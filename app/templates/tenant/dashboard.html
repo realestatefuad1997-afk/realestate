@@ -1,78 +1,104 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Tenant Dashboard') }}{% endblock %}
 {% block content %}
-<h3 class="mb-3">{{ _('Tenant Dashboard') }}</h3>
-<div class="row">
-  <div class="col-md-6">
-    <h5>{{ _('My Contracts') }}</h5>
-    <ul class="list-group">
-      {% for c in contracts %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        #{{ c.id }} - {{ c.property.title }}
-        <span class="badge text-bg-secondary">{{ c.status }}</span>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+<div class="d-flex align-items-center justify-content-between mb-3 animate-fade-in-up">
+  <h3 class="m-0">{{ _('Tenant Dashboard') }}</h3>
+  <span class="text-muted-strong small">{{ _('Welcome back') }}</span>
   </div>
-  <div class="col-md-6">
-    <h5>{{ _('Invoices & Payments') }}</h5>
-    <ul class="list-group">
-      {% for p in payments %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        {{ _('Due') }}: {{ p.due_date }} — {{ _('Amount') }}: {{ p.amount }}
-        <span class="badge {{ 'text-bg-success' if p.status=='paid' else 'text-bg-warning' }}">{{ p.status }}</span>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+
+<div class="row g-4">
+  <div class="col-md-6 animate-fade-in-up delay-1">
+    <div class="card re-card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="m-0">{{ _('My Contracts') }}</h5>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for c in contracts %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>#{{ c.id }} - {{ c.property.title }}</span>
+            <span class="badge text-bg-secondary">{{ c.status }}</span>
+          </li>
+          {% else %}
+          <li class="list-group-item">{{ _('No data') }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 animate-fade-in-up delay-2">
+    <div class="card re-card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="m-0">{{ _('Invoices & Payments') }}</h5>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for p in payments %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ _('Due') }}: {{ p.due_date }} — {{ _('Amount') }}: {{ p.amount }}</span>
+            <span class="badge {{ 'text-bg-success' if p.status=='paid' else 'text-bg-warning' }}">{{ p.status }}</span>
+          </li>
+          {% else %}
+          <li class="list-group-item">{{ _('No data') }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="row mt-4">
-  <div class="col-md-6">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h5>{{ _('My Maintenance Requests') }}</h5>
-      <a class="btn btn-sm btn-primary" href="{{ url_for('tenant.maintenance_create') }}">{{ _('New Request') }}</a>
+<div class="row g-4 mt-1">
+  <div class="col-md-6 animate-fade-in-up delay-3">
+    <div class="card re-card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="m-0">{{ _('My Maintenance Requests') }}</h5>
+        <a class="btn btn-sm btn-primary" href="{{ url_for('tenant.maintenance_create') }}">{{ _('New Request') }}</a>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for m in maintenance_requests %}
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+              <div>
+                <strong>{{ m.title }}</strong>
+                <div class="text-muted small">{{ m.description }}</div>
+              </div>
+              <span class="badge text-bg-secondary">{{ m.status }}</span>
+            </div>
+          </li>
+          {% else %}
+          <li class="list-group-item">{{ _('No data') }}</li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
-    <ul class="list-group">
-      {% for m in maintenance_requests %}
-      <li class="list-group-item">
-        <div class="d-flex justify-content-between">
-          <div>
-            <strong>{{ m.title }}</strong>
-            <div class="text-muted small">{{ m.description }}</div>
-          </div>
-          <span class="badge text-bg-secondary">{{ m.status }}</span>
-        </div>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
   </div>
-  <div class="col-md-6">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h5>{{ _('My Complaints') }}</h5>
-      <a class="btn btn-sm btn-primary" href="{{ url_for('tenant.complaint_create') }}">{{ _('New Complaint') }}</a>
+
+  <div class="col-md-6 animate-fade-in-up delay-4">
+    <div class="card re-card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="m-0">{{ _('My Complaints') }}</h5>
+        <a class="btn btn-sm btn-primary" href="{{ url_for('tenant.complaint_create') }}">{{ _('New Complaint') }}</a>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for c in complaints %}
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+              <div>
+                <strong>{{ c.subject }}</strong>
+                <div class="text-muted small">{{ c.description }}</div>
+              </div>
+              <span class="badge text-bg-secondary">{{ c.status }}</span>
+            </div>
+          </li>
+          {% else %}
+          <li class="list-group-item">{{ _('No data') }}</li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
-    <ul class="list-group">
-      {% for c in complaints %}
-      <li class="list-group-item">
-        <div class="d-flex justify-content-between">
-          <div>
-            <strong>{{ c.subject }}</strong>
-            <div class="text-muted small">{{ c.description }}</div>
-          </div>
-          <span class="badge text-bg-secondary">{{ c.status }}</span>
-        </div>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
   </div>
 </div>
 {% endblock %}

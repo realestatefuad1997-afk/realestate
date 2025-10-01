@@ -8,3 +8,59 @@ html[dir="rtl"] table td { text-align: right; }
 
 /* Navbar brand weight */
 .navbar .navbar-brand { font-weight: 600; }
+
+/* ==========================
+   Shared palette & surfaces
+   ========================== */
+:root {
+  --re-bg: #f5f7fb;
+  --re-surface: #ffffff;
+  --re-primary: #0d6efd; /* Bootstrap primary */
+  --re-accent: #20c997;  /* teal */
+  --re-muted: #6c757d;
+  --re-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+}
+
+body { background-color: var(--re-bg); }
+
+/* ==========================
+   Card styling & hover
+   ========================== */
+.re-card {
+  background-color: var(--re-surface);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: .75rem;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.re-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--re-shadow);
+}
+
+.re-card .card-header {
+  background: linear-gradient(90deg, rgba(13,110,253,0.08), rgba(32,201,151,0.08));
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  font-weight: 600;
+}
+
+/* ==========================
+   Animations
+   ========================== */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up { animation: fade-in-up .5s ease both; }
+.delay-1 { animation-delay: .05s; }
+.delay-2 { animation-delay: .1s; }
+.delay-3 { animation-delay: .15s; }
+.delay-4 { animation-delay: .2s; }
+
+/* Utilities */
+.text-muted-strong { color: var(--re-muted); }
+
+/* RTL niceties */
+html[dir="rtl"] .card-header h5 { margin-bottom: 0; }
