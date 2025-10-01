@@ -1,21 +1,30 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Users') }}{% endblock %}
 {% block content %}
-<h3 class="mb-3">{{ _('Users') }}</h3>
-<table class="table table-striped">
-  <thead><tr><th>#</th><th>{{ _('Username') }}</th><th>{{ _('Email') }}</th><th>{{ _('Role') }}</th><th>{{ _('Created') }}</th></tr></thead>
-  <tbody>
-    {% for u in users %}
-    <tr>
-      <td>{{ u.id }}</td>
-      <td>{{ u.username }}</td>
-      <td>{{ u.email }}</td>
-      <td>{{ u.role }}</td>
-      <td>{{ u.created_at }}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">{{ _('No data') }}</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">{{ _('Users') }}</h5>
+    <div class="d-none d-md-block text-muted">{{ _('Total') }}: {{ users|length }}</div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead><tr><th>#</th><th>{{ _('Username') }}</th><th>{{ _('Email') }}</th><th>{{ _('Role') }}</th><th>{{ _('Created') }}</th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.role }}</td>
+            <td>{{ u.created_at }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="text-center py-4">{{ _('No data') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

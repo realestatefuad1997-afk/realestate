@@ -23,6 +23,19 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             {% if current_user.is_authenticated %}
+            {% if current_user.role == 'admin' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.dashboard') }}">{{ _('Admin') }}</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.users_list') }}">{{ _('Users') }}</a></li>
+            {% endif %}
+            {% if current_user.role == 'employee' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('employee.dashboard') }}">{{ _('Employee') }}</a></li>
+            {% endif %}
+            {% if current_user.role == 'tenant' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('tenant.dashboard') }}">{{ _('Tenant') }}</a></li>
+            {% endif %}
+            {% if current_user.role == 'accountant' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('accountant.dashboard') }}">{{ _('Accountant') }}</a></li>
+            {% endif %}
             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">{{ _('Logout') }}</a></li>
             {% endif %}
           </ul>

@@ -1,16 +1,34 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Admin Dashboard') }}{% endblock %}
 {% block content %}
-<h3 class="mb-4">{{ _('Admin Dashboard') }}</h3>
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h3 class="mb-0">{{ _('Admin Dashboard') }}</h3>
+  <div class="text-muted small">{{ _('Overview of key metrics') }}</div>
+  </div>
 <div class="row g-3">
-  <div class="col-md-4">
-    <div class="card text-bg-light"><div class="card-body">{{ _('Properties') }}: {{ properties_count }}</div></div>
+  <div class="col-12 col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">{{ _('Properties') }}</div>
+        <div class="fs-3 fw-semibold">{{ properties_count }}</div>
+      </div>
+    </div>
   </div>
-  <div class="col-md-4">
-    <div class="card text-bg-light"><div class="card-body">{{ _('Active Contracts') }}: {{ active_contracts }}</div></div>
+  <div class="col-12 col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">{{ _('Active Contracts') }}</div>
+        <div class="fs-3 fw-semibold">{{ active_contracts }}</div>
+      </div>
+    </div>
   </div>
-  <div class="col-md-4">
-    <div class="card text-bg-light"><div class="card-body">{{ _('Total Revenue') }}: {{ total_revenue }}</div></div>
+  <div class="col-12 col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">{{ _('Total Revenue') }}</div>
+        <div class="fs-3 fw-semibold">{{ total_revenue }}</div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
