@@ -59,13 +59,15 @@
         <ul class="list-group list-group-flush">
           {% for m in maintenance_requests %}
           <li class="list-group-item">
-            <div class="d-flex justify-content-between">
-              <div>
-                <strong>{{ m.title }}</strong>
-                <div class="text-muted small">{{ m.description }}</div>
+            <a class="text-decoration-none d-block" href="{{ url_for('tenant.maintenance_detail', request_id=m.id) }}">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <strong>{{ m.title }}</strong>
+                  <div class="text-muted small">{{ m.description }}</div>
+                </div>
+                <span class="badge text-bg-secondary">{{ m.status }}</span>
               </div>
-              <span class="badge text-bg-secondary">{{ m.status }}</span>
-            </div>
+            </a>
           </li>
           {% else %}
           <li class="list-group-item">{{ _('No data') }}</li>
@@ -85,13 +87,15 @@
         <ul class="list-group list-group-flush">
           {% for c in complaints %}
           <li class="list-group-item">
-            <div class="d-flex justify-content-between">
-              <div>
-                <strong>{{ c.subject }}</strong>
-                <div class="text-muted small">{{ c.description }}</div>
+            <a class="text-decoration-none d-block" href="{{ url_for('tenant.complaint_detail', complaint_id=c.id) }}">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <strong>{{ c.subject }}</strong>
+                  <div class="text-muted small">{{ c.description }}</div>
+                </div>
+                <span class="badge text-bg-secondary">{{ c.status }}</span>
               </div>
-              <span class="badge text-bg-secondary">{{ c.status }}</span>
-            </div>
+            </a>
           </li>
           {% else %}
           <li class="list-group-item">{{ _('No data') }}</li>
