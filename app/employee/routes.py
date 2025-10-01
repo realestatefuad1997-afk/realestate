@@ -5,6 +5,8 @@ from ..extensions import db
 from ..models import Property, Contract, MaintenanceRequest, Complaint
 from werkzeug.utils import secure_filename
 import os
+import smtplib
+from email.message import EmailMessage
 
 
 employee_bp = Blueprint("employee", __name__)
@@ -37,6 +39,126 @@ def dashboard():
         maintenance_requests=maints,
         complaints=complaints,
     )
+
+
+def _send_email(recipient: str, subject: str, body: str) -> bool:
+    """Send a simple email using SMTP settings if configured.
+
+    Returns True if attempt was made and did not raise, False otherwise.
+    """
+    mail_server = current_app.config.get("MAIL_SERVER")
+    if not mail_server or not recipient:
+        return False
+    mail_port = int(current_app.config.get("MAIL_PORT", 587))
+    use_tls = bool(current_app.config.get("MAIL_USE_TLS", True))
+    use_ssl = bool(current_app.config.get("MAIL_USE_SSL", False))
+    username = current_app.config.get("MAIL_USERNAME")
+    password = current_app.config.get("MAIL_PASSWORD")
+    sender = current_app.config.get("MAIL_DEFAULT_SENDER") or username or "no-reply@example.com"
+
+    msg = EmailMessage()
+    msg["From"] = sender
+    msg["To"] = recipient
+    msg["Subject"] = subject
+    msg.set_content(body)
+
+    try:
+        if use_ssl:
+            with smtplib.SMTP_SSL(mail_server, mail_port) as server:
+                if username and password:
+                    server.login(username, password)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(mail_server, mail_port) as server:
+                server.ehlo()
+                if use_tls:
+                    server.starttls()
+                if username and password:
+                    server.login(username, password)
+                server.send_message(msg)
+        return True
+    except Exception:
+        return False
+
+
+@employee_bp.route("/maintenance/<int:req_id>", methods=["GET", "POST"])
+@login_required
+@employee_required
+def maintenance_detail(req_id: int):
+    req = MaintenanceRequest.query.get_or_404(req_id)
+    if request.method == "POST":
+        new_status = request.form.get("status") or req.status
+        response = request.form.get("response")
+        req.status = new_status
+        req.response = response
+        db.session.commit()
+        flash(_("Maintenance request updated"), "success")
+        if request.form.get("notify_client"):
+            from ..models import User
+            tenant = User.query.get(req.tenant_id) if req.tenant_id else None
+            if tenant and tenant.email:
+                subject = _("Maintenance Request #%(num)s Update", num=req.id)
+                body = (
+                    _("Title")
+                    + f": {req.title}\n"
+                    + _("Status")
+                    + f": {req.status}\n\n"
+                )
+                if req.response:
+                    body += _("Notes") + f":\n{req.response}\n"
+                sent = _send_email(tenant.email, subject, body)
+                if sent:
+                    flash(_("Notification sent to client"), "info")
+                else:
+                    flash(_("Notification not sent (mail not configured)"), "warning")
+        return redirect(url_for("employee.maintenance_detail", req_id=req.id))
+    # Load related data
+    tenant = None
+    prop = None
+    if req.tenant_id:
+        from ..models import User
+        tenant = User.query.get(req.tenant_id)
+    if req.property_id:
+        prop = Property.query.get(req.property_id)
+    return render_template("employee/maintenance_detail.html", req=req, tenant=tenant, property=prop)
+
+
+@employee_bp.route("/complaints/<int:comp_id>", methods=["GET", "POST"])
+@login_required
+@employee_required
+def complaint_detail(comp_id: int):
+    comp = Complaint.query.get_or_404(comp_id)
+    if request.method == "POST":
+        new_status = request.form.get("status") or comp.status
+        response = request.form.get("response")
+        comp.status = new_status
+        comp.response = response
+        db.session.commit()
+        flash(_("Complaint updated"), "success")
+        if request.form.get("notify_client"):
+            from ..models import User
+            tenant = User.query.get(comp.tenant_id) if comp.tenant_id else None
+            if tenant and tenant.email:
+                subject = _("Complaint #%(num)s Update", num=comp.id)
+                body = (
+                    _("Subject")
+                    + f": {comp.subject}\n"
+                    + _("Status")
+                    + f": {comp.status}\n\n"
+                )
+                if comp.response:
+                    body += _("Notes") + f":\n{comp.response}\n"
+                sent = _send_email(tenant.email, subject, body)
+                if sent:
+                    flash(_("Notification sent to client"), "info")
+                else:
+                    flash(_("Notification not sent (mail not configured)"), "warning")
+        return redirect(url_for("employee.complaint_detail", comp_id=comp.id))
+    tenant = None
+    if comp.tenant_id:
+        from ..models import User
+        tenant = User.query.get(comp.tenant_id)
+    return render_template("employee/complaint_detail.html", comp=comp, tenant=tenant)
 
 
 @employee_bp.route("/properties")

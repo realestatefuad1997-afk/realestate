@@ -2,6 +2,7 @@ import os
 from flask import Flask, g, request, redirect, url_for, session, render_template, send_from_directory
 from flask_babel import get_locale as babel_get_locale
 from .config import Config
+from sqlalchemy import inspect, text
 from .extensions import db, migrate, login_manager, babel
 
 
@@ -34,8 +35,23 @@ def create_app(config_class: type = Config) -> Flask:
     def load_user(user_id: str):
         return User.query.get(int(user_id))
 
-    # Locale selection
-    # locale selector configured above
+    # Ensure DB has required lightweight columns if migrations cannot run
+    def _ensure_column(table_name: str, column_name: str, ddl: str) -> None:
+        try:
+            with app.app_context():
+                engine = db.engine
+                inspector = inspect(engine)
+                existing = {c["name"] for c in inspector.get_columns(table_name)}
+                if column_name not in existing:
+                    with engine.begin() as conn:
+                        conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {ddl}"))
+        except Exception:
+            # best-effort; ignore if not possible (e.g., permissions or engine limitations)
+            pass
+
+    # Best-effort to add new response fields for support flows
+    _ensure_column("maintenance_requests", "response", "response TEXT")
+    _ensure_column("complaints", "response", "response TEXT")
 
     # Blueprints
     from .auth.routes import auth_bp
