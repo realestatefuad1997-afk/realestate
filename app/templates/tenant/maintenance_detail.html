@@ -16,6 +16,13 @@
       <span class="badge text-bg-secondary">{{ m.status }}</span>
     </div>
     <p class="mb-0">{{ m.description }}</p>
+      {% if m.employee_notes %}
+      <hr/>
+      <div>
+        <div class="fw-bold">{{ _('Employee Notes') }}</div>
+        <div class="text-prewrap">{{ m.employee_notes }}</div>
+      </div>
+      {% endif %}
   </div>
 </div>
 {% endblock %}

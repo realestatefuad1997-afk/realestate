@@ -162,3 +162,39 @@ def contracts_create():
     tenants = User.query.filter_by(role="tenant").all()
     return render_template("employee/contract_form.html", properties=properties, tenants=tenants)
 
+
+@employee_bp.route("/maintenance/<int:request_id>", methods=["GET", "POST"])
+@login_required
+@employee_required
+def maintenance_detail(request_id: int):
+    m = MaintenanceRequest.query.get_or_404(request_id)
+    status_options = ["new", "in_progress", "resolved", "closed"]
+    if request.method == "POST":
+        status = request.form.get("status")
+        employee_notes = request.form.get("employee_notes")
+        if status in status_options:
+            m.status = status
+        m.employee_notes = employee_notes
+        db.session.commit()
+        flash(_("Maintenance request updated"), "success")
+        return redirect(url_for("employee.maintenance_detail", request_id=m.id))
+    return render_template("employee/maintenance_detail.html", m=m, status_options=status_options)
+
+
+@employee_bp.route("/complaints/<int:complaint_id>", methods=["GET", "POST"])
+@login_required
+@employee_required
+def complaint_detail(complaint_id: int):
+    c = Complaint.query.get_or_404(complaint_id)
+    status_options = ["new", "reviewing", "resolved", "closed"]
+    if request.method == "POST":
+        status = request.form.get("status")
+        employee_notes = request.form.get("employee_notes")
+        if status in status_options:
+            c.status = status
+        c.employee_notes = employee_notes
+        db.session.commit()
+        flash(_("Complaint updated"), "success")
+        return redirect(url_for("employee.complaint_detail", complaint_id=c.id))
+    return render_template("employee/complaint_detail.html", c=c, status_options=status_options)
+

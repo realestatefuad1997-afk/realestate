@@ -111,6 +111,7 @@ class MaintenanceRequest(db.Model, TimestampMixin):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), nullable=False, default="new")  # new, in_progress, resolved, closed
+    employee_notes = db.Column(db.Text)
 
 
 class Complaint(db.Model, TimestampMixin):
@@ -121,3 +122,4 @@ class Complaint(db.Model, TimestampMixin):
     subject = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), nullable=False, default="new")  # new, reviewing, resolved, closed
+    employee_notes = db.Column(db.Text)
