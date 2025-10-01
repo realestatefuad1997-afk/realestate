@@ -1,1 +1,10 @@
 body { font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif; }
+
+/* Improve RTL table alignment and card spacing */
+html[dir="rtl"] table th,
+html[dir="rtl"] table td { text-align: right; }
+
+.card + .card { margin-top: 1rem; }
+
+/* Navbar brand weight */
+.navbar .navbar-brand { font-weight: 600; }
