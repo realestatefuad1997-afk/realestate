@@ -6,6 +6,7 @@
   <div class="d-flex align-items-center gap-2">
     <a class="btn btn-sm btn-primary" href="{{ url_for('admin.create_user', role='employee') }}">{{ _('Add Employee') }}</a>
     <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.create_user', role='tenant') }}">{{ _('Add Tenant') }}</a>
+    <a class="btn btn-sm btn-success" href="{{ url_for('employee.properties_create') }}">{{ _('Add Property') }}</a>
   </div>
   </div>
 
