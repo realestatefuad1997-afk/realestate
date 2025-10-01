@@ -1,0 +1,13 @@
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.7
+Flask-Login==0.6.3
+Flask-Babel==4.0.0
+Werkzeug==3.0.4
+email-validator==2.1.1
+itsdangerous==2.2.0
+python-dotenv==1.0.1
+reportlab==4.2.2
+openpyxl==3.1.5
+Babel==2.15.0
+pytz==2024.1

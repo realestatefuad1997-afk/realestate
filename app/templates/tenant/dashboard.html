@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Tenant Dashboard') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('Tenant Dashboard') }}</h3>
+<div class="row">
+  <div class="col-md-6">
+    <h5>{{ _('My Contracts') }}</h5>
+    <ul class="list-group">
+      {% for c in contracts %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        #{{ c.id }} - {{ c.property.title }}
+        <span class="badge text-bg-secondary">{{ c.status }}</span>
+      </li>
+      {% else %}
+      <li class="list-group-item">{{ _('No data') }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="col-md-6">
+    <h5>{{ _('Invoices & Payments') }}</h5>
+    <ul class="list-group">
+      {% for p in payments %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ _('Due') }}: {{ p.due_date }} — {{ _('Amount') }}: {{ p.amount }}
+        <span class="badge {{ 'text-bg-success' if p.status=='paid' else 'text-bg-warning' }}">{{ p.status }}</span>
+      </li>
+      {% else %}
+      <li class="list-group-item">{{ _('No data') }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

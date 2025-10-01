@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ property and _('Edit Property') or _('Create Property') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ property and _('Edit Property') or _('Create Property') }}</h3>
+<form method="post" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label class="form-label">{{ _('Title') }}</label>
+    <input class="form-control" name="title" value="{{ property.title if property else '' }}" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Price') }}</label>
+    <input class="form-control" name="price" type="number" step="0.01" value="{{ property.price if property else '' }}" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Description') }}</label>
+    <textarea class="form-control" rows="4" name="description">{{ property.description if property else '' }}</textarea>
+  </div>
+  {% if property %}
+  <div class="mb-3">
+    <label class="form-label">{{ _('Status') }}</label>
+    <select class="form-select" name="status">
+      <option value="available" {% if property.status=='available' %}selected{% endif %}>{{ _('Available') }}</option>
+      <option value="occupied" {% if property.status=='occupied' %}selected{% endif %}>{{ _('Occupied') }}</option>
+      <option value="maintenance" {% if property.status=='maintenance' %}selected{% endif %}>{{ _('Maintenance') }}</option>
+    </select>
+  </div>
+  {% endif %}
+  <div class="mb-3">
+    <label class="form-label">{{ _('Images') }}</label>
+    <input class="form-control" type="file" name="images" accept="image/*" multiple />
+  </div>
+  <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
+  <a class="btn btn-secondary" href="{{ url_for('employee.properties_list') }}">{{ _('Cancel') }}</a>
+</form>
+{% endblock %}
