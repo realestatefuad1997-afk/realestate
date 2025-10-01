@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}
+  {% if role == 'employee' %}{{ _('Add Employee') }}{% else %}{{ _('Add Tenant') }}{% endif %}
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      {% if role == 'employee' %}{{ _('Add Employee') }}{% else %}{{ _('Add Tenant') }}{% endif %}
+    </h5>
+  </div>
+  <div class="card-body">
+    <form method="post" action="">
+      <div class="mb-3">
+        <label class="form-label">{{ _('Username') }}</label>
+        <input type="text" name="username" class="form-control" value="{{ username_value|default('') }}" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ _('Email') }}</label>
+        <input type="email" name="email" class="form-control" value="{{ email_value|default('') }}" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ _('Password') }}</label>
+        <input type="password" name="password" class="form-control" required />
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          {% if role == 'employee' %}{{ _('Create Employee') }}{% else %}{{ _('Create Tenant') }}{% endif %}
+        </button>
+        <a href="{{ url_for('admin.users_list') }}" class="btn btn-secondary">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
