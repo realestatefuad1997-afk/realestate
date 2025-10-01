@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Complaint') }} #{{ c.id }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h3 class="m-0">{{ _('Complaint') }} #{{ c.id }}</h3>
+  <a class="btn btn-secondary" href="{{ url_for('tenant.dashboard') }}">{{ _('Back') }}</a>
+</div>
+
+<div class="card re-card">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+      <div>
+        <div class="h5 m-0">{{ c.subject }}</div>
+        <div class="text-muted small">{{ _('Created') }}: {{ c.created_at }} · {{ _('Updated') }}: {{ c.updated_at or '-' }}</div>
+      </div>
+      <span class="badge text-bg-secondary">{{ c.status }}</span>
+    </div>
+    <p class="mb-0">{{ c.description }}</p>
+  </div>
+</div>
+{% endblock %}
+
