@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('New Maintenance Request') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('New Maintenance Request') }}</h3>
+<form method="post">
+  <div class="mb-3">
+    <label class="form-label">{{ _('Title') }}</label>
+    <input name="title" type="text" class="form-control" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Description') }}</label>
+    <textarea name="description" class="form-control" rows="4" required></textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Property (optional)') }}</label>
+    <select name="property_id" class="form-select">
+      <option value="">--</option>
+      {% for p in properties %}
+      <option value="{{ p.id }}">{{ p.title }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn-primary" type="submit">{{ _('Submit') }}</button>
+  <a class="btn btn-secondary" href="{{ url_for('tenant.dashboard') }}">{{ _('Cancel') }}</a>
+  </form>
+{% endblock %}
+
