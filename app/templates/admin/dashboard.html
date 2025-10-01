@@ -8,28 +8,48 @@
     <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.create_user', role='tenant') }}">{{ _('Add Tenant') }}</a>
   </div>
   </div>
+
 <div class="row g-3">
   <div class="col-12 col-md-4">
     <div class="card h-100">
       <div class="card-body">
-        <div class="text-muted small mb-1">{{ _('Properties') }}</div>
-        <div class="fs-3 fw-semibold">{{ properties_count }}</div>
+        <div class="text-muted small mb-1">{{ _('Income') }}</div>
+        <div class="fs-3 fw-semibold">{{ total_income }}</div>
       </div>
     </div>
   </div>
   <div class="col-12 col-md-4">
     <div class="card h-100">
       <div class="card-body">
-        <div class="text-muted small mb-1">{{ _('Active Contracts') }}</div>
-        <div class="fs-3 fw-semibold">{{ active_contracts }}</div>
+        <div class="text-muted small mb-1">{{ _('Expenses') }}</div>
+        <div class="fs-3 fw-semibold">{{ total_expenses }}</div>
       </div>
     </div>
   </div>
   <div class="col-12 col-md-4">
     <div class="card h-100">
       <div class="card-body">
-        <div class="text-muted small mb-1">{{ _('Total Revenue') }}</div>
-        <div class="fs-3 fw-semibold">{{ total_revenue }}</div>
+        <div class="text-muted small mb-1">{{ _('Profit') }}</div>
+        <div class="fs-3 fw-semibold">{{ profit }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-12 col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">{{ _('Unleased Properties') }}</div>
+        <div class="fs-3 fw-semibold">{{ unleased_properties }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">{{ _('Maintenance Requests > 24h') }}</div>
+        <div class="fs-3 fw-semibold">{{ overdue_maintenance_24h }}</div>
       </div>
     </div>
   </div>
