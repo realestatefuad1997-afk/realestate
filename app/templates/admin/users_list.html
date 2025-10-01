@@ -4,7 +4,11 @@
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="mb-0">{{ _('Users') }}</h5>
-    <div class="d-none d-md-block text-muted">{{ _('Total') }}: {{ users|length }}</div>
+    <div class="d-flex align-items-center gap-2">
+      <a class="btn btn-sm btn-primary" href="{{ url_for('admin.create_user', role='employee') }}">{{ _('Add Employee') }}</a>
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.create_user', role='tenant') }}">{{ _('Add Tenant') }}</a>
+      <div class="d-none d-md-block text-muted">{{ _('Total') }}: {{ users|length }}</div>
+    </div>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
