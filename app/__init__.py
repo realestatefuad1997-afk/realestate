@@ -1,5 +1,6 @@
 import os
 from flask import Flask, g, request, redirect, url_for, session, render_template, send_from_directory
+from flask_babel import get_locale as babel_get_locale
 from .config import Config
 from .extensions import db, migrate, login_manager, babel
 
@@ -53,6 +54,14 @@ def create_app(config_class: type = Config) -> Flask:
     from .cli import register_cli
 
     register_cli(app)
+
+    @app.context_processor
+    def inject_get_locale():
+        # Expose get_locale() to Jinja templates as a callable returning a string like 'en' or 'ar'
+        def _get_locale():
+            return str(babel_get_locale())
+
+        return {"get_locale": _get_locale}
 
     @app.route("/")
     def index():
