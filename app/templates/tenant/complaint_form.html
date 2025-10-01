@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('New Complaint') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('New Complaint') }}</h3>
+<form method="post">
+  <div class="mb-3">
+    <label class="form-label">{{ _('Subject') }}</label>
+    <input class="form-control" name="subject" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Related contract (optional)') }}</label>
+    <select class="form-select" name="contract_id">
+      <option value="">{{ _('None') }}</option>
+      {% for c in contracts %}
+      <option value="{{ c.id }}">#{{ c.id }} - {{ c.property.title }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Description') }}</label>
+    <textarea class="form-control" name="description" rows="5" required></textarea>
+  </div>
+  <div class="d-grid gap-2 d-md-flex">
+    <button type="submit" class="btn btn-secondary">{{ _('Submit') }}</button>
+    <a href="{{ url_for('tenant.complaints_list') }}" class="btn btn-outline-secondary">{{ _('Cancel') }}</a>
+  </div>
+</form>
+{% endblock %}
+

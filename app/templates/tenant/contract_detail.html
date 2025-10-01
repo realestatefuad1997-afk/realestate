@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Contract Details') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('Contract Details') }}</h3>
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">#{{ contract.id }} - {{ contract.property.title }}</h5>
+    <p class="card-text mb-1"><strong>{{ _('Status') }}:</strong> {{ contract.status }}</p>
+    <p class="card-text mb-1"><strong>{{ _('Start date') }}:</strong> {{ contract.start_date }}</p>
+    <p class="card-text mb-1"><strong>{{ _('End date') }}:</strong> {{ contract.end_date }}</p>
+    <p class="card-text mb-1"><strong>{{ _('Rent amount') }}:</strong> {{ contract.rent_amount }}</p>
+    {% if contract.document_path %}
+    <p class="card-text"><a href="{{ url_for('uploaded_file', filename=contract.document_path) }}" class="btn btn-sm btn-outline-secondary">{{ _('Download contract') }}</a></p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="mt-3 d-grid gap-2 d-md-flex">
+  <a class="btn btn-primary" href="{{ url_for('tenant.maintenance_create') }}">{{ _('New Maintenance') }}</a>
+  <a class="btn btn-secondary" href="{{ url_for('tenant.complaints_create') }}">{{ _('New Complaint') }}</a>
+</div>
+{% endblock %}
+

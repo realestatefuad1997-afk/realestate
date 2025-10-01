@@ -8,7 +8,10 @@
     <ul class="list-group">
       {% for c in contracts %}
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        #{{ c.id }} - {{ c.property.title }}
+        <div>
+          <a href="{{ url_for('tenant.contract_detail', contract_id=c.id) }}">#{{ c.id }} - {{ c.property.title }}</a>
+          <div class="small text-muted">{{ _('From') }} {{ c.start_date }} {{ _('to') }} {{ c.end_date }} — {{ _('Rent') }}: {{ c.rent_amount }}</div>
+        </div>
         <span class="badge text-bg-secondary">{{ c.status }}</span>
       </li>
       {% else %}
@@ -28,6 +31,21 @@
       <li class="list-group-item">{{ _('No data') }}</li>
       {% endfor %}
     </ul>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="d-grid gap-2 d-md-flex">
+      <a class="btn btn-outline-primary" href="{{ url_for('tenant.maintenance_list') }}">{{ _('Maintenance Requests') }}</a>
+      <a class="btn btn-primary" href="{{ url_for('tenant.maintenance_create') }}">{{ _('New Maintenance') }}</a>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="d-grid gap-2 d-md-flex">
+      <a class="btn btn-outline-secondary" href="{{ url_for('tenant.complaints_list') }}">{{ _('Complaints') }}</a>
+      <a class="btn btn-secondary" href="{{ url_for('tenant.complaints_create') }}">{{ _('New Complaint') }}</a>
+    </div>
   </div>
 </div>
 {% endblock %}

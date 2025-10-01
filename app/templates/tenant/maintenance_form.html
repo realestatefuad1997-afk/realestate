@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('New Maintenance') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('New Maintenance Request') }}</h3>
+<form method="post">
+  <div class="mb-3">
+    <label class="form-label">{{ _('Subject') }}</label>
+    <input class="form-control" name="subject" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Related contract (optional)') }}</label>
+    <select class="form-select" name="contract_id">
+      <option value="">{{ _('None') }}</option>
+      {% for c in contracts %}
+      <option value="{{ c.id }}">#{{ c.id }} - {{ c.property.title }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Priority') }}</label>
+    <select class="form-select" name="priority">
+      <option value="low">{{ _('Low') }}</option>
+      <option value="normal" selected>{{ _('Normal') }}</option>
+      <option value="high">{{ _('High') }}</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Description') }}</label>
+    <textarea class="form-control" name="description" rows="5" required></textarea>
+  </div>
+  <div class="d-grid gap-2 d-md-flex">
+    <button type="submit" class="btn btn-primary">{{ _('Submit') }}</button>
+    <a href="{{ url_for('tenant.maintenance_list') }}" class="btn btn-outline-secondary">{{ _('Cancel') }}</a>
+  </div>
+</form>
+{% endblock %}
+

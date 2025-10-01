@@ -98,3 +98,32 @@ class Invoice(db.Model, TimestampMixin):
 
     payment = db.relationship("Payment", back_populates="invoice")
 
+
+# Tenant service models
+class MaintenanceRequest(db.Model, TimestampMixin):
+    __tablename__ = "maintenance_requests"
+
+    id = db.Column(db.Integer, primary_key=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey("contracts.id"), index=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    subject = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(50), nullable=False, default="open")  # open, in_progress, resolved, closed
+    priority = db.Column(db.String(20), nullable=False, default="normal")  # low, normal, high
+
+    contract = db.relationship("Contract")
+    tenant = db.relationship("User")
+
+
+class Complaint(db.Model, TimestampMixin):
+    __tablename__ = "complaints"
+
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey("contracts.id"), index=True)
+    subject = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(50), nullable=False, default="open")  # open, in_review, resolved, rejected
+
+    tenant = db.relationship("User")
+    contract = db.relationship("Contract")
