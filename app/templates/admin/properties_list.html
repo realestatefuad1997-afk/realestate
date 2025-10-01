@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Properties') }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>{{ _('Properties') }}</h3>
+  <a class="btn btn-primary" href="{{ url_for('admin.properties_create') }}">{{ _('Add Property') }}</a>
+  </div>
+<table class="table table-striped">
+  <thead><tr><th>#</th><th>{{ _('Title') }}</th><th>{{ _('Price') }}</th><th>{{ _('Status') }}</th></tr></thead>
+  <tbody>
+    {% for p in properties %}
+    <tr>
+      <td>{{ p.id }}</td>
+      <td>{{ p.title }}</td>
+      <td>{{ p.price }}</td>
+      <td>{{ p.status }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4">{{ _('No data') }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+

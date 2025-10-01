@@ -6,6 +6,9 @@ from ..extensions import db
 from flask import request, redirect, url_for, flash
 from datetime import date, datetime, timedelta
 from sqlalchemy import text
+from flask import current_app
+from werkzeug.utils import secure_filename
+import os
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -162,4 +165,39 @@ def create_user(role: str):
         return redirect(url_for("admin.users_list"))
 
     return render_template("admin/user_form.html", role=role)
+
+
+@admin_bp.route("/properties")
+@login_required
+@admin_required
+def properties_list():
+    properties = Property.query.order_by(Property.created_at.desc()).all()
+    return render_template("admin/properties_list.html", properties=properties)
+
+
+@admin_bp.route("/properties/create", methods=["GET", "POST"])
+@login_required
+@admin_required
+def properties_create():
+    if request.method == "POST":
+        title = request.form.get("title")
+        price = request.form.get("price")
+        description = request.form.get("description")
+        images_filenames = []
+        images_files = request.files.getlist("images")
+        upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
+        os.makedirs(upload_dir, exist_ok=True)
+        for f in images_files:
+            if f and f.filename:
+                filename = secure_filename(f.filename)
+                path = os.path.join(upload_dir, filename)
+                f.save(path)
+                images_filenames.append(f"properties/{filename}")
+        images_value = ",".join(images_filenames) if images_filenames else None
+        prop = Property(title=title, price=price, description=description, status="available", images=images_value)
+        db.session.add(prop)
+        db.session.commit()
+        flash(_( "Property created"), "success")
+        return redirect(url_for("admin.properties_list"))
+    return render_template("admin/property_form.html", property=None)
 
