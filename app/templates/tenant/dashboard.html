@@ -1,108 +1,158 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Tenant Dashboard') }}{% endblock %}
+
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-3 animate-fade-in-up">
-  <h3 class="m-0">{{ _('Tenant Dashboard') }}</h3>
-  <span class="text-muted-strong small">{{ _('Welcome back') }}</span>
-  </div>
+<div class="container py-5">
 
-<div class="row g-4">
-  <div class="col-md-6 animate-fade-in-up delay-1">
-    <div class="card re-card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="m-0">{{ _('My Contracts') }}</h5>
-      </div>
-      <div class="card-body p-0">
-        <ul class="list-group list-group-flush">
-          {% for c in contracts %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>#{{ c.id }} - {{ c.property.title }}</span>
-            <span class="badge text-bg-secondary">{{ c.status }}</span>
-          </li>
-          {% else %}
-          <li class="list-group-item">{{ _('No data') }}</li>
-          {% endfor %}
-        </ul>
+  <div class="row g-4">
+
+    <!-- My Contracts -->
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 overflow-hidden animate-card hover-card">
+        <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+          <h5 class="m-0"><i class="bi bi-file-earmark-text me-2"></i>{{ _('My Contracts') }}</h5>
+        </div>
+        <div class="card-body p-0 card-body-scroll">
+          <ul class="list-group list-group-flush">
+            {% for c in contracts %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>#{{ c.id }} - {{ c.property.title }}</span>
+              <span class="badge 
+                {% if c.status == 'active' %} bg-success 
+                {% elif c.status == 'pending' %} bg-warning 
+                {% else %} bg-secondary {% endif %}">
+                {{ c.status }}
+              </span>
+            </li>
+            {% else %}
+            <li class="list-group-item text-muted text-center">{{ _('No data') }}</li>
+            {% endfor %}
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-6 animate-fade-in-up delay-2">
-    <div class="card re-card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="m-0">{{ _('Invoices & Payments') }}</h5>
-      </div>
-      <div class="card-body p-0">
-        <ul class="list-group list-group-flush">
-          {% for p in payments %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>{{ _('Due') }}: {{ p.due_date }} — {{ _('Amount') }}: {{ p.amount }}</span>
-            <span class="badge {{ 'text-bg-success' if p.status=='paid' else 'text-bg-warning' }}">{{ p.status }}</span>
-          </li>
-          {% else %}
-          <li class="list-group-item">{{ _('No data') }}</li>
-          {% endfor %}
-        </ul>
+    <!-- Invoices & Payments -->
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 overflow-hidden animate-card hover-card">
+        <div class="card-header bg-success text-white d-flex align-items-center justify-content-between">
+          <h5 class="m-0"><i class="bi bi-receipt me-2"></i>{{ _('Invoices & Payments') }}</h5>
+        </div>
+        <div class="card-body p-0 card-body-scroll">
+          <ul class="list-group list-group-flush">
+            {% for p in payments %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>{{ _('Due') }}: {{ p.due_date }} — {{ _('Amount') }}: {{ p.amount }}</span>
+              <span class="badge 
+                {% if p.status=='paid' %} bg-success 
+                {% elif p.status=='overdue' %} bg-danger
+                {% else %} bg-warning {% endif %}">
+                {{ p.status }}
+              </span>
+            </li>
+            {% else %}
+            <li class="list-group-item text-muted text-center">{{ _('No data') }}</li>
+            {% endfor %}
+          </ul>
+        </div>
       </div>
     </div>
+
+    <!-- Maintenance Requests -->
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 overflow-hidden animate-card hover-card">
+        <div class="card-header bg-warning text-dark d-flex align-items-center justify-content-between">
+          <h5 class="m-0"><i class="bi bi-tools me-2"></i>{{ _('My Maintenance Requests') }}</h5>
+          <a class="btn btn-sm btn-dark" href="{{ url_for('tenant.maintenance_create') }}">{{ _('New Request') }}</a>
+        </div>
+        <div class="card-body p-0 card-body-scroll">
+          <ul class="list-group list-group-flush">
+            {% for m in maintenance_requests %}
+            <li class="list-group-item">
+              <a class="text-decoration-none d-block" href="{{ url_for('tenant.maintenance_detail', request_id=m.id) }}">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>{{ m.title }}</strong>
+                    <div class="text-muted small">{{ m.description }}</div>
+                  </div>
+                  <span class="badge 
+                    {% if m.status=='open' %} bg-warning 
+                    {% elif m.status=='in_progress' %} bg-info 
+                    {% else %} bg-success {% endif %}">
+                    {{ m.status }}
+                  </span>
+                </div>
+              </a>
+            </li>
+            {% else %}
+            <li class="list-group-item text-muted text-center">{{ _('No data') }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complaints -->
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 overflow-hidden animate-card hover-card">
+        <div class="card-header bg-danger text-white d-flex align-items-center justify-content-between">
+          <h5 class="m-0"><i class="bi bi-exclamation-triangle me-2"></i>{{ _('My Complaints') }}</h5>
+          <a class="btn btn-sm btn-dark" href="{{ url_for('tenant.complaint_create') }}">{{ _('New Complaint') }}</a>
+        </div>
+        <div class="card-body p-0 card-body-scroll">
+          <ul class="list-group list-group-flush">
+            {% for c in complaints %}
+            <li class="list-group-item">
+              <a class="text-decoration-none d-block" href="{{ url_for('tenant.complaint_detail', complaint_id=c.id) }}">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>{{ c.subject }}</strong>
+                    <div class="text-muted small">{{ c.description }}</div>
+                  </div>
+                  <span class="badge 
+                    {% if c.status=='open' %} bg-warning 
+                    {% elif c.status=='resolved' %} bg-success 
+                    {% else %} bg-secondary {% endif %}">
+                    {{ c.status }}
+                  </span>
+                </div>
+              </a>
+            </li>
+            {% else %}
+            <li class="list-group-item text-muted text-center">{{ _('No data') }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<div class="row g-4 mt-1">
-  <div class="col-md-6 animate-fade-in-up delay-3">
-    <div class="card re-card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="m-0">{{ _('My Maintenance Requests') }}</h5>
-        <a class="btn btn-sm btn-primary" href="{{ url_for('tenant.maintenance_create') }}">{{ _('New Request') }}</a>
-      </div>
-      <div class="card-body p-0">
-        <ul class="list-group list-group-flush">
-          {% for m in maintenance_requests %}
-          <li class="list-group-item">
-            <a class="text-decoration-none d-block" href="{{ url_for('tenant.maintenance_detail', request_id=m.id) }}">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <strong>{{ m.title }}</strong>
-                  <div class="text-muted small">{{ m.description }}</div>
-                </div>
-                <span class="badge text-bg-secondary">{{ m.status }}</span>
-              </div>
-            </a>
-          </li>
-          {% else %}
-          <li class="list-group-item">{{ _('No data') }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-  </div>
+<style>
+.card-body-scroll {
+    max-height: 320px;
+    overflow-y: auto;
+}
+.animate-card {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.7s forwards;
+}
+.animate-card:nth-child(1) { animation-delay: 0.1s; }
+.animate-card:nth-child(2) { animation-delay: 0.2s; }
+.animate-card:nth-child(3) { animation-delay: 0.3s; }
+.animate-card:nth-child(4) { animation-delay: 0.4s; }
 
-  <div class="col-md-6 animate-fade-in-up delay-4">
-    <div class="card re-card h-100">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="m-0">{{ _('My Complaints') }}</h5>
-        <a class="btn btn-sm btn-primary" href="{{ url_for('tenant.complaint_create') }}">{{ _('New Complaint') }}</a>
-      </div>
-      <div class="card-body p-0">
-        <ul class="list-group list-group-flush">
-          {% for c in complaints %}
-          <li class="list-group-item">
-            <a class="text-decoration-none d-block" href="{{ url_for('tenant.complaint_detail', complaint_id=c.id) }}">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <strong>{{ c.subject }}</strong>
-                  <div class="text-muted small">{{ c.description }}</div>
-                </div>
-                <span class="badge text-bg-secondary">{{ c.status }}</span>
-              </div>
-            </a>
-          </li>
-          {% else %}
-          <li class="list-group-item">{{ _('No data') }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    0% { transform: translateY(30px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+</style>
 {% endblock %}
