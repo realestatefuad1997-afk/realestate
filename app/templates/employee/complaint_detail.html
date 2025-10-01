@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Complaint') }} #{{ c.id }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h3 class="m-0">{{ _('Complaint') }} #{{ c.id }}</h3>
+  <a class="btn btn-secondary" href="{{ url_for('employee.dashboard') }}">{{ _('Back') }}</a>
+  </div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card re-card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <div class="h5 m-0">{{ c.subject }}</div>
+            <div class="text-muted small">{{ _('Created') }}: {{ c.created_at }} · {{ _('Updated') }}: {{ c.updated_at or '-' }}</div>
+          </div>
+          <span class="badge text-bg-secondary">{{ c.status }}</span>
+        </div>
+        <p class="mb-0">{{ c.description }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card re-card h-100">
+      <div class="card-header">
+        <h5 class="m-0">{{ _('Update') }}</h5>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label">{{ _('Status') }}</label>
+            <select class="form-select" name="status">
+              {% for s in status_options %}
+              <option value="{{ s }}" {% if c.status==s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ _('Employee Notes') }}</label>
+            <textarea class="form-control" name="employee_notes" rows="6">{{ c.employee_notes or '' }}</textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

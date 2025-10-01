@@ -34,9 +34,11 @@
     <h5>{{ _('Recent Maintenance Requests') }}</h5>
     <ul class="list-group">
       {% for m in maintenance_requests %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        {{ m.title }}
-        <span class="badge text-bg-secondary">{{ m.status }}</span>
+      <li class="list-group-item">
+        <a class="d-flex justify-content-between align-items-center text-decoration-none" href="{{ url_for('employee.maintenance_detail', request_id=m.id) }}">
+          <span>{{ m.title }}</span>
+          <span class="badge text-bg-secondary">{{ m.status }}</span>
+        </a>
       </li>
       {% else %}
       <li class="list-group-item">{{ _('No data') }}</li>
@@ -47,9 +49,11 @@
     <h5>{{ _('Recent Complaints') }}</h5>
     <ul class="list-group">
       {% for c in complaints %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        {{ c.subject }}
-        <span class="badge text-bg-secondary">{{ c.status }}</span>
+      <li class="list-group-item">
+        <a class="d-flex justify-content-between align-items-center text-decoration-none" href="{{ url_for('employee.complaint_detail', complaint_id=c.id) }}">
+          <span>{{ c.subject }}</span>
+          <span class="badge text-bg-secondary">{{ c.status }}</span>
+        </a>
       </li>
       {% else %}
       <li class="list-group-item">{{ _('No data') }}</li>

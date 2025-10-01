@@ -89,6 +89,12 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('payment_id')
     )
+    # Add notes/status columns added later via manual update in absence of CLI
+    with op.batch_alter_table('maintenance_requests', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('employee_notes', sa.Text(), nullable=True))
+
+    with op.batch_alter_table('complaints', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('employee_notes', sa.Text(), nullable=True))
     # ### end Alembic commands ###
 
 
