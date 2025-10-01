@@ -131,14 +131,21 @@ def create_user(role: str):
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
+        # Tenant-specific fields
+        property_id_raw = request.form.get("property_id", "").strip()
+        rent_amount_raw = request.form.get("rent_amount", "").strip()
 
         if not username or not email or not password:
             flash(_("All fields are required"), "warning")
+            props = Property.query.all() if role == "tenant" else None
             return render_template(
                 "admin/user_form.html",
                 role=role,
                 username_value=username,
                 email_value=email,
+                properties=props,
+                property_id_value=property_id_raw,
+                rent_amount_value=rent_amount_raw,
             )
 
         # ensure unique username/email
@@ -147,23 +154,113 @@ def create_user(role: str):
         )
         if existing_user:
             flash(_("Username or email already exists"), "danger")
+            props = Property.query.all() if role == "tenant" else None
             return render_template(
                 "admin/user_form.html",
                 role=role,
                 username_value=username,
                 email_value=email,
+                properties=props,
+                property_id_value=property_id_raw,
+                rent_amount_value=rent_amount_raw,
             )
 
-        new_user = User(username=username, email=email, role=role)
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
-        if role == "employee":
-            flash(_("Employee created successfully"), "success")
-        else:
-            flash(_("Tenant created successfully"), "success")
-        return redirect(url_for("admin.users_list"))
+        # Create user (and contract if tenant) in one transaction
+        try:
+            new_user = User(username=username, email=email, role=role)
+            new_user.set_password(password)
+            db.session.add(new_user)
 
+            if role == "tenant":
+                # Validate tenant-specific inputs
+                if not property_id_raw or not rent_amount_raw:
+                    raise ValueError("PROPERTY_AND_RENT_REQUIRED")
+                try:
+                    property_id = int(property_id_raw)
+                except Exception:
+                    raise ValueError("INVALID_PROPERTY")
+                try:
+                    rent_value = float(rent_amount_raw)
+                except Exception:
+                    raise ValueError("INVALID_RENT")
+                if rent_value <= 0:
+                    raise ValueError("INVALID_RENT")
+
+                prop = Property.query.get(property_id)
+                if not prop:
+                    raise ValueError("INVALID_PROPERTY")
+
+                # Ensure property has no active contract covering today
+                today = date.today()
+                overlapping = (
+                    Contract.query.filter(
+                        Contract.property_id == property_id,
+                        Contract.status == "active",
+                        Contract.start_date <= today,
+                        Contract.end_date >= today,
+                    ).first()
+                )
+                if overlapping:
+                    raise ValueError("PROPERTY_UNAVAILABLE")
+
+                # Create 1-year contract starting today
+                contract = Contract(
+                    property_id=property_id,
+                    tenant=new_user,
+                    start_date=today,
+                    end_date=today + timedelta(days=365),
+                    rent_amount=rent_value,
+                    status="active",
+                )
+                db.session.add(contract)
+
+            db.session.commit()
+            if role == "employee":
+                flash(_("Employee created successfully"), "success")
+            else:
+                flash(_("Tenant created successfully"), "success")
+            return redirect(url_for("admin.users_list"))
+        except ValueError as ve:
+            db.session.rollback()
+            code = str(ve)
+            if code == "PROPERTY_AND_RENT_REQUIRED":
+                flash(_("Property and rent are required for tenants"), "warning")
+            elif code == "INVALID_PROPERTY":
+                flash(_("Please select a valid property"), "warning")
+            elif code == "INVALID_RENT":
+                flash(_("Please enter a valid positive rent amount"), "warning")
+            elif code == "PROPERTY_UNAVAILABLE":
+                flash(_("Selected property already has an active contract"), "danger")
+            else:
+                flash(_("Failed to create tenant"), "danger")
+            props = Property.query.all() if role == "tenant" else None
+            return render_template(
+                "admin/user_form.html",
+                role=role,
+                username_value=username,
+                email_value=email,
+                properties=props,
+                property_id_value=property_id_raw,
+                rent_amount_value=rent_amount_raw,
+            )
+        except Exception:
+            db.session.rollback()
+            flash(_("An unexpected error occurred"), "danger")
+            props = Property.query.all() if role == "tenant" else None
+            return render_template(
+                "admin/user_form.html",
+                role=role,
+                username_value=username,
+                email_value=email,
+                properties=props,
+                property_id_value=property_id_raw,
+                rent_amount_value=rent_amount_raw,
+            )
+
+    # GET
+    if role == "tenant":
+        props = Property.query.all()
+        return render_template("admin/user_form.html", role=role, properties=props)
     return render_template("admin/user_form.html", role=role)
 
 
