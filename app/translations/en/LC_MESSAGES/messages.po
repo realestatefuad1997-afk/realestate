@@ -1,0 +1,147 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: real-estate\n"
+"POT-Creation-Date: 2025-10-01 00:00+0000\n"
+"PO-Revision-Date: 2025-10-01 00:00+0000\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Real Estate"
+msgstr "Real Estate"
+
+msgid "Login"
+msgstr "Login"
+
+msgid "Logout"
+msgstr "Logout"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Username"
+msgstr "Username"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Sign in"
+msgstr "Sign in"
+
+msgid "Welcome back, %(user)s"
+msgstr "Welcome back, %(user)s"
+
+msgid "Invalid credentials"
+msgstr "Invalid credentials"
+
+msgid "You have been logged out"
+msgstr "You have been logged out"
+
+msgid "Admin Dashboard"
+msgstr "Admin Dashboard"
+
+msgid "Properties"
+msgstr "Properties"
+
+msgid "Active Contracts"
+msgstr "Active Contracts"
+
+msgid "Total Revenue"
+msgstr "Total Revenue"
+
+msgid "Employee Dashboard"
+msgstr "Employee Dashboard"
+
+msgid "Recent Properties"
+msgstr "Recent Properties"
+
+msgid "Recent Contracts"
+msgstr "Recent Contracts"
+
+msgid "No data"
+msgstr "No data"
+
+msgid "Add Property"
+msgstr "Add Property"
+
+msgid "Title"
+msgstr "Title"
+
+msgid "Price"
+msgstr "Price"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Are you sure?"
+msgstr "Are you sure?"
+
+msgid "Edit Property"
+msgstr "Edit Property"
+
+msgid "Create Property"
+msgstr "Create Property"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Available"
+msgstr "Available"
+
+msgid "Occupied"
+msgstr "Occupied"
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Property created"
+msgstr "Property created"
+
+msgid "Property updated"
+msgstr "Property updated"
+
+msgid "Property deleted"
+msgstr "Property deleted"
+
+msgid "Tenant Dashboard"
+msgstr "Tenant Dashboard"
+
+msgid "My Contracts"
+msgstr "My Contracts"
+
+msgid "Invoices & Payments"
+msgstr "Invoices & Payments"
+
+msgid "Due"
+msgstr "Due"
+
+msgid "Amount"
+msgstr "Amount"
+
+msgid "Accountant Dashboard"
+msgstr "Accountant Dashboard"
+
+msgid "Total Paid"
+msgstr "Total Paid"
+
+msgid "Due Date"
+msgstr "Due Date"
+
+msgid "Toggle"
+msgstr "Toggle"
+
+msgid "Payment status updated"
+msgstr "Payment status updated"

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Admin Dashboard') }}{% endblock %}
+{% block content %}
+<h3 class="mb-4">{{ _('Admin Dashboard') }}</h3>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card text-bg-light"><div class="card-body">{{ _('Properties') }}: {{ properties_count }}</div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-bg-light"><div class="card-body">{{ _('Active Contracts') }}: {{ active_contracts }}</div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-bg-light"><div class="card-body">{{ _('Total Revenue') }}: {{ total_revenue }}</div></div>
+  </div>
+</div>
+{% endblock %}

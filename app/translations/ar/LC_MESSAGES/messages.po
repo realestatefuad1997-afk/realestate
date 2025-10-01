@@ -1,0 +1,148 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: real-estate\n"
+"POT-Creation-Date: 2025-10-01 00:00+0000\n"
+"PO-Revision-Date: 2025-10-01 00:00+0000\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+msgid "Real Estate"
+msgstr "إدارة العقارات"
+
+msgid "Login"
+msgstr "تسجيل الدخول"
+
+msgid "Logout"
+msgstr "تسجيل الخروج"
+
+msgid "Language"
+msgstr "اللغة"
+
+msgid "Username"
+msgstr "اسم المستخدم"
+
+msgid "Password"
+msgstr "كلمة المرور"
+
+msgid "Sign in"
+msgstr "دخول"
+
+msgid "Welcome back, %(user)s"
+msgstr "مرحباً بعودتك، %(user)s"
+
+msgid "Invalid credentials"
+msgstr "بيانات الدخول غير صحيحة"
+
+msgid "You have been logged out"
+msgstr "تم تسجيل الخروج"
+
+msgid "Admin Dashboard"
+msgstr "لوحة تحكم المدير"
+
+msgid "Properties"
+msgstr "العقارات"
+
+msgid "Active Contracts"
+msgstr "العقود النشطة"
+
+msgid "Total Revenue"
+msgstr "إجمالي الإيرادات"
+
+msgid "Employee Dashboard"
+msgstr "لوحة تحكم الموظف"
+
+msgid "Recent Properties"
+msgstr "أحدث العقارات"
+
+msgid "Recent Contracts"
+msgstr "أحدث العقود"
+
+msgid "No data"
+msgstr "لا توجد بيانات"
+
+msgid "Add Property"
+msgstr "إضافة عقار"
+
+msgid "Title"
+msgstr "العنوان"
+
+msgid "Price"
+msgstr "السعر"
+
+msgid "Status"
+msgstr "الحالة"
+
+msgid "Edit"
+msgstr "تعديل"
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "Are you sure?"
+msgstr "هل أنت متأكد؟"
+
+msgid "Edit Property"
+msgstr "تعديل العقار"
+
+msgid "Create Property"
+msgstr "إنشاء عقار"
+
+msgid "Description"
+msgstr "الوصف"
+
+msgid "Available"
+msgstr "متاح"
+
+msgid "Occupied"
+msgstr "مشغول"
+
+msgid "Maintenance"
+msgstr "صيانة"
+
+msgid "Save"
+msgstr "حفظ"
+
+msgid "Cancel"
+msgstr "إلغاء"
+
+msgid "Property created"
+msgstr "تم إنشاء العقار"
+
+msgid "Property updated"
+msgstr "تم تحديث العقار"
+
+msgid "Property deleted"
+msgstr "تم حذف العقار"
+
+msgid "Tenant Dashboard"
+msgstr "لوحة تحكم المستأجر"
+
+msgid "My Contracts"
+msgstr "عقودي"
+
+msgid "Invoices & Payments"
+msgstr "الفواتير والمدفوعات"
+
+msgid "Due"
+msgstr "مستحق"
+
+msgid "Amount"
+msgstr "المبلغ"
+
+msgid "Accountant Dashboard"
+msgstr "لوحة تحكم المحاسب"
+
+msgid "Total Paid"
+msgstr "إجمالي المدفوع"
+
+msgid "Due Date"
+msgstr "تاريخ الاستحقاق"
+
+msgid "Toggle"
+msgstr "تبديل"
+
+msgid "Payment status updated"
+msgstr "تم تحديث حالة الدفعة"
