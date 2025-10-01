@@ -98,3 +98,26 @@ class Invoice(db.Model, TimestampMixin):
 
     payment = db.relationship("Payment", back_populates="invoice")
 
+
+# --- Service and Support domain ---
+
+
+class MaintenanceRequest(db.Model, TimestampMixin):
+    __tablename__ = "maintenance_requests"
+
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    property_id = db.Column(db.Integer, db.ForeignKey("properties.id"), nullable=True, index=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(50), nullable=False, default="new")  # new, in_progress, resolved, closed
+
+
+class Complaint(db.Model, TimestampMixin):
+    __tablename__ = "complaints"
+
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    subject = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(50), nullable=False, default="new")  # new, reviewing, resolved, closed

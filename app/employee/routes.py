@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, abort, request, redirect, url_for,
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from ..extensions import db
-from ..models import Property, Contract
+from ..models import Property, Contract, MaintenanceRequest, Complaint
 from werkzeug.utils import secure_filename
 import os
 
@@ -28,7 +28,15 @@ def employee_required(func):
 def dashboard():
     properties = Property.query.order_by(Property.created_at.desc()).limit(10).all()
     contracts = Contract.query.order_by(Contract.created_at.desc()).limit(10).all()
-    return render_template("employee/dashboard.html", properties=properties, contracts=contracts)
+    maints = MaintenanceRequest.query.order_by(MaintenanceRequest.created_at.desc()).limit(10).all()
+    complaints = Complaint.query.order_by(Complaint.created_at.desc()).limit(10).all()
+    return render_template(
+        "employee/dashboard.html",
+        properties=properties,
+        contracts=contracts,
+        maintenance_requests=maints,
+        complaints=complaints,
+    )
 
 
 @employee_bp.route("/properties")
