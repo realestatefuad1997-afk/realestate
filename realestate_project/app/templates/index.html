@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="text-center">
+    <h1>مرحباً بك في لوحة الشركة العقارية</h1>
+    <p class="lead">نسخة تطويرية سريعة تعمل بـ Flask + Bootstrap</p>
+    <a class="btn btn-primary" href="{{ url_for('properties.list_properties') }}">عرض العقارات</a>
+  </div>
+{% endblock %}
