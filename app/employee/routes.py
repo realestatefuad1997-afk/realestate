@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, abort, request, redirect, url_for,
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from ..extensions import db
-from ..models import Property, Contract, MaintenanceRequest, Complaint, Apartment
+from ..models import Property, Contract, MaintenanceRequest, Complaint, Apartment, Payment, User
 from werkzeug.utils import secure_filename
 import uuid
 import os
@@ -463,3 +463,120 @@ def complaint_update(comp_id: int):
         flash(_("Complaint updated"), "success")
         return redirect(url_for("employee.dashboard"))
     return render_template("employee/complaint_update.html", c=c)
+
+
+# --- Rent Collection ---
+
+
+@employee_bp.route("/rent-collection")
+@login_required
+@employee_required
+def rent_collection_list():
+    from datetime import date
+
+    today = date.today()
+    month_start = date(today.year, today.month, 1)
+    # Compute next month start
+    if today.month == 12:
+        next_month_start = date(today.year + 1, 1, 1)
+    else:
+        next_month_start = date(today.year, today.month + 1, 1)
+
+    tenants = User.query.filter_by(role="tenant").order_by(User.created_at.desc()).all()
+    rows = []
+    for t in tenants:
+        # Active contract covering today
+        contract = (
+            Contract.query.filter(
+                Contract.tenant_id == t.id,
+                Contract.status == "active",
+                Contract.start_date <= today,
+                Contract.end_date >= today,
+            )
+            .order_by(Contract.created_at.desc())
+            .first()
+        )
+        paid_this_month = False
+        if contract:
+            existing_paid = (
+                Payment.query.filter(
+                    Payment.contract_id == contract.id,
+                    Payment.due_date >= month_start,
+                    Payment.due_date < next_month_start,
+                    Payment.status == "paid",
+                )
+                .first()
+            )
+            paid_this_month = existing_paid is not None
+        rows.append(
+            {
+                "tenant": t,
+                "contract": contract,
+                "paid_this_month": paid_this_month,
+            }
+        )
+
+    return render_template(
+        "employee/rent_collection.html",
+        rows=rows,
+        month_start=month_start,
+    )
+
+
+@employee_bp.route("/rent-collection/collect/<int:tenant_id>", methods=["POST"])
+@login_required
+@employee_required
+def collect_rent(tenant_id: int):
+    from datetime import date
+
+    today = date.today()
+    month_start = date(today.year, today.month, 1)
+    if today.month == 12:
+        next_month_start = date(today.year + 1, 1, 1)
+    else:
+        next_month_start = date(today.year, today.month + 1, 1)
+
+    tenant = User.query.get_or_404(tenant_id)
+    # Find active contract
+    contract = (
+        Contract.query.filter(
+            Contract.tenant_id == tenant.id,
+            Contract.status == "active",
+            Contract.start_date <= today,
+            Contract.end_date >= today,
+        )
+        .order_by(Contract.created_at.desc())
+        .first()
+    )
+    if not contract:
+        flash(_("No active contract for this tenant"), "warning")
+        return redirect(url_for("employee.rent_collection_list"))
+
+    # If a payment for current month exists, mark it paid; otherwise create it
+    payment = (
+        Payment.query.filter(
+            Payment.contract_id == contract.id,
+            Payment.due_date >= month_start,
+            Payment.due_date < next_month_start,
+        )
+        .order_by(Payment.created_at.desc())
+        .first()
+    )
+    if payment:
+        payment.status = "paid"
+        payment.paid_date = today
+        payment.amount = payment.amount or contract.rent_amount
+        payment.method = payment.method or "cash"
+    else:
+        payment = Payment(
+            contract_id=contract.id,
+            amount=contract.rent_amount,
+            due_date=today,
+            paid_date=today,
+            method="cash",
+            status="paid",
+        )
+        db.session.add(payment)
+    db.session.commit()
+    flash(_("Rent marked as received"), "success")
+    return redirect(url_for("employee.rent_collection_list"))
