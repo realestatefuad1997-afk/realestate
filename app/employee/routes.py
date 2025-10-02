@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, abort, request, redirect, url_for,
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from ..extensions import db
-from ..models import Property, Contract, MaintenanceRequest, Complaint
+from ..models import Property, Contract, MaintenanceRequest, Complaint, Apartment
 from werkzeug.utils import secure_filename
 import os
 from itsdangerous import URLSafeSerializer
@@ -147,6 +147,126 @@ def properties_delete(prop_id: int):
     db.session.commit()
     flash(_("Property deleted"), "info")
     return redirect(url_for("employee.properties_list"))
+
+
+# --- Apartments (units) under a Building ---
+
+
+@employee_bp.route("/buildings/<int:building_id>/apartments")
+@login_required
+@employee_required
+def apartments_list(building_id: int):
+    building = Property.query.get_or_404(building_id)
+    apartments = (
+        Apartment.query.filter_by(building_id=building.id)
+        .order_by(Apartment.created_at.desc())
+        .all()
+    )
+    return render_template(
+        "employee/apartments_list.html",
+        building=building,
+        apartments=apartments,
+    )
+
+
+@employee_bp.route("/buildings/<int:building_id>/apartments/create", methods=["GET", "POST"])
+@login_required
+@employee_required
+def apartments_create(building_id: int):
+    building = Property.query.get_or_404(building_id)
+    if request.method == "POST":
+        number = (request.form.get("number") or "").strip()
+        floor_raw = (request.form.get("floor") or "").strip()
+        area_raw = (request.form.get("area_sqm") or "").strip()
+        bedrooms_raw = (request.form.get("bedrooms") or "").strip()
+        bathrooms_raw = (request.form.get("bathrooms") or "").strip()
+        rent_price = request.form.get("rent_price")
+
+        floor = int(floor_raw) if floor_raw.isdigit() else None
+        bedrooms = int(bedrooms_raw) if bedrooms_raw.isdigit() else None
+        bathrooms = int(bathrooms_raw) if bathrooms_raw.isdigit() else None
+        area_sqm = area_raw or None
+
+        images_filenames = []
+        images_files = request.files.getlist("images")
+        upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "apartments")
+        os.makedirs(upload_dir, exist_ok=True)
+        for f in images_files:
+            if f and f.filename:
+                filename = secure_filename(f.filename)
+                path = os.path.join(upload_dir, filename)
+                f.save(path)
+                images_filenames.append(f"apartments/{filename}")
+        images_value = ",".join(images_filenames) if images_filenames else None
+
+        apt = Apartment(
+            building_id=building.id,
+            number=number or None,
+            floor=floor,
+            area_sqm=area_sqm,
+            bedrooms=bedrooms,
+            bathrooms=bathrooms,
+            rent_price=rent_price,
+            status="available",
+            images=images_value,
+        )
+        db.session.add(apt)
+        db.session.commit()
+        flash(_("Apartment created"), "success")
+        return redirect(url_for("employee.apartments_list", building_id=building.id))
+    return render_template("employee/apartment_form.html", building=building, apartment=None)
+
+
+@employee_bp.route("/apartments/<int:apt_id>/edit", methods=["GET", "POST"])
+@login_required
+@employee_required
+def apartments_edit(apt_id: int):
+    apt = Apartment.query.get_or_404(apt_id)
+    building = Property.query.get_or_404(apt.building_id)
+    if request.method == "POST":
+        apt.number = (request.form.get("number") or "").strip() or None
+        floor_raw = (request.form.get("floor") or "").strip()
+        area_raw = (request.form.get("area_sqm") or "").strip()
+        bedrooms_raw = (request.form.get("bedrooms") or "").strip()
+        bathrooms_raw = (request.form.get("bathrooms") or "").strip()
+        apt.floor = int(floor_raw) if floor_raw.isdigit() else None
+        apt.area_sqm = area_raw or None
+        apt.bedrooms = int(bedrooms_raw) if bedrooms_raw.isdigit() else None
+        apt.bathrooms = int(bathrooms_raw) if bathrooms_raw.isdigit() else None
+        apt.rent_price = request.form.get("rent_price")
+        apt.status = request.form.get("status") or apt.status
+
+        images_files = request.files.getlist("images")
+        if images_files:
+            upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "apartments")
+            os.makedirs(upload_dir, exist_ok=True)
+            new_files = []
+            for f in images_files:
+                if f and f.filename:
+                    filename = secure_filename(f.filename)
+                    path = os.path.join(upload_dir, filename)
+                    f.save(path)
+                    new_files.append(f"apartments/{filename}")
+            if new_files:
+                existing = apt.images.split(",") if apt.images else []
+                apt.images = ",".join(existing + new_files)
+
+        db.session.commit()
+        flash(_("Apartment updated"), "success")
+        return redirect(url_for("employee.apartments_list", building_id=building.id))
+    return render_template("employee/apartment_form.html", building=building, apartment=apt)
+
+
+@employee_bp.route("/apartments/<int:apt_id>/delete", methods=["POST"])
+@login_required
+@employee_required
+def apartments_delete(apt_id: int):
+    apt = Apartment.query.get_or_404(apt_id)
+    building_id = apt.building_id
+    db.session.delete(apt)
+    db.session.commit()
+    flash(_("Apartment deleted"), "info")
+    return redirect(url_for("employee.apartments_list", building_id=building_id))
 
 
 @employee_bp.route("/contracts")

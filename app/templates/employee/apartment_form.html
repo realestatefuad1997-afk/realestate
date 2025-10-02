@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}{{ apartment and _('Edit Apartment') or _('Add Apartment') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ apartment and _('Edit Apartment') or _('Add Apartment') }} - {{ building.title }}</h3>
+<form method="post" enctype="multipart/form-data">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label">{{ _('Number') }}</label>
+        <input class="form-control" name="number" value="{{ apartment.number if apartment else '' }}" />
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label">{{ _('Floor') }}</label>
+        <input class="form-control" name="floor" type="number" step="1" value="{{ apartment.floor if apartment and apartment.floor is not none else '' }}" />
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label">{{ _('Area (sqm)') }}</label>
+        <input class="form-control" name="area_sqm" type="number" step="0.01" value="{{ apartment.area_sqm if apartment and apartment.area_sqm is not none else '' }}" />
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label">{{ _('Bedrooms') }}</label>
+        <input class="form-control" name="bedrooms" type="number" step="1" value="{{ apartment.bedrooms if apartment and apartment.bedrooms is not none else '' }}" />
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label">{{ _('Bathrooms') }}</label>
+        <input class="form-control" name="bathrooms" type="number" step="1" value="{{ apartment.bathrooms if apartment and apartment.bathrooms is not none else '' }}" />
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label">{{ _('Rent Price') }}</label>
+        <input class="form-control" name="rent_price" type="number" step="0.01" value="{{ apartment.rent_price if apartment and apartment.rent_price is not none else '' }}" />
+      </div>
+    </div>
+  </div>
+  {% if apartment %}
+  <div class="mb-3">
+    <label class="form-label">{{ _('Status') }}</label>
+    <select class="form-select" name="status">
+      <option value="available" {% if apartment.status=='available' %}selected{% endif %}>{{ _('Available') }}</option>
+      <option value="occupied" {% if apartment.status=='occupied' %}selected{% endif %}>{{ _('Occupied') }}</option>
+      <option value="maintenance" {% if apartment.status=='maintenance' %}selected{% endif %}>{{ _('Maintenance') }}</option>
+    </select>
+  </div>
+  {% endif %}
+  <div class="mb-3">
+    <label class="form-label">{{ _('Images') }}</label>
+    <input class="form-control" type="file" name="images" accept="image/*" multiple />
+  </div>
+  <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
+  <a class="btn btn-secondary" href="{{ url_for('employee.apartments_list', building_id=building.id) }}">{{ _('Cancel') }}</a>
+</form>
+{% endblock %}

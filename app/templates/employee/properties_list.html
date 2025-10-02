@@ -18,6 +18,7 @@
       <td>{{ p.price }}</td>
       <td>{{ p.status }}</td>
       <td>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('employee.apartments_list', building_id=p.id) }}">{{ _('Manage Apartments') }}</a>
         <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">{{ _('Edit') }}</a>
         <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.properties_share', prop_id=p.id) }}">{{ _('Share') }}</a>
         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ url_for('public_property_view', token=share_tokens[p.id], _external=True) }}'); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">{{ _('Copy Link') }}</button>
