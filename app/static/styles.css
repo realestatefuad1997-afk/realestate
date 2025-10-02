@@ -19,5 +19,14 @@ html[dir="rtl"] table td { text-align: right; }
   border-radius: 0.5rem;
 }
 
+/* Square thumbnails for mobile property grids */
+.square-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: #f1f3f5;
+  border-radius: 0.5rem;
+}
+
 /* Typography polish for share page */
 .lead.text-body-secondary { line-height: 1.7; }

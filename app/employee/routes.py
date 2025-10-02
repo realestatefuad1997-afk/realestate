@@ -6,6 +6,43 @@ from ..models import Property, Contract, MaintenanceRequest, Complaint, Apartmen
 from werkzeug.utils import secure_filename
 import os
 from itsdangerous import URLSafeSerializer
+from uuid import uuid4
+
+
+# --- Image upload helpers ---
+ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png"}
+
+
+def _is_allowed_image(filename: str) -> bool:
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+
+
+def _save_uploaded_images(files, subfolder: str):
+    """Save uploaded image FileStorage list into UPLOAD_FOLDER/subfolder.
+
+    Returns list of relative paths (e.g., "properties/<name>.jpg").
+    """
+    saved_relpaths = []
+    if not files:
+        return saved_relpaths
+
+    upload_root = current_app.config.get("UPLOAD_FOLDER", "uploads")
+    upload_dir = os.path.join(upload_root, subfolder)
+    os.makedirs(upload_dir, exist_ok=True)
+
+    for f in files:
+        if not f or not getattr(f, "filename", None):
+            continue
+        original = secure_filename(f.filename)
+        if not _is_allowed_image(original):
+            flash(_(f"Skipping file '{original}': invalid image type. Allowed: jpg, jpeg, png"), "warning")
+            continue
+        ext = original.rsplit(".", 1)[1].lower()
+        unique_name = f"{uuid4().hex}.{ext}"
+        abs_path = os.path.join(upload_dir, unique_name)
+        f.save(abs_path)
+        saved_relpaths.append(f"{subfolder}/{unique_name}")
+    return saved_relpaths
 
 
 employee_bp = Blueprint("employee", __name__)
@@ -98,7 +135,7 @@ def properties_create():
         )
 
         if property_type == "building":
-            # Only accept number of apartments and floors for buildings
+            # Accept number of apartments and floors, and optional images for buildings
             num_apartments_raw = (request.form.get("num_apartments") or "").strip()
             num_floors_raw = (request.form.get("num_floors") or "").strip()
 
@@ -109,7 +146,12 @@ def properties_create():
             num_apartments = parse_non_negative_int(num_apartments_raw)
             num_floors = parse_non_negative_int(num_floors_raw)
             prop_kwargs.update(num_apartments=num_apartments, num_floors=num_floors)
-            # Ignore price/description/images for buildings
+
+            # Optional images for buildings
+            images_files = request.files.getlist("images")
+            building_images = _save_uploaded_images(images_files, "properties")
+            if building_images:
+                prop_kwargs.update(images=",".join(building_images))
         else:
             # Standalone apartment fields + optional metadata
             price = request.form.get("price")
@@ -124,17 +166,9 @@ def properties_create():
             bathrooms_val = int(bathrooms_raw) if bathrooms_raw.isdigit() else None
             area_val = area_raw or None
 
-            images_filenames = []
             images_files = request.files.getlist("images")
-            upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
-            os.makedirs(upload_dir, exist_ok=True)
-            for f in images_files:
-                if f and f.filename:
-                    filename = secure_filename(f.filename)
-                    path = os.path.join(upload_dir, filename)
-                    f.save(path)
-                    images_filenames.append(f"properties/{filename}")
-            images_value = ",".join(images_filenames) if images_filenames else None
+            apt_images = _save_uploaded_images(images_files, "properties")
+            images_value = ",".join(apt_images) if apt_images else None
 
             prop_kwargs.update(
                 price=price,
@@ -182,15 +216,7 @@ def properties_edit(prop_id: int):
             prop.bathrooms = int(bathrooms_raw) if bathrooms_raw.isdigit() else None
         images_files = request.files.getlist("images")
         if images_files:
-            upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
-            os.makedirs(upload_dir, exist_ok=True)
-            new_files = []
-            for f in images_files:
-                if f and f.filename:
-                    filename = secure_filename(f.filename)
-                    path = os.path.join(upload_dir, filename)
-                    f.save(path)
-                    new_files.append(f"properties/{filename}")
+            new_files = _save_uploaded_images(images_files, "properties")
             if new_files:
                 existing = prop.images.split(",") if prop.images else []
                 prop.images = ",".join(existing + new_files)
@@ -261,17 +287,9 @@ def apartments_create(building_id: int):
         bathrooms = int(bathrooms_raw) if bathrooms_raw.isdigit() else None
         area_sqm = area_raw or None
 
-        images_filenames = []
         images_files = request.files.getlist("images")
-        upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "apartments")
-        os.makedirs(upload_dir, exist_ok=True)
-        for f in images_files:
-            if f and f.filename:
-                filename = secure_filename(f.filename)
-                path = os.path.join(upload_dir, filename)
-                f.save(path)
-                images_filenames.append(f"apartments/{filename}")
-        images_value = ",".join(images_filenames) if images_filenames else None
+        apt_images = _save_uploaded_images(images_files, "apartments")
+        images_value = ",".join(apt_images) if apt_images else None
 
         apt = Apartment(
             building_id=building.id,
@@ -312,15 +330,7 @@ def apartments_edit(apt_id: int):
 
         images_files = request.files.getlist("images")
         if images_files:
-            upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "apartments")
-            os.makedirs(upload_dir, exist_ok=True)
-            new_files = []
-            for f in images_files:
-                if f and f.filename:
-                    filename = secure_filename(f.filename)
-                    path = os.path.join(upload_dir, filename)
-                    f.save(path)
-                    new_files.append(f"apartments/{filename}")
+            new_files = _save_uploaded_images(images_files, "apartments")
             if new_files:
                 existing = apt.images.split(",") if apt.images else []
                 apt.images = ",".join(existing + new_files)
