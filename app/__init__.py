@@ -1,5 +1,6 @@
 import os
 from flask import Flask, g, request, redirect, url_for, session, render_template, send_from_directory
+from itsdangerous import URLSafeSerializer
 from flask_babel import get_locale as babel_get_locale
 from .config import Config
 from .extensions import db, migrate, login_manager, babel
@@ -63,6 +64,25 @@ def create_app(config_class: type = Config) -> Flask:
 
         return {"get_locale": _get_locale}
 
+    # --- Property share link utilities (token-based, no DB changes) ---
+    def _get_share_serializer() -> URLSafeSerializer:
+        return URLSafeSerializer(app.config["SECRET_KEY"], salt="property-share")
+
+    @app.context_processor
+    def inject_share_link_helpers():
+        def generate_property_share_token(property_id: int) -> str:
+            serializer = _get_share_serializer()
+            return serializer.dumps({"property_id": int(property_id)})
+
+        def property_share_url(property_id: int) -> str:
+            token = generate_property_share_token(property_id)
+            return url_for("public_property", token=token, _external=True)
+
+        return {
+            "generate_property_share_token": generate_property_share_token,
+            "property_share_url": property_share_url,
+        }
+
     @app.route("/")
     def index():
         # Redirect based on role
@@ -79,6 +99,20 @@ def create_app(config_class: type = Config) -> Flask:
         if current_user.role == "accountant":
             return redirect(url_for("accountant.dashboard"))
         return redirect(url_for("auth.login"))
+
+    @app.route("/public/property/<token>")
+    def public_property(token: str):
+        serializer = _get_share_serializer()
+        try:
+            data = serializer.loads(token)
+            prop_id = int(data.get("property_id"))
+        except Exception:
+            return (render_template("404.html"), 404)
+
+        from .models import Property
+
+        prop = Property.query.get_or_404(prop_id)
+        return render_template("public/property_detail.html", property=prop)
 
     @app.route("/set-lang/<lang_code>")
     def set_language(lang_code: str):

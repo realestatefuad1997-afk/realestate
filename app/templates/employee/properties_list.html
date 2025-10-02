@@ -6,7 +6,7 @@
   <a class="btn btn-primary" href="{{ url_for('employee.properties_create') }}">{{ _('Add Property') }}</a>
   </div>
 <table class="table table-striped align-middle">
-  <thead><tr><th>#</th><th>{{ _('Title') }}</th><th>{{ _('Price') }}</th><th>{{ _('Status') }}</th><th>{{ _('Images') }}</th><th></th></tr></thead>
+  <thead><tr><th>#</th><th>{{ _('Title') }}</th><th>{{ _('Price') }}</th><th>{{ _('Status') }}</th><th>{{ _('Images') }}</th><th>{{ _('Share') }}</th><th></th></tr></thead>
   <tbody>
     {% for p in properties %}
     <tr>
@@ -27,6 +27,14 @@
         {% endif %}
       </td>
       <td>
+        {% set share_url = property_share_url(p.id) %}
+        <div class="input-group input-group-sm" style="max-width: 360px;">
+          <input type="text" class="form-control" value="{{ share_url }}" readonly onclick="this.select();" />
+          <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText('{{ share_url }}').then(()=>{ this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy') }}',1500); })">{{ _('Copy') }}</button>
+          <a class="btn btn-outline-primary" target="_blank" href="{{ share_url }}">{{ _('Open') }}</a>
+        </div>
+      </td>
+      <td>
         <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">{{ _('Edit') }}</a>
         <form method="post" action="{{ url_for('employee.properties_delete', prop_id=p.id) }}" style="display:inline" onsubmit="return confirm('{{ _('Are you sure?') }}');">
           <button class="btn btn-sm btn-outline-danger" type="submit">{{ _('Delete') }}</button>
@@ -34,7 +42,7 @@
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="5">{{ _('No data') }}</td></tr>
+    <tr><td colspan="7">{{ _('No data') }}</td></tr>
     {% endfor %}
   </tbody>
 </table>

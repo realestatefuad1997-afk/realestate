@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Property Details') }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-12 col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <h3 class="card-title mb-2">{{ property.title }}</h3>
+        <div class="text-muted mb-3">{{ _('Price') }}: {{ property.price }}</div>
+        <p class="card-text">{{ property.description or '' }}</p>
+        {% set imgs = (property.images or '').split(',') if property.images else [] %}
+        {% if imgs %}
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            {% for fn in imgs %}
+              <img src="{{ url_for('uploaded_file', filename=fn) }}" alt="img" style="width:140px;height:140px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" />
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-4">
+    <div class="alert alert-info">
+      {{ _('This is a public view of the property. Do not share confidential information.') }}
+    </div>
+  </div>
+</div>
+{% endblock %}
