@@ -154,3 +154,6 @@ msgstr "Number of apartments"
 
 msgid "Number of floors"
 msgstr "Number of floors"
+
+msgid "Manage Apartments"
+msgstr "Manage Apartments"

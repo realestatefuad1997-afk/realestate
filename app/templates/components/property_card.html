@@ -1,0 +1,30 @@
+{# Property Card - used for non-building properties #}
+{% set images = p.images.split(',') if p.images else [] %}
+{% set first_image = images[0] if images and images|length > 0 else None %}
+<div class="card h-100 shadow-sm">
+  {% if first_image %}
+  <img src="{{ url_for('uploaded_file', filename=first_image) }}" class="card-img-top property-thumb" alt="{{ p.title }}" />
+  {% else %}
+  <div class="bg-light d-flex align-items-center justify-content-center property-thumb text-muted">
+    {{ _('No image') }}
+  </div>
+  {% endif %}
+  <div class="card-body">
+    <h5 class="card-title mb-1">{{ p.title }}</h5>
+    <div class="text-muted small mb-2">{{ _('Price') }}: {{ p.price }}</div>
+    {% if p.description %}
+    <p class="card-text text-body-secondary" style="min-height: 2.5rem;">{{ p.description[:120] }}{% if p.description|length > 120 %}…{% endif %}</p>
+    {% endif %}
+    <span class="badge bg-{{ 'success' if p.status=='available' else ('secondary' if p.status=='occupied' else 'warning') }}">{{ p.status }}</span>
+  </div>
+  <div class="card-footer bg-white border-0 pt-0">
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">{{ _('Edit') }}</a>
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.properties_share', prop_id=p.id) }}">{{ _('Share') }}</a>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ url_for('public_property_view', token=share_tokens[p.id], _external=True) }}'); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">{{ _('Copy Link') }}</button>
+      <form method="post" action="{{ url_for('employee.properties_delete', prop_id=p.id) }}" onsubmit="return confirm('{{ _('Are you sure?') }}');">
+        <button class="btn btn-sm btn-outline-danger" type="submit">{{ _('Delete') }}</button>
+      </form>
+    </div>
+  </div>
+</div>

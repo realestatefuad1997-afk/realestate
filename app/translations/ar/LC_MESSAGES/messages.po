@@ -286,6 +286,9 @@ msgstr "عدد الشقق"
 msgid "Number of floors"
 msgstr "عدد الأدوار"
 
+msgid "Manage Apartments"
+msgstr "إدارة الشقق"
+
 msgid "Maintenance Request"
 msgstr "طلب صيانة"
 

@@ -8,30 +8,52 @@
     <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addBuildingModal">{{ _('Add Building') }}</button>
   </div>
   </div>
-<table class="table table-striped">
-  <thead><tr><th>#</th><th>{{ _('Title') }}</th><th>{{ _('Price') }}</th><th>{{ _('Status') }}</th><th></th></tr></thead>
-  <tbody>
-    {% for p in properties %}
-    <tr>
-      <td>{{ p.id }}</td>
-      <td>{{ p.title }}</td>
-      <td>{{ p.price }}</td>
-      <td>{{ p.status }}</td>
-      <td>
-        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('employee.apartments_list', building_id=p.id) }}">{{ _('Manage Apartments') }}</a>
-        <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">{{ _('Edit') }}</a>
-        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.properties_share', prop_id=p.id) }}">{{ _('Share') }}</a>
-        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ url_for('public_property_view', token=share_tokens[p.id], _external=True) }}'); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">{{ _('Copy Link') }}</button>
-        <form method="post" action="{{ url_for('employee.properties_delete', prop_id=p.id) }}" style="display:inline" onsubmit="return confirm('{{ _('Are you sure?') }}');">
-          <button class="btn btn-sm btn-outline-danger" type="submit">{{ _('Delete') }}</button>
-        </form>
-      </td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">{{ _('No data') }}</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+{# --- Buildings Grid --- #}
+<div class="mb-2 d-flex align-items-center justify-content-between">
+  <h5 class="mb-0">{{ _('Buildings') }}</h5>
+  <span class="text-muted small">{{ _('Properties with building details') }}</span>
+  </div>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
+  {% set ns = namespace(has_building=false) %}
+  {% for p in properties %}
+    {% if p.num_apartments is not none or p.num_floors is not none %}
+      {% set ns.has_building = true %}
+      <div class="col">
+        {% include 'components/building_card.html' %}
+      </div>
+    {% endif %}
+  {% endfor %}
+  {% if not ns.has_building %}
+  <div class="col-12">
+    <div class="alert alert-light border d-flex align-items-center justify-content-between">
+      <span class="text-muted">{{ _('No data') }}</span>
+      <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addBuildingModal">{{ _('Add Building') }}</button>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{# --- Other Properties Grid --- #}
+<div class="mb-2 d-flex align-items-center justify-content-between">
+  <h5 class="mb-0">{{ _('Other Properties') }}</h5>
+  <span class="text-muted small">{{ _('Apartments, villas, lands, etc.') }}</span>
+</div>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
+  {% set ns2 = namespace(has_other=false) %}
+  {% for p in properties %}
+    {% if p.num_apartments is none and p.num_floors is none %}
+      {% set ns2.has_other = true %}
+      <div class="col">
+        {% include 'components/property_card.html' %}
+      </div>
+    {% endif %}
+  {% endfor %}
+  {% if not ns2.has_other %}
+  <div class="col-12">
+    <div class="alert alert-light border">{{ _('No data') }}</div>
+  </div>
+  {% endif %}
+</div>
 
 <!-- Add Building Modal -->
 <div class="modal fade" id="addBuildingModal" tabindex="-1" aria-hidden="true">
