@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}{{ prop.title }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-7">
+    {% if images and images|length > 0 %}
+    <div id="gallery" class="mb-3">
+      <div id="carousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% for img in images %}
+          <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}">
+            <img src="{{ url_for('uploaded_file', filename=img) }}" class="d-block w-100" alt="image" />
+          </div>
+          {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">{{ _('No images available') }}</div>
+    {% endif %}
+  </div>
+  <div class="col-lg-5">
+    <h3 class="mb-3">{{ prop.title }}</h3>
+    <p class="text-muted">{{ _('Price') }}: {{ prop.price }}</p>
+    <p>{{ prop.description }}</p>
+    <div class="mt-3">
+      <button class="btn btn-outline-primary" type="button" onclick="navigator.clipboard.writeText(window.location.href); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">{{ _('Copy Link') }}</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
