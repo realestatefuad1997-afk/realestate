@@ -12,6 +12,10 @@
        href="{{ url_for('admin.create_user', role='employee') }}">
       <i class="bi bi-person-plus-fill me-1"></i> {{ _('Add Employee') }}
     </a>
+    <a class="btn btn-sm btn-primary animate__animated animate__fadeInRight" 
+       href="{{ url_for('employee.properties_create') }}">
+      <i class="bi bi-building me-1"></i> {{ _('Add Property') }}
+    </a>
     <a class="btn btn-sm btn-outline-primary animate__animated animate__fadeInRight" 
        href="{{ url_for('admin.create_user', role='tenant') }}">
       <i class="bi bi-house-add me-1"></i> {{ _('Add Tenant') }}
