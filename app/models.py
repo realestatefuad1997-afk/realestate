@@ -58,6 +58,34 @@ class Property(db.Model, TimestampMixin):
     num_floors = db.Column(db.Integer, nullable=True)
 
     contracts = db.relationship("Contract", back_populates="property", lazy="dynamic")
+    apartments = db.relationship(
+        "Apartment",
+        back_populates="building",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+
+
+class Apartment(db.Model, TimestampMixin):
+    __tablename__ = "apartments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    building_id = db.Column(
+        db.Integer,
+        db.ForeignKey("properties.id"),
+        nullable=False,
+        index=True,
+    )
+    number = db.Column(db.String(50), nullable=True)  # e.g., 12A
+    floor = db.Column(db.Integer, nullable=True)
+    area_sqm = db.Column(db.Numeric(10, 2), nullable=True)
+    bedrooms = db.Column(db.Integer, nullable=True)
+    bathrooms = db.Column(db.Integer, nullable=True)
+    rent_price = db.Column(db.Numeric(12, 2), nullable=True)
+    status = db.Column(db.String(50), nullable=False, default="available")
+    images = db.Column(db.Text)  # comma-separated relative paths
+
+    building = db.relationship("Property", back_populates="apartments")
 
 
 class Contract(db.Model, TimestampMixin):

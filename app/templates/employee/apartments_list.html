@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Apartments in') }} {{ building.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>{{ _('Apartments in') }} {{ building.title }}</h3>
+  <a class="btn btn-primary" href="{{ url_for('employee.apartments_create', building_id=building.id) }}">{{ _('Add Apartment') }}</a>
+</div>
+<table class="table table-striped">
+  <thead><tr><th>#</th><th>{{ _('Number') }}</th><th>{{ _('Floor') }}</th><th>{{ _('Bedrooms') }}</th><th>{{ _('Bathrooms') }}</th><th>{{ _('Rent') }}</th><th>{{ _('Status') }}</th><th></th></tr></thead>
+  <tbody>
+    {% for a in apartments %}
+    <tr>
+      <td>{{ a.id }}</td>
+      <td>{{ a.number or '-' }}</td>
+      <td>{{ a.floor or '-' }}</td>
+      <td>{{ a.bedrooms or '-' }}</td>
+      <td>{{ a.bathrooms or '-' }}</td>
+      <td>{{ a.rent_price or '-' }}</td>
+      <td>{{ a.status }}</td>
+      <td>
+        <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.apartments_edit', apt_id=a.id) }}">{{ _('Edit') }}</a>
+        <form method="post" action="{{ url_for('employee.apartments_delete', apt_id=a.id) }}" style="display:inline" onsubmit="return confirm('{{ _('Are you sure?') }}');">
+          <button class="btn btn-sm btn-outline-danger" type="submit">{{ _('Delete') }}</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8">{{ _('No data') }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a class="btn btn-secondary" href="{{ url_for('employee.properties_list') }}">{{ _('Back') }}</a>
+{% endblock %}
