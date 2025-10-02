@@ -83,48 +83,63 @@ def properties_list():
 @employee_required
 def properties_create():
     if request.method == "POST":
-        title = request.form.get("title")
-        price = request.form.get("price")
-        description = request.form.get("description")
+        title = (request.form.get("title") or "").strip()
         property_type = (request.form.get("property_type") or "building").strip()
-        # Building fields
-        num_apartments_raw = (request.form.get("num_apartments") or "").strip()
-        num_floors_raw = (request.form.get("num_floors") or "").strip()
-        num_apartments = int(num_apartments_raw) if num_apartments_raw.isdigit() else None
-        num_floors = int(num_floors_raw) if num_floors_raw.isdigit() else None
-        # Standalone apartment fields
-        apt_number = (request.form.get("number") or "").strip() or None
-        floor_raw = (request.form.get("floor") or "").strip()
-        area_raw = (request.form.get("area_sqm") or "").strip()
-        bedrooms_raw = (request.form.get("bedrooms") or "").strip()
-        bathrooms_raw = (request.form.get("bathrooms") or "").strip()
-        floor_val = int(floor_raw) if floor_raw.isdigit() else None
-        bedrooms_val = int(bedrooms_raw) if bedrooms_raw.isdigit() else None
-        bathrooms_val = int(bathrooms_raw) if bathrooms_raw.isdigit() else None
-        area_val = area_raw or None
-        images_filenames = []
-        images_files = request.files.getlist("images")
-        upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
-        os.makedirs(upload_dir, exist_ok=True)
-        for f in images_files:
-            if f and f.filename:
-                filename = secure_filename(f.filename)
-                path = os.path.join(upload_dir, filename)
-                f.save(path)
-                images_filenames.append(f"properties/{filename}")
-        images_value = ",".join(images_filenames) if images_filenames else None
+
+        if not title:
+            flash(_("All fields are required"), "danger")
+            return redirect(url_for("employee.properties_create"))
+
+        # Prepare base kwargs with only common fields
         prop_kwargs = dict(
             title=title,
-            price=price,
-            description=description,
             status="available",
-            images=images_value,
             property_type=property_type,
         )
+
         if property_type == "building":
+            # Only accept number of apartments and floors for buildings
+            num_apartments_raw = (request.form.get("num_apartments") or "").strip()
+            num_floors_raw = (request.form.get("num_floors") or "").strip()
+
+            # Basic numeric validation
+            def parse_non_negative_int(value_str):
+                return int(value_str) if value_str.isdigit() and int(value_str) >= 0 else None
+
+            num_apartments = parse_non_negative_int(num_apartments_raw)
+            num_floors = parse_non_negative_int(num_floors_raw)
             prop_kwargs.update(num_apartments=num_apartments, num_floors=num_floors)
+            # Ignore price/description/images for buildings
         else:
+            # Standalone apartment fields + optional metadata
+            price = request.form.get("price")
+            description = request.form.get("description")
+            apt_number = (request.form.get("number") or "").strip() or None
+            floor_raw = (request.form.get("floor") or "").strip()
+            area_raw = (request.form.get("area_sqm") or "").strip()
+            bedrooms_raw = (request.form.get("bedrooms") or "").strip()
+            bathrooms_raw = (request.form.get("bathrooms") or "").strip()
+            floor_val = int(floor_raw) if floor_raw.isdigit() else None
+            bedrooms_val = int(bedrooms_raw) if bedrooms_raw.isdigit() else None
+            bathrooms_val = int(bathrooms_raw) if bathrooms_raw.isdigit() else None
+            area_val = area_raw or None
+
+            images_filenames = []
+            images_files = request.files.getlist("images")
+            upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
+            os.makedirs(upload_dir, exist_ok=True)
+            for f in images_files:
+                if f and f.filename:
+                    filename = secure_filename(f.filename)
+                    path = os.path.join(upload_dir, filename)
+                    f.save(path)
+                    images_filenames.append(f"properties/{filename}")
+            images_value = ",".join(images_filenames) if images_filenames else None
+
             prop_kwargs.update(
+                price=price,
+                description=description,
+                images=images_value,
                 number=apt_number,
                 floor=floor_val,
                 area_sqm=area_val,
