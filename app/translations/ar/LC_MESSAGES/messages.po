@@ -280,8 +280,28 @@ msgstr "تصدير PDF"
 msgid "Add Building"
 msgstr "إضافة مبنى"
 
+msgid "Type"
+msgstr "النوع"
+
+msgid "Building"
+msgstr "بناية"
+
+msgid "Apartment"
+msgstr "شقة"
+
+msgid "Standalone Apartments"
+msgstr "شقق منفصلة"
+
 msgid "Number of apartments"
 msgstr "عدد الشقق"
+msgid "Bedrooms"
+msgstr "غرف النوم"
+
+msgid "Bathrooms"
+msgstr "الحمامات"
+
+msgid "Area (sqm)"
+msgstr "المساحة (م²)"
 
 msgid "Number of floors"
 msgstr "عدد الأدوار"
