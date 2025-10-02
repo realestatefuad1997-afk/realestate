@@ -126,7 +126,26 @@ def properties_create():
             num_apartments = parse_non_negative_int(num_apartments_raw)
             num_floors = parse_non_negative_int(num_floors_raw)
             prop_kwargs.update(num_apartments=num_apartments, num_floors=num_floors)
-            # Ignore price/description/images for buildings
+
+            # Handle optional images for buildings
+            images_filenames = []
+            images_files = request.files.getlist("images")
+            upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
+            os.makedirs(upload_dir, exist_ok=True)
+            allowed = current_app.config.get("ALLOWED_IMAGE_EXTENSIONS", {"jpg", "jpeg", "png"})
+            for f in images_files:
+                if f and f.filename:
+                    ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+                    if ext not in allowed:
+                        flash(_(f"Invalid image type. Allowed: {', '.join(sorted(allowed))}"), "danger")
+                        return redirect(url_for("employee.properties_create"))
+                    base_name = secure_filename(os.path.splitext(f.filename)[0]) or "image"
+                    unique_name = f"{base_name}-{uuid.uuid4().hex[:8]}.{ext}"
+                    path = os.path.join(upload_dir, unique_name)
+                    f.save(path)
+                    images_filenames.append(f"properties/{unique_name}")
+            images_value = ",".join(images_filenames) if images_filenames else None
+            prop_kwargs.update(images=images_value)
         else:
             # Standalone apartment fields + optional metadata
             price = request.form.get("price")

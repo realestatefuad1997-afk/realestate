@@ -121,9 +121,9 @@
     var type = document.getElementById('property_type').value;
     document.getElementById('building_fields').style.display = (type === 'building') ? 'flex' : 'none';
     document.getElementById('apartment_fields').style.display = (type === 'apartment') ? 'block' : 'none';
-    document.getElementById('price_field').style.display = (type === 'building') ? 'none' : '';
-    document.getElementById('description_field').style.display = (type === 'building') ? 'none' : '';
-    document.getElementById('images_field').style.display = (type === 'building') ? 'none' : '';
+  document.getElementById('price_field').style.display = (type === 'building') ? 'none' : '';
+  document.getElementById('description_field').style.display = (type === 'building') ? 'none' : '';
+  document.getElementById('images_field').style.display = '';
     document.getElementById('price_input').required = (type === 'apartment');
   }
   document.getElementById('property_type').addEventListener('change', toggleTypeFields);
