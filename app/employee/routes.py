@@ -162,3 +162,44 @@ def contracts_create():
     tenants = User.query.filter_by(role="tenant").all()
     return render_template("employee/contract_form.html", properties=properties, tenants=tenants)
 
+
+@employee_bp.route("/maintenance/<int:req_id>/update", methods=["GET", "POST"])
+@login_required
+@employee_required
+def maintenance_update(req_id: int):
+    m = MaintenanceRequest.query.get_or_404(req_id)
+    if request.method == "POST":
+        status = (request.form.get("status") or "").strip()
+        notes = request.form.get("notes")
+        allowed_statuses = {"new", "in_progress", "resolved", "closed"}
+        if status and status not in allowed_statuses:
+            flash(_("Invalid status"), "danger")
+            return redirect(url_for("employee.maintenance_update", req_id=req_id))
+        if status:
+            m.status = status
+        m.notes = (notes or "").strip()
+        db.session.commit()
+        flash(_("Maintenance request updated"), "success")
+        return redirect(url_for("employee.dashboard"))
+    return render_template("employee/maintenance_update.html", m=m)
+
+
+@employee_bp.route("/complaints/<int:comp_id>/update", methods=["GET", "POST"])
+@login_required
+@employee_required
+def complaint_update(comp_id: int):
+    c = Complaint.query.get_or_404(comp_id)
+    if request.method == "POST":
+        status = (request.form.get("status") or "").strip()
+        notes = request.form.get("notes")
+        allowed_statuses = {"new", "reviewing", "resolved", "closed"}
+        if status and status not in allowed_statuses:
+            flash(_("Invalid status"), "danger")
+            return redirect(url_for("employee.complaint_update", comp_id=comp_id))
+        if status:
+            c.status = status
+        c.notes = (notes or "").strip()
+        db.session.commit()
+        flash(_("Complaint updated"), "success")
+        return redirect(url_for("employee.dashboard"))
+    return render_template("employee/complaint_update.html", c=c)
