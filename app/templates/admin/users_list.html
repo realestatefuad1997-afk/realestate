@@ -58,7 +58,7 @@
           <tr>
             <th>#</th>
             <th>{{ _('Username') }}</th>
-            <th>{{ _('Email') }}</th>
+            <th>{{ _('Contact') }}</th>
             <th>{{ _('Role') }}</th>
             <th>{{ _('Created') }}</th>
             <th>{{ _('Actions') }}</th>
@@ -69,7 +69,13 @@
           <tr>
             <td>{{ u.id }}</td>
             <td>{{ u.username }}</td>
-            <td>{{ u.email }}</td>
+            <td>
+              {% if u.role == 'tenant' %}
+                {{ u.phone or '—' }}
+              {% else %}
+                {{ u.email or '—' }}
+              {% endif %}
+            </td>
             <td>{{ u.role|capitalize }}</td>
             <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
             <td>

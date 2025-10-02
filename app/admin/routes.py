@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
-from ..models import Property, Contract, Payment, User
+from ..models import Property, Contract, Payment, User, Apartment
 from ..extensions import db
 from flask import request, redirect, url_for, flash
 from datetime import date, datetime, timedelta
@@ -134,11 +134,12 @@ def create_user(role: str):
     if role not in allowed_roles:
         return abort(404)
 
-    # Precompute available properties for tenant assignment (no active contract covering today)
+    # For tenants, list all buildings, plus standalone apartments that are not under an active contract
     available_properties = []
     if role == "tenant":
         today = date.today()
-        active_props_subq = (
+        # Standalone apartments with no active contract
+        active_apartment_props_subq = (
             db.session.query(Contract.property_id)
             .filter(
                 Contract.status == "active",
@@ -147,57 +148,79 @@ def create_user(role: str):
             )
             .subquery()
         )
-        available_properties = (
-            Property.query.filter(~Property.id.in_(active_props_subq))
+        standalone_apartments = (
+            Property.query.filter(Property.property_type == "apartment", ~Property.id.in_(active_apartment_props_subq))
             .order_by(Property.created_at.desc())
             .all()
         )
+        buildings = (
+            Property.query.filter(Property.property_type == "building")
+            .order_by(Property.created_at.desc())
+            .all()
+        )
+        available_properties = buildings + standalone_apartments
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
-        email = request.form.get("email", "").strip()
+        email = (request.form.get("email", "").strip() or None)
+        phone = (request.form.get("phone", "").strip() or None)
         password = request.form.get("password", "")
         selected_property_id = (request.form.get("property_id") or "").strip()
+        selected_apartment_id = (request.form.get("apartment_id") or "").strip()
 
-        if not username or not email or not password:
-            flash(_("All fields are required"), "warning")
-            return render_template(
-                "admin/user_form.html",
-                role=role,
-                username_value=username,
-                email_value=email,
-                properties=available_properties if role == "tenant" else None,
-                selected_property_id=selected_property_id,
-            )
-
-        # ensure unique username/email
-        existing_user = (
-            User.query.filter((User.username == username) | (User.email == email)).first()
-        )
-        if existing_user:
-            flash(_("Username or email already exists"), "danger")
-            return render_template(
-                "admin/user_form.html",
-                role=role,
-                username_value=username,
-                email_value=email,
-                properties=available_properties if role == "tenant" else None,
-                selected_property_id=selected_property_id,
-            )
-
-        # For tenants, ensure a property was selected and is still available
-        property_obj = None
-        if role == "tenant":
-            if not selected_property_id:
-                flash(_("Please select a property"), "warning")
+        # Basic required validation
+        if role == "employee":
+            if not username or not email or not password:
+                flash(_("All fields are required"), "warning")
                 return render_template(
                     "admin/user_form.html",
                     role=role,
                     username_value=username,
-                    email_value=email,
+                    email_value=email or "",
+                    properties=None,
+                )
+        else:  # tenant
+            if not username or not phone or not password or not selected_property_id:
+                flash(_("All fields are required"), "warning")
+                return render_template(
+                    "admin/user_form.html",
+                    role=role,
+                    username_value=username,
+                    phone_value=phone or "",
                     properties=available_properties,
                     selected_property_id=selected_property_id,
+                    selected_apartment_id=selected_apartment_id,
                 )
+
+        # Uniqueness validation
+        from sqlalchemy import or_
+        conditions = [User.username == username]
+        if role == "employee":
+            if email:
+                conditions.append(User.email == email)
+        else:
+            if phone:
+                conditions.append(User.phone == phone)
+            if email:
+                conditions.append(User.email == email)
+        existing_user = User.query.filter(or_(*conditions)).first()
+        if existing_user:
+            flash(_("Username or email already exists") if role == "employee" else _("Username or phone already exists"), "danger")
+            return render_template(
+                "admin/user_form.html",
+                role=role,
+                username_value=username,
+                email_value=email or "",
+                phone_value=phone or "",
+                properties=available_properties if role == "tenant" else None,
+                selected_property_id=selected_property_id,
+                selected_apartment_id=selected_apartment_id,
+            )
+
+        # For tenants, ensure property (and apartment if building) are valid
+        property_obj = None
+        apartment_obj = None
+        if role == "tenant":
             try:
                 pid_int = int(selected_property_id)
             except ValueError:
@@ -206,37 +229,108 @@ def create_user(role: str):
                     "admin/user_form.html",
                     role=role,
                     username_value=username,
-                    email_value=email,
+                    phone_value=phone or "",
                     properties=available_properties,
                     selected_property_id=selected_property_id,
+                    selected_apartment_id=selected_apartment_id,
                 )
-            # validate availability again server-side
-            property_obj = next((p for p in available_properties if p.id == pid_int), None)
+            property_obj = Property.query.get(pid_int)
             if property_obj is None:
-                flash(_("Selected property is no longer available"), "danger")
+                flash(_("Invalid property selected"), "danger")
                 return render_template(
                     "admin/user_form.html",
                     role=role,
                     username_value=username,
-                    email_value=email,
+                    phone_value=phone or "",
                     properties=available_properties,
                     selected_property_id=selected_property_id,
+                    selected_apartment_id=selected_apartment_id,
                 )
+            if property_obj.property_type == "building":
+                if not selected_apartment_id:
+                    flash(_("Please select an apartment"), "warning")
+                    return render_template(
+                        "admin/user_form.html",
+                        role=role,
+                        username_value=username,
+                        phone_value=phone or "",
+                        properties=available_properties,
+                        selected_property_id=selected_property_id,
+                        selected_apartment_id=selected_apartment_id,
+                    )
+                try:
+                    aid_int = int(selected_apartment_id)
+                except ValueError:
+                    flash(_("Invalid apartment selected"), "danger")
+                    return render_template(
+                        "admin/user_form.html",
+                        role=role,
+                        username_value=username,
+                        phone_value=phone or "",
+                        properties=available_properties,
+                        selected_property_id=selected_property_id,
+                        selected_apartment_id=selected_apartment_id,
+                    )
+                apartment_obj = Apartment.query.filter_by(id=aid_int, building_id=property_obj.id).first()
+                if apartment_obj is None or (apartment_obj.status or "").lower() != "available":
+                    flash(_("Selected apartment is no longer available"), "danger")
+                    return render_template(
+                        "admin/user_form.html",
+                        role=role,
+                        username_value=username,
+                        phone_value=phone or "",
+                        properties=available_properties,
+                        selected_property_id=selected_property_id,
+                        selected_apartment_id=selected_apartment_id,
+                    )
+            else:
+                # Standalone apartment must still be available (no active contract)
+                today = date.today()
+                active_for_prop = (
+                    Contract.query.filter(
+                        Contract.property_id == property_obj.id,
+                        Contract.status == "active",
+                        Contract.start_date <= today,
+                        Contract.end_date >= today,
+                    ).first()
+                )
+                if active_for_prop is not None:
+                    flash(_("Selected property is no longer available"), "danger")
+                    return render_template(
+                        "admin/user_form.html",
+                        role=role,
+                        username_value=username,
+                        phone_value=phone or "",
+                        properties=available_properties,
+                        selected_property_id=selected_property_id,
+                    )
 
-        new_user = User(username=username, email=email, role=role)
+        # Create user
+        if role == "employee":
+            new_user = User(username=username, email=email, role=role)
+        else:
+            new_user = User(username=username, phone=phone, email=email, role=role)
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
+
         if role == "employee":
             flash(_("Employee created successfully"), "success")
         else:
-            # Auto-create a contract for the selected property
+            # Auto-create a contract for the selected property (and apartment if building)
             start_date = date.today()
-            # Default to 12 months lease
             end_date = start_date + timedelta(days=365)
-            rent_amount = property_obj.price
+            rent_amount = None
+            apt_id_val = None
+            if property_obj.property_type == "building" and apartment_obj is not None:
+                rent_amount = apartment_obj.rent_price or 0
+                apt_id_val = apartment_obj.id
+            else:
+                rent_amount = property_obj.price or 0
+
             contract = Contract(
                 property_id=property_obj.id,
+                apartment_id=apt_id_val,
                 tenant_id=new_user.id,
                 start_date=start_date,
                 end_date=end_date,
@@ -244,11 +338,13 @@ def create_user(role: str):
                 status="active",
             )
             db.session.add(contract)
-            # Optionally mark property as leased for quick visual status
+            # Update statuses
             try:
-                property_obj.status = "leased"
+                if apartment_obj is not None:
+                    apartment_obj.status = "occupied"
+                else:
+                    property_obj.status = "leased"
             except Exception:
-                # If status update fails for any reason, skip without breaking creation
                 pass
             db.session.commit()
             flash(_("Tenant and contract created successfully"), "success")
@@ -259,4 +355,30 @@ def create_user(role: str):
         role=role,
         properties=available_properties if role == "tenant" else None,
     )
+
+
+# --- API: Apartments under a Building (JSON) ---
+@admin_bp.route("/api/buildings/<int:building_id>/apartments")
+@login_required
+@admin_required
+def api_building_apartments(building_id: int):
+    status_filter = (request.args.get("status") or "").strip().lower()
+    apartments_q = Apartment.query.filter_by(building_id=building_id)
+    apartments = apartments_q.order_by(Apartment.number.asc()).all()
+    if status_filter:
+        apartments = [a for a in apartments if (a.status or "").lower() == status_filter]
+    def to_label(a: Apartment) -> str:
+        rent = (a.rent_price if a.rent_price is not None else "-")
+        num = a.number or str(a.id)
+        return f"#{num} — {str(rent)}"
+    return jsonify([
+        {
+            "id": a.id,
+            "label": to_label(a),
+            "number": a.number,
+            "status": a.status,
+            "rent_price": str(a.rent_price) if a.rent_price is not None else None,
+        }
+        for a in apartments
+    ])
 

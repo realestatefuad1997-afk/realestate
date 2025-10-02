@@ -15,7 +15,9 @@ class User(UserMixin, db.Model, TimestampMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=True)
+    # Mobile phone for tenants; optional for other roles
+    phone = db.Column(db.String(32), unique=True, nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(32), nullable=False, index=True)
 
@@ -102,6 +104,8 @@ class Contract(db.Model, TimestampMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     property_id = db.Column(db.Integer, db.ForeignKey("properties.id"), nullable=False, index=True)
+    # Optional apartment reference if the property is a building
+    apartment_id = db.Column(db.Integer, db.ForeignKey("apartments.id"), nullable=True, index=True)
     tenant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
@@ -110,6 +114,7 @@ class Contract(db.Model, TimestampMixin):
     document_path = db.Column(db.String(500))
 
     property = db.relationship("Property", back_populates="contracts")
+    apartment = db.relationship("Apartment")
     tenant = db.relationship("User", back_populates="contracts")
     payments = db.relationship("Payment", back_populates="contract", lazy="dynamic")
 
