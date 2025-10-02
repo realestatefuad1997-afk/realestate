@@ -41,6 +41,22 @@ def dashboard():
     )
 
 
+@employee_bp.route("/maintenance")
+@login_required
+@employee_required
+def maintenance_list():
+    maints = MaintenanceRequest.query.order_by(MaintenanceRequest.created_at.desc()).all()
+    return render_template("employee/maintenance_list.html", maintenance_requests=maints)
+
+
+@employee_bp.route("/complaints")
+@login_required
+@employee_required
+def complaints_list():
+    complaints = Complaint.query.order_by(Complaint.created_at.desc()).all()
+    return render_template("employee/complaints_list.html", complaints=complaints)
+
+
 @employee_bp.route("/properties")
 @login_required
 @employee_required
