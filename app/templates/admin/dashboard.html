@@ -52,8 +52,11 @@
     <a class="btn btn-light btn-sm me-2" href="{{ url_for('admin.create_user', role='employee') }}">
       <i class="bi bi-person-plus"></i> {{ _('Add Employee') }}
     </a>
-    <a class="btn btn-outline-light btn-sm" href="{{ url_for('admin.create_user', role='tenant') }}">
+    <a class="btn btn-outline-light btn-sm me-2" href="{{ url_for('admin.create_user', role='tenant') }}">
       <i class="bi bi-person-plus-fill"></i> {{ _('Add Tenant') }}
+    </a>
+    <a class="btn btn-outline-light btn-sm" href="{{ url_for('admin.users_list') }}">
+      <i class="bi bi-people"></i> {{ _('Manage Users') }}
     </a>
   </div>
 </div>
