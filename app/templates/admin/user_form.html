@@ -23,6 +23,20 @@
         <label class="form-label">{{ _('Password') }}</label>
         <input type="password" name="password" class="form-control" required />
       </div>
+      {% if role == 'tenant' %}
+      <div class="mb-3">
+        <label class="form-label">{{ _('Property to lease') }}</label>
+        <select class="form-select" name="property_id" required>
+          <option value="">{{ _('Select a property') }}</option>
+          {% for p in properties or [] %}
+            <option value="{{ p.id }}" {% if selected_property_id and (selected_property_id|string) == (p.id|string) %}selected{% endif %}>
+              {{ p.title }} - {{ _('Price') }}: {{ p.price }}
+            </option>
+          {% endfor %}
+        </select>
+        <div class="form-text">{{ _('Only properties without an active contract are listed.') }}</div>
+      </div>
+      {% endif %}
       <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">
           {% if role == 'employee' %}{{ _('Create Employee') }}{% else %}{{ _('Create Tenant') }}{% endif %}

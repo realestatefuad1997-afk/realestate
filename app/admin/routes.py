@@ -124,10 +124,30 @@ def create_user(role: str):
     if role not in allowed_roles:
         return abort(404)
 
+    # Precompute available properties for tenant assignment (no active contract covering today)
+    available_properties = []
+    if role == "tenant":
+        today = date.today()
+        active_props_subq = (
+            db.session.query(Contract.property_id)
+            .filter(
+                Contract.status == "active",
+                Contract.start_date <= today,
+                Contract.end_date >= today,
+            )
+            .subquery()
+        )
+        available_properties = (
+            Property.query.filter(~Property.id.in_(active_props_subq))
+            .order_by(Property.created_at.desc())
+            .all()
+        )
+
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
+        selected_property_id = (request.form.get("property_id") or "").strip()
 
         if not username or not email or not password:
             flash(_("All fields are required"), "warning")
@@ -136,6 +156,8 @@ def create_user(role: str):
                 role=role,
                 username_value=username,
                 email_value=email,
+                properties=available_properties if role == "tenant" else None,
+                selected_property_id=selected_property_id,
             )
 
         # ensure unique username/email
@@ -149,7 +171,47 @@ def create_user(role: str):
                 role=role,
                 username_value=username,
                 email_value=email,
+                properties=available_properties if role == "tenant" else None,
+                selected_property_id=selected_property_id,
             )
+
+        # For tenants, ensure a property was selected and is still available
+        property_obj = None
+        if role == "tenant":
+            if not selected_property_id:
+                flash(_("Please select a property"), "warning")
+                return render_template(
+                    "admin/user_form.html",
+                    role=role,
+                    username_value=username,
+                    email_value=email,
+                    properties=available_properties,
+                    selected_property_id=selected_property_id,
+                )
+            try:
+                pid_int = int(selected_property_id)
+            except ValueError:
+                flash(_("Invalid property selected"), "danger")
+                return render_template(
+                    "admin/user_form.html",
+                    role=role,
+                    username_value=username,
+                    email_value=email,
+                    properties=available_properties,
+                    selected_property_id=selected_property_id,
+                )
+            # validate availability again server-side
+            property_obj = next((p for p in available_properties if p.id == pid_int), None)
+            if property_obj is None:
+                flash(_("Selected property is no longer available"), "danger")
+                return render_template(
+                    "admin/user_form.html",
+                    role=role,
+                    username_value=username,
+                    email_value=email,
+                    properties=available_properties,
+                    selected_property_id=selected_property_id,
+                )
 
         new_user = User(username=username, email=email, role=role)
         new_user.set_password(password)
@@ -158,8 +220,33 @@ def create_user(role: str):
         if role == "employee":
             flash(_("Employee created successfully"), "success")
         else:
-            flash(_("Tenant created successfully"), "success")
+            # Auto-create a contract for the selected property
+            start_date = date.today()
+            # Default to 12 months lease
+            end_date = start_date + timedelta(days=365)
+            rent_amount = property_obj.price
+            contract = Contract(
+                property_id=property_obj.id,
+                tenant_id=new_user.id,
+                start_date=start_date,
+                end_date=end_date,
+                rent_amount=rent_amount,
+                status="active",
+            )
+            db.session.add(contract)
+            # Optionally mark property as leased for quick visual status
+            try:
+                property_obj.status = "leased"
+            except Exception:
+                # If status update fails for any reason, skip without breaking creation
+                pass
+            db.session.commit()
+            flash(_("Tenant and contract created successfully"), "success")
         return redirect(url_for("admin.users_list"))
 
-    return render_template("admin/user_form.html", role=role)
+    return render_template(
+        "admin/user_form.html",
+        role=role,
+        properties=available_properties if role == "tenant" else None,
+    )
 
