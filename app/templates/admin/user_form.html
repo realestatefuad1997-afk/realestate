@@ -130,7 +130,11 @@
         }
         apartmentSelect.appendChild(opt);
       }
-      // If an apartment is preselected or has just been selected, reflect its number
+      // If none preselected, auto-select the first available option
+      if (!apartmentSelect.value && apartmentSelect.options.length > 1) {
+        apartmentSelect.selectedIndex = 1;
+      }
+      // Reflect the selected apartment's number into the input (for convenience)
       const selectedOpt = apartmentSelect.options[apartmentSelect.selectedIndex];
       if (selectedOpt && selectedOpt.value && apartmentNumberInput) {
         apartmentNumberInput.value = selectedOpt.dataset.number || '';
