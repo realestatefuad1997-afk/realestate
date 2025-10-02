@@ -39,7 +39,7 @@
     </div>
     <ul class="list-group">
       {% for m in maintenance_requests %}
-      <li class="list-group-item">
+      <a class="list-group-item list-group-item-action" href="{{ url_for('tenant.maintenance_show', request_id=m.id) }}">
         <div class="d-flex justify-content-between">
           <div>
             <strong>{{ m.title }}</strong>
@@ -47,7 +47,7 @@
           </div>
           <span class="badge text-bg-secondary">{{ m.status }}</span>
         </div>
-      </li>
+      </a>
       {% else %}
       <li class="list-group-item">{{ _('No data') }}</li>
       {% endfor %}
@@ -60,7 +60,7 @@
     </div>
     <ul class="list-group">
       {% for c in complaints %}
-      <li class="list-group-item">
+      <a class="list-group-item list-group-item-action" href="{{ url_for('tenant.complaint_show', complaint_id=c.id) }}">
         <div class="d-flex justify-content-between">
           <div>
             <strong>{{ c.subject }}</strong>
@@ -68,7 +68,7 @@
           </div>
           <span class="badge text-bg-secondary">{{ c.status }}</span>
         </div>
-      </li>
+      </a>
       {% else %}
       <li class="list-group-item">{{ _('No data') }}</li>
       {% endfor %}
