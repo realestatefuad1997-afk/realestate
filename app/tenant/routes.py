@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, abort, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
-from ..models import Contract, Payment, MaintenanceRequest, Complaint
+from ..models import Contract, Payment, MaintenanceRequest, Complaint, Property
 from ..extensions import db
 
 
@@ -89,4 +89,25 @@ def complaint_create():
         flash(_("Complaint submitted"), "success")
         return redirect(url_for("tenant.dashboard"))
     return render_template("tenant/complaint_form.html")
+
+
+@tenant_bp.route("/complaints/<int:complaint_id>")
+@login_required
+@tenant_required
+def complaint_detail(complaint_id: int):
+    complaint = Complaint.query.get_or_404(complaint_id)
+    if complaint.tenant_id != current_user.id:
+        return abort(404)
+    return render_template("tenant/complaint_detail.html", complaint=complaint)
+
+
+@tenant_bp.route("/maintenance/<int:request_id>")
+@login_required
+@tenant_required
+def maintenance_detail(request_id: int):
+    maint = MaintenanceRequest.query.get_or_404(request_id)
+    if maint.tenant_id != current_user.id:
+        return abort(404)
+    prop = Property.query.get(maint.property_id) if maint.property_id else None
+    return render_template("tenant/maintenance_detail.html", maint_request=maint, property=prop)
 
