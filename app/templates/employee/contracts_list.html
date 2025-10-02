@@ -41,6 +41,7 @@
         <th>{{ _('End') }}</th>
         <th>{{ _('Rent') }}</th>
         <th>{{ _('Status') }}</th>
+        <th>{{ _('Document') }}</th>
       </tr>
     </thead>
     <tbody>
@@ -63,10 +64,19 @@
             <span class="badge bg-secondary">{{ c.status }}</span>
           {% endif %}
         </td>
+        <td>
+          {% if c.document_path %}
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('uploaded_file', filename=c.document_path) }}" target="_blank">
+            <i class="bi bi-box-arrow-up-right me-1"></i>{{ _('View') }}
+          </a>
+          {% else %}
+          <span class="text-muted">—</span>
+          {% endif %}
+        </td>
       </tr>
       {% else %}
       <tr>
-        <td colspan="7" class="text-center py-4">{{ _('No data') }}</td>
+        <td colspan="8" class="text-center py-4">{{ _('No data') }}</td>
       </tr>
       {% endfor %}
     </tbody>

@@ -4,6 +4,7 @@ from flask_babel import gettext as _
 from ..extensions import db
 from ..models import Property, Contract, MaintenanceRequest, Complaint, Apartment
 from werkzeug.utils import secure_filename
+import uuid
 import os
 from itsdangerous import URLSafeSerializer
 
@@ -362,16 +363,23 @@ def contracts_create():
         start_date = request.form.get("start_date")
         end_date = request.form.get("end_date")
         rent_amount = request.form.get("rent_amount")
-        # Save optional contract document
+        # Save optional contract document (validate type and uniquify filename)
         doc = request.files.get("document")
         document_path = None
         if doc and doc.filename:
+            allowed = current_app.config.get("ALLOWED_EXTENSIONS", set())
+            ext = doc.filename.rsplit(".", 1)[-1].lower() if "." in doc.filename else ""
+            if ext not in allowed:
+                flash(_(f"Invalid file type. Allowed: {', '.join(sorted(allowed))}"), "danger")
+                return redirect(url_for("employee.contracts_create"))
+
             upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "contracts")
             os.makedirs(upload_dir, exist_ok=True)
-            filename = secure_filename(doc.filename)
-            path = os.path.join(upload_dir, filename)
+            base_name = secure_filename(os.path.splitext(doc.filename)[0]) or "document"
+            unique_name = f"{base_name}-{uuid.uuid4().hex[:8]}.{ext}"
+            path = os.path.join(upload_dir, unique_name)
             doc.save(path)
-            document_path = f"contracts/{filename}"
+            document_path = f"contracts/{unique_name}"
 
         contract = Contract(
             property_id=property_id,
