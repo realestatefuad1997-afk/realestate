@@ -78,7 +78,7 @@
             </option>
           {% endfor %}
         </select>
-        <div class="form-text">{{ _('Buildings will require selecting an apartment') }}</div>
+        <div class="form-text">{{ _('For buildings, select an apartment or enter its number') }}</div>
       </div>
       <div class="mb-3" id="apartmentGroup" style="display:none;">
         <label class="form-label">{{ _('Apartment in building') }}</label>
@@ -86,6 +86,11 @@
           <option value="">{{ _('Select an apartment') }}</option>
         </select>
         <div class="form-text">{{ _('Only available apartments are listed.') }}</div>
+        <div class="mt-3">
+          <label class="form-label">{{ _('Apartment number') }}</label>
+          <input type="text" class="form-control" id="apartmentNumberInput" name="apartment_number" value="{{ entered_apartment_number|default('') }}" placeholder="{{ _('e.g., 12A') }}" />
+          <div class="form-text">{{ _('If not listed above, enter the apartment number') }}</div>
+        </div>
       </div>
       {% endif %}
       <div class="d-flex gap-2 mt-3">
@@ -106,6 +111,7 @@
   const propertySelect = document.getElementById('propertySelect');
   const apartmentGroup = document.getElementById('apartmentGroup');
   const apartmentSelect = document.getElementById('apartmentSelect');
+  const apartmentNumberInput = document.getElementById('apartmentNumberInput');
 
   async function loadApartments(buildingId) {
     apartmentSelect.innerHTML = `<option value="">${"{{ _('Select an apartment') }}"}</option>`;
@@ -134,6 +140,7 @@
     } else {
       apartmentGroup.style.display = 'none';
       apartmentSelect.innerHTML = `<option value="">${"{{ _('Select an apartment') }}"}</option>`;
+      if (apartmentNumberInput) apartmentNumberInput.value = '';
     }
   }
 

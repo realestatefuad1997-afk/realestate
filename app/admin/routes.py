@@ -167,6 +167,7 @@ def create_user(role: str):
         password = request.form.get("password", "")
         selected_property_id = (request.form.get("property_id") or "").strip()
         selected_apartment_id = (request.form.get("apartment_id") or "").strip()
+        entered_apartment_number = (request.form.get("apartment_number") or "").strip()
 
         # Basic required validation
         if role == "employee":
@@ -190,6 +191,7 @@ def create_user(role: str):
                     properties=available_properties,
                     selected_property_id=selected_property_id,
                     selected_apartment_id=selected_apartment_id,
+                    entered_apartment_number=entered_apartment_number,
                 )
 
         # Uniqueness validation
@@ -233,6 +235,7 @@ def create_user(role: str):
                     properties=available_properties,
                     selected_property_id=selected_property_id,
                     selected_apartment_id=selected_apartment_id,
+                    entered_apartment_number=entered_apartment_number,
                 )
             property_obj = Property.query.get(pid_int)
             if property_obj is None:
@@ -247,8 +250,9 @@ def create_user(role: str):
                     selected_apartment_id=selected_apartment_id,
                 )
             if property_obj.property_type == "building":
-                if not selected_apartment_id:
-                    flash(_("Please select an apartment"), "warning")
+                # Allow either selecting an existing apartment OR entering a new apartment number
+                if not selected_apartment_id and not entered_apartment_number:
+                    flash(_("Please select an apartment or enter its number"), "warning")
                     return render_template(
                         "admin/user_form.html",
                         role=role,
@@ -257,32 +261,61 @@ def create_user(role: str):
                         properties=available_properties,
                         selected_property_id=selected_property_id,
                         selected_apartment_id=selected_apartment_id,
+                        entered_apartment_number=entered_apartment_number,
                     )
-                try:
-                    aid_int = int(selected_apartment_id)
-                except ValueError:
-                    flash(_("Invalid apartment selected"), "danger")
-                    return render_template(
-                        "admin/user_form.html",
-                        role=role,
-                        username_value=username,
-                        phone_value=phone or "",
-                        properties=available_properties,
-                        selected_property_id=selected_property_id,
-                        selected_apartment_id=selected_apartment_id,
-                    )
-                apartment_obj = Apartment.query.filter_by(id=aid_int, building_id=property_obj.id).first()
-                if apartment_obj is None or (apartment_obj.status or "").lower() != "available":
-                    flash(_("Selected apartment is no longer available"), "danger")
-                    return render_template(
-                        "admin/user_form.html",
-                        role=role,
-                        username_value=username,
-                        phone_value=phone or "",
-                        properties=available_properties,
-                        selected_property_id=selected_property_id,
-                        selected_apartment_id=selected_apartment_id,
-                    )
+                if selected_apartment_id:
+                    try:
+                        aid_int = int(selected_apartment_id)
+                    except ValueError:
+                        flash(_("Invalid apartment selected"), "danger")
+                        return render_template(
+                            "admin/user_form.html",
+                            role=role,
+                            username_value=username,
+                            phone_value=phone or "",
+                            properties=available_properties,
+                            selected_property_id=selected_property_id,
+                            selected_apartment_id=selected_apartment_id,
+                            entered_apartment_number=entered_apartment_number,
+                        )
+                    apartment_obj = Apartment.query.filter_by(id=aid_int, building_id=property_obj.id).first()
+                    if apartment_obj is None or (apartment_obj.status or "").lower() != "available":
+                        flash(_("Selected apartment is no longer available"), "danger")
+                        return render_template(
+                            "admin/user_form.html",
+                            role=role,
+                            username_value=username,
+                            phone_value=phone or "",
+                            properties=available_properties,
+                            selected_property_id=selected_property_id,
+                            selected_apartment_id=selected_apartment_id,
+                            entered_apartment_number=entered_apartment_number,
+                        )
+                else:
+                    # Create a new apartment under the building with the given number, if not exists
+                    existing = Apartment.query.filter_by(building_id=property_obj.id, number=entered_apartment_number).first()
+                    if existing:
+                        if (existing.status or "").lower() != "available":
+                            flash(_("Entered apartment number is not available"), "danger")
+                            return render_template(
+                                "admin/user_form.html",
+                                role=role,
+                                username_value=username,
+                                phone_value=phone or "",
+                                properties=available_properties,
+                                selected_property_id=selected_property_id,
+                                selected_apartment_id=selected_apartment_id,
+                                entered_apartment_number=entered_apartment_number,
+                            )
+                        apartment_obj = existing
+                    else:
+                        apartment_obj = Apartment(
+                            building_id=property_obj.id,
+                            number=entered_apartment_number,
+                            status="available",
+                        )
+                        db.session.add(apartment_obj)
+                        db.session.flush()  # ensure id is available
             else:
                 # Standalone apartment must still be available (no active contract)
                 today = date.today()
