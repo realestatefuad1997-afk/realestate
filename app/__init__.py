@@ -1,8 +1,9 @@
 import os
-from flask import Flask, g, request, redirect, url_for, session, render_template, send_from_directory
+from flask import Flask, g, request, redirect, url_for, session, render_template, send_from_directory, abort
 from flask_babel import get_locale as babel_get_locale
 from .config import Config
 from .extensions import db, migrate, login_manager, babel
+from itsdangerous import URLSafeSerializer, BadSignature
 
 def create_app(config_class: type = Config) -> Flask:
     app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -75,6 +76,34 @@ def create_app(config_class: type = Config) -> Flask:
     def uploaded_file(filename: str):
         upload_folder = app.config.get("UPLOAD_FOLDER", "uploads")
         return send_from_directory(upload_folder, filename, as_attachment=False)
+
+    # --- Public Share Route for Property Details ---
+    def _get_property_share_serializer() -> URLSafeSerializer:
+        secret_key = app.config.get("SECRET_KEY")
+        return URLSafeSerializer(secret_key, salt="property-share")
+
+    @app.route("/p/<token>")
+    def public_property_view(token: str):
+        try:
+            serializer = _get_property_share_serializer()
+            property_id = serializer.loads(token)
+        except BadSignature:
+            return abort(404)
+
+        from .models import Property  # local import to avoid circulars
+
+        prop = Property.query.get_or_404(int(property_id))
+
+        # Prepare images list from stored comma-separated paths
+        images = []
+        if prop.images:
+            images = [p.strip() for p in prop.images.split(",") if p.strip()]
+
+        return render_template(
+            "public/property_view.html",
+            prop=prop,
+            images=images,
+        )
 
     # --- Error Handlers ---
     @app.errorhandler(403)

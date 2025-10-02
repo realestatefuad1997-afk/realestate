@@ -5,6 +5,7 @@ from ..extensions import db
 from ..models import Property, Contract, MaintenanceRequest, Complaint
 from werkzeug.utils import secure_filename
 import os
+from itsdangerous import URLSafeSerializer
 
 
 employee_bp = Blueprint("employee", __name__)
@@ -44,7 +45,10 @@ def dashboard():
 @employee_required
 def properties_list():
     properties = Property.query.order_by(Property.created_at.desc()).all()
-    return render_template("employee/properties_list.html", properties=properties)
+    # Helper to generate share token
+    serializer = URLSafeSerializer(current_app.config["SECRET_KEY"], salt="property-share")
+    tokens = {p.id: serializer.dumps(p.id) for p in properties}
+    return render_template("employee/properties_list.html", properties=properties, share_tokens=tokens)
 
 
 @employee_bp.route("/properties/create", methods=["GET", "POST"])
@@ -102,6 +106,18 @@ def properties_edit(prop_id: int):
         flash(_("Property updated"), "success")
         return redirect(url_for("employee.properties_list"))
     return render_template("employee/property_form.html", property=prop)
+
+
+@employee_bp.route("/properties/<int:prop_id>/share", methods=["GET"])  # simple redirect to public link
+@login_required
+@employee_required
+def properties_share(prop_id: int):
+    prop = Property.query.get_or_404(prop_id)
+    serializer = URLSafeSerializer(current_app.config["SECRET_KEY"], salt="property-share")
+    token = serializer.dumps(prop.id)
+    public_url = url_for("public_property_view", token=token, _external=True)
+    flash(_("Share link generated: ") + public_url, "info")
+    return redirect(url_for("employee.properties_list"))
 
 
 @employee_bp.route("/properties/<int:prop_id>/delete", methods=["POST"])
