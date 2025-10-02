@@ -162,3 +162,44 @@ def contracts_create():
     tenants = User.query.filter_by(role="tenant").all()
     return render_template("employee/contract_form.html", properties=properties, tenants=tenants)
 
+
+@employee_bp.route("/maintenance/<int:req_id>/edit", methods=["GET", "POST"])
+@login_required
+@employee_required
+def maintenance_edit(req_id: int):
+    req = MaintenanceRequest.query.get_or_404(req_id)
+    if request.method == "POST":
+        req.status = request.form.get("status") or req.status
+        req.notes = request.form.get("notes")
+        db.session.commit()
+        flash(_("Maintenance request updated"), "success")
+        return redirect(url_for("employee.dashboard"))
+    # Available statuses for select input
+    statuses = [
+        ("new", _("New")),
+        ("in_progress", _("In Progress")),
+        ("resolved", _("Resolved")),
+        ("closed", _("Closed")),
+    ]
+    return render_template("employee/maintenance_edit.html", req=req, statuses=statuses)
+
+
+@employee_bp.route("/complaints/<int:complaint_id>/edit", methods=["GET", "POST"])
+@login_required
+@employee_required
+def complaint_edit(complaint_id: int):
+    comp = Complaint.query.get_or_404(complaint_id)
+    if request.method == "POST":
+        comp.status = request.form.get("status") or comp.status
+        comp.notes = request.form.get("notes")
+        db.session.commit()
+        flash(_("Complaint updated"), "success")
+        return redirect(url_for("employee.dashboard"))
+    statuses = [
+        ("new", _("New")),
+        ("reviewing", _("Reviewing")),
+        ("resolved", _("Resolved")),
+        ("closed", _("Closed")),
+    ]
+    return render_template("employee/complaint_edit.html", complaint=comp, statuses=statuses)
+
