@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Complaints') }}{% endblock %}
+
+{% block content %}
+<style>
+.table tbody tr:hover { background-color: #f8f9fa; }
+.badge-status { font-size: 0.8rem; }
+.bg-new { background: #0d6efd; color: #fff; }
+.bg-reviewing { background: #ffc107; color: #212529; }
+.bg-resolved { background: #198754; color: #fff; }
+.bg-closed { background: #6c757d; color: #fff; }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3><i class="bi bi-exclamation-triangle me-2"></i>{{ _('Complaints') }}</h3>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{ _('Subject') }}</th>
+        <th>{{ _('Description') }}</th>
+        <th>{{ _('Status') }}</th>
+        <th>{{ _('Created at') }}</th>
+        <th>{{ _('Actions') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in complaints %}
+      <tr>
+        <td>{{ c.id }}</td>
+        <td>{{ c.subject }}</td>
+        <td class="text-truncate" style="max-width: 320px;">{{ c.description }}</td>
+        <td><span class="badge badge-status bg-{{ c.status }}">{{ c.status }}</span></td>
+        <td>{{ c.created_at }}</td>
+        <td>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.complaint_update', comp_id=c.id) }}">
+            <i class="bi bi-pencil-square me-1"></i>{{ _('Update') }}
+          </a>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="text-center py-4">{{ _('No complaints') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -59,25 +59,25 @@
 
 <!-- كروت رئيسية لكل قسم -->
 <div class="dashboard-grid">
-  <div class="dashboard-card">
+  <div class="dashboard-card" onclick="window.location.href='{{ url_for('employee.properties_list') }}'">
     <i class="bi bi-building"></i>
     <span>{{ _('Properties') }}</span>
     <span class="badge-status">{{ properties|length }}</span>
   </div>
 
-  <div class="dashboard-card">
+  <div class="dashboard-card" onclick="window.location.href='{{ url_for('employee.contracts_list') }}'">
     <i class="bi bi-file-text"></i>
     <span>{{ _('Contracts') }}</span>
     <span class="badge-status">{{ contracts|length }}</span>
   </div>
 
-  <div class="dashboard-card">
+  <div class="dashboard-card" onclick="window.location.href='{{ url_for('employee.maintenance_list') }}'">
     <i class="bi bi-tools"></i>
     <span>{{ _('Maintenance Requests') }}</span>
     <span class="badge-status">{{ maintenance_requests|length }}</span>
   </div>
 
-  <div class="dashboard-card">
+  <div class="dashboard-card" onclick="window.location.href='{{ url_for('employee.complaints_list') }}'">
     <i class="bi bi-exclamation-triangle"></i>
     <span>{{ _('Complaints') }}</span>
     <span class="badge-status">{{ complaints|length }}</span>
@@ -88,7 +88,7 @@
 <h5 class="mt-4 mb-2"><i class="bi bi-building me-1"></i>{{ _('Recent Properties') }}</h5>
 <div class="dashboard-grid">
   {% for p in properties[:6] %}
-  <div class="dashboard-card">
+  <div class="dashboard-card" onclick="window.location.href='{{ url_for('employee.properties_edit', prop_id=p.id) }}'">
     <i class="bi bi-house-door"></i>
     <span>{{ p.title }}</span>
     {% if p.status == 'available' %}
