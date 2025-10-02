@@ -1,57 +1,116 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Admin Dashboard') }}{% endblock %}
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
-  <h3 class="mb-0">{{ _('Admin Dashboard') }}</h3>
-  <div class="d-flex align-items-center gap-2">
-    <a class="btn btn-sm btn-primary" href="{{ url_for('admin.create_user', role='employee') }}">{{ _('Add Employee') }}</a>
-    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.create_user', role='tenant') }}">{{ _('Add Tenant') }}</a>
-  </div>
-  </div>
 
+<!-- عنوان -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h3 class="mb-0 fw-bold text-primary animate__animated animate__fadeInDown">
+    <i class="bi bi-speedometer2 me-2"></i> {{ _('Admin Dashboard') }}
+  </h3>
+  <div class="d-flex align-items-center gap-2">
+    <a class="btn btn-sm btn-success animate__animated animate__fadeInRight" 
+       href="{{ url_for('admin.create_user', role='employee') }}">
+      <i class="bi bi-person-plus-fill me-1"></i> {{ _('Add Employee') }}
+    </a>
+    <a class="btn btn-sm btn-outline-primary animate__animated animate__fadeInRight" 
+       href="{{ url_for('admin.create_user', role='tenant') }}">
+      <i class="bi bi-house-add me-1"></i> {{ _('Add Tenant') }}
+    </a>
+  </div>
+</div>
+
+<!-- بطاقات إحصائيات -->
 <div class="row g-3">
   <div class="col-12 col-md-4">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="text-muted small mb-1">{{ _('Income') }}</div>
-        <div class="fs-3 fw-semibold">{{ total_income }}</div>
+    <div class="card stat-card shadow-lg border-0 h-100 animate__animated animate__zoomIn">
+      <div class="card-body text-center">
+        <div class="text-muted small mb-1">
+          <i class="bi bi-cash-stack text-success me-1"></i>{{ _('Income') }}
+        </div>
+        <div class="fs-3 fw-bold text-success counter" data-value="{{ total_income }}">0</div>
       </div>
     </div>
   </div>
+
   <div class="col-12 col-md-4">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="text-muted small mb-1">{{ _('Expenses') }}</div>
-        <div class="fs-3 fw-semibold">{{ total_expenses }}</div>
+    <div class="card stat-card shadow-lg border-0 h-100 animate__animated animate__zoomIn" style="animation-delay:0.2s">
+      <div class="card-body text-center">
+        <div class="text-muted small mb-1">
+          <i class="bi bi-wallet2 text-danger me-1"></i>{{ _('Expenses') }}
+        </div>
+        <div class="fs-3 fw-bold text-danger counter" data-value="{{ total_expenses }}">0</div>
       </div>
     </div>
   </div>
+
   <div class="col-12 col-md-4">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="text-muted small mb-1">{{ _('Profit') }}</div>
-        <div class="fs-3 fw-semibold">{{ profit }}</div>
+    <div class="card stat-card shadow-lg border-0 h-100 animate__animated animate__zoomIn" style="animation-delay:0.4s">
+      <div class="card-body text-center">
+        <div class="text-muted small mb-1">
+          <i class="bi bi-graph-up-arrow text-primary me-1"></i>{{ _('Profit') }}
+        </div>
+        <div class="fs-3 fw-bold text-primary counter" data-value="{{ profit }}">0</div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="row g-3 mt-1">
+<!-- بطاقات إضافية -->
+<div class="row g-3 mt-2">
   <div class="col-12 col-md-6">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="text-muted small mb-1">{{ _('Unleased Properties') }}</div>
-        <div class="fs-3 fw-semibold">{{ unleased_properties }}</div>
+    <div class="card stat-card shadow-lg border-0 h-100 animate__animated animate__fadeInUp">
+      <div class="card-body text-center">
+        <div class="text-muted small mb-1">
+          <i class="bi bi-building-x text-warning me-1"></i>{{ _('Unleased Properties') }}
+        </div>
+        <div class="fs-3 fw-bold text-warning counter" data-value="{{ unleased_properties }}">0</div>
       </div>
     </div>
   </div>
+
   <div class="col-12 col-md-6">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="text-muted small mb-1">{{ _('Maintenance Requests > 24h') }}</div>
-        <div class="fs-3 fw-semibold">{{ overdue_maintenance_24h }}</div>
+    <div class="card stat-card shadow-lg border-0 h-100 animate__animated animate__fadeInUp" style="animation-delay:0.2s">
+      <div class="card-body text-center">
+        <div class="text-muted small mb-1">
+          <i class="bi bi-tools text-danger me-1"></i>{{ _('Maintenance Requests > 24h') }}
+        </div>
+        <div class="fs-3 fw-bold text-danger counter" data-value="{{ overdue_maintenance_24h }}">0</div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- CSS مخصص -->
+<style>
+  .stat-card {
+    transition: transform 0.3s ease;
+    border-radius: 1rem;
+  }
+  .stat-card:hover {
+    transform: translateY(-6px) scale(1.02);
+  }
+</style>
+
+<!-- إضافة مكتبة Animation + Counter -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<script>
+  // عداد متحرك للأرقام
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".counter").forEach(counter => {
+      const updateCount = () => {
+        const target = +counter.getAttribute("data-value");
+        const count = +counter.innerText;
+        const increment = Math.ceil(target / 50); // سرعة العد
+        if (count < target) {
+          counter.innerText = count + increment;
+          setTimeout(updateCount, 40);
+        } else {
+          counter.innerText = target;
+        }
+      };
+      updateCount();
+    });
+  });
+</script>
+
 {% endblock %}
