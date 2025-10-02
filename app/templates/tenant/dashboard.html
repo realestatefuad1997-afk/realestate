@@ -3,73 +3,87 @@
 
 {% block content %}
 <style>
-/* شبكة الكروت */
+/* لوحة متكاملة وعصرية */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   margin-bottom: 24px;
 }
 
-/* كرت المعلومات */
+/* كروت ملونة وجذابة */
 .card-tenant {
-  border-radius: 15px;
-  padding: 20px;
-  background: #fff;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  transition: 0.3s;
+  border-radius: 20px;
+  padding: 25px;
+  background: linear-gradient(145deg, #ffffff, #f0f0f5);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  transition: 0.4s;
   cursor: pointer;
+  position: relative;
 }
 .card-tenant:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
 }
 
+/* أيقونات في الكروت */
+.card-tenant .icon {
+  font-size: 2.2rem;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  opacity: 0.15;
+}
+
+/* العناوين والنصوص */
 .card-tenant h6 {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.1rem;
   margin-bottom: 8px;
 }
-
-.card-tenant .badge {
-  font-size: 0.85rem;
-}
-
 .card-tenant .small-text {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #6c757d;
+  margin-bottom: 5px;
 }
 
-/* ألوان الحالة */
-.bg-new { background-color: #0d6efd; color: #fff; }
-.bg-in_progress { background-color: #ffc107; color: #212529; }
-.bg-resolved { background-color: #198754; color: #fff; }
-.bg-closed { background-color: #6c757d; color: #fff; }
-.bg-active { background-color: #198754; color: #fff; }
-.bg-pending { background-color: #ffc107; color: #212529; }
-.bg-expired { background-color: #6c757d; color: #fff; }
-.bg-paid { background-color: #198754; color: #fff; }
-.bg-unpaid { background-color: #ffc107; color: #212529; }
-
-.card-header {
-  font-weight: 700;
-  margin-bottom: 12px;
+/* شريط الحالة */
+.badge-status {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
+
+/* ألوان الحالات */
+.bg-new { background: #0d6efd; color: #fff; }
+.bg-in_progress { background: #ffc107; color: #212529; }
+.bg-resolved { background: #198754; color: #fff; }
+.bg-closed { background: #6c757d; color: #fff; }
+.bg-active { background: #198754; color: #fff; }
+.bg-pending { background: #ffc107; color: #212529; }
+.bg-expired { background: #6c757d; color: #fff; }
+.bg-paid { background: #198754; color: #fff; }
+.bg-unpaid { background: #ffc107; color: #212529; }
+
 </style>
 
 <h3 class="mb-4">{{ _('Tenant Dashboard') }}</h3>
 
-<!-- عقودي والمدفوعات -->
+<!-- عقودي ومدفوعاتي -->
 <div class="dashboard-grid">
   {% for c in contracts %}
   <div class="card-tenant">
-    <h6>{{ _('Contract') }} #{{ c.id }} - {{ c.property.title }}</h6>
+    <i class="bi bi-file-earmark-text icon"></i>
+    <h6>{{ _('Contract') }} #{{ c.id }}</h6>
+    <div class="small-text">{{ c.property.title }}</div>
     <div class="small-text">{{ _('Start') }}: {{ c.start_date }} — {{ _('End') }}: {{ c.end_date }}</div>
     {% set status_class = {
         'active':'bg-active',
         'pending':'bg-pending',
         'expired':'bg-expired'
     }[c.status] %}
-    <span class="badge {{ status_class }}">{{ c.status }}</span>
+    <span class="badge-status {{ status_class }}">{{ c.status }}</span>
   </div>
   {% else %}
   <div class="card-tenant">{{ _('No contracts available') }}</div>
@@ -77,11 +91,12 @@
 
   {% for p in payments %}
   <div class="card-tenant">
+    <i class="bi bi-currency-dollar icon"></i>
     <h6>{{ _('Payment') }} #{{ p.id }}</h6>
     <div class="small-text">{{ _('Amount') }}: {{ p.amount }}</div>
     <div class="small-text">{{ _('Due') }}: {{ p.due_date }}</div>
     {% set pay_class = 'bg-paid' if p.status=='paid' else 'bg-unpaid' %}
-    <span class="badge {{ pay_class }}">{{ p.status }}</span>
+    <span class="badge-status {{ pay_class }}">{{ p.status }}</span>
   </div>
   {% else %}
   <div class="card-tenant">{{ _('No payments available') }}</div>
@@ -93,13 +108,14 @@
 <div class="dashboard-grid">
   {% for m in maintenance_requests %}
   <div class="card-tenant" onclick="window.location.href='{{ url_for('tenant.maintenance_show', request_id=m.id) }}'">
+    <i class="bi bi-tools icon"></i>
     <h6>{{ m.title }}</h6>
     <div class="small-text">{{ m.description }}</div>
     {% if m.notes %}
     <div class="small-text text-primary">{{ _('Employee notes') }}: {{ m.notes }}</div>
     {% endif %}
     <div class="small-text"><i class="bi bi-clock"></i> {{ _('Created at') }}: {{ m.created_at }}</div>
-    <span class="badge {{ m.status }}">{{ m.status }}</span>
+    <span class="badge-status {{ m.status }}">{{ m.status }}</span>
   </div>
   {% else %}
   <div class="card-tenant">{{ _('No maintenance requests') }}</div>
@@ -107,17 +123,17 @@
 
   {% for c in complaints %}
   <div class="card-tenant" onclick="window.location.href='{{ url_for('tenant.complaint_show', complaint_id=c.id) }}'">
+    <i class="bi bi-exclamation-triangle icon"></i>
     <h6>{{ c.subject }}</h6>
     <div class="small-text">{{ c.description }}</div>
     {% if c.notes %}
     <div class="small-text text-primary">{{ _('Employee notes') }}: {{ c.notes }}</div>
     {% endif %}
     <div class="small-text"><i class="bi bi-clock"></i> {{ _('Created at') }}: {{ c.created_at }}</div>
-    <span class="badge {{ c.status }}">{{ c.status }}</span>
+    <span class="badge-status {{ c.status }}">{{ c.status }}</span>
   </div>
   {% else %}
   <div class="card-tenant">{{ _('No complaints') }}</div>
   {% endfor %}
 </div>
-
 {% endblock %}
