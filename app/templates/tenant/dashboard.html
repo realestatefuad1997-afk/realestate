@@ -16,13 +16,13 @@
           'pending':'bg-warning text-dark',
           'expired':'bg-secondary'
       }[c.status] %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
+      <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ url_for('tenant.contract_show', contract_id=c.id) }}">
         <div>
           <strong>#{{ c.id }} - {{ c.property.title }}</strong>
           <div class="text-muted small">{{ _('Start') }}: {{ c.start_date }} — {{ _('End') }}: {{ c.end_date }}</div>
         </div>
         <span class="badge {{ badge_class }}">{{ c.status }}</span>
-      </li>
+      </a>
       {% else %}
       <li class="list-group-item">{{ _('No data') }}</li>
       {% endfor %}
@@ -35,13 +35,13 @@
     <ul class="list-group">
       {% for p in payments %}
       {% set badge_class = 'text-bg-success' if p.status=='paid' else 'text-bg-warning' %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
+      <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ url_for('tenant.payment_show', payment_id=p.id) }}">
         <div>
           <strong>{{ _('Amount') }}: {{ p.amount }}</strong>
           <div class="text-muted small">{{ _('Due') }}: {{ p.due_date }}</div>
         </div>
         <span class="badge {{ badge_class }}">{{ p.status }}</span>
-      </li>
+      </a>
       {% else %}
       <li class="list-group-item">{{ _('No data') }}</li>
       {% endfor %}

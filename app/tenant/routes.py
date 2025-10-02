@@ -112,3 +112,28 @@ def complaint_show(complaint_id: int):
     if not c:
         return abort(404)
     return render_template("tenant/complaint_show.html", c=c)
+
+
+@tenant_bp.route("/contracts/<int:contract_id>")
+@login_required
+@tenant_required
+def contract_show(contract_id: int):
+    contract = Contract.query.filter_by(id=contract_id, tenant_id=current_user.id).first()
+    if not contract:
+        return abort(404)
+    return render_template("tenant/contract_show.html", contract=contract)
+
+
+@tenant_bp.route("/payments/<int:payment_id>")
+@login_required
+@tenant_required
+def payment_show(payment_id: int):
+    # Ensure the payment belongs to the current tenant via its contract
+    payment = (
+        Payment.query.join(Contract, Payment.contract_id == Contract.id)
+        .filter(Payment.id == payment_id, Contract.tenant_id == current_user.id)
+        .first()
+    )
+    if not payment:
+        return abort(404)
+    return render_template("tenant/payment_show.html", payment=payment)
