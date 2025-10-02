@@ -146,3 +146,178 @@ msgstr "تبديل"
 
 msgid "Payment status updated"
 msgstr "تم تحديث حالة الدفعة"
+
+# Newly added strings
+msgid "Admin"
+msgstr "المشرف"
+
+msgid "Users"
+msgstr "المستخدمون"
+
+msgid "Employee"
+msgstr "الموظف"
+
+msgid "Tenant"
+msgstr "المستأجر"
+
+msgid "Accountant"
+msgstr "المحاسب"
+
+msgid "Employee notes"
+msgstr "ملاحظات الموظف"
+
+msgid "New Request"
+msgstr "طلب جديد"
+
+msgid "New Complaint"
+msgstr "شكوى جديدة"
+
+msgid "Subject"
+msgstr "الموضوع"
+
+msgid "Submit"
+msgstr "إرسال"
+
+msgid "Property (optional)"
+msgstr "العقار (اختياري)"
+
+msgid "Update"
+msgstr "تحديث"
+
+msgid "Contracts"
+msgstr "العقود"
+
+msgid "Add Contract"
+msgstr "إضافة عقد"
+
+msgid "Property"
+msgstr "العقار"
+
+msgid "Start"
+msgstr "البداية"
+
+msgid "End"
+msgstr "النهاية"
+
+msgid "Rent"
+msgstr "الإيجار"
+
+msgid "Create Contract"
+msgstr "إنشاء عقد"
+
+msgid "Contract Document (optional)"
+msgstr "مستند العقد (اختياري)"
+
+msgid "Update Maintenance Request"
+msgstr "تحديث طلب الصيانة"
+
+msgid "Update Complaint"
+msgstr "تحديث الشكوى"
+
+msgid "You do not have permission to access this page"
+msgstr "ليست لديك صلاحية للوصول إلى هذه الصفحة"
+
+msgid "Home"
+msgstr "الصفحة الرئيسية"
+
+msgid "Page not found"
+msgstr "الصفحة غير موجودة"
+
+msgid "Admin Dashboard"
+msgstr "لوحة تحكم المشرف"
+
+msgid "Add Employee"
+msgstr "إضافة موظف"
+
+msgid "Add Tenant"
+msgstr "إضافة مستأجر"
+
+msgid "Total"
+msgstr "الإجمالي"
+
+msgid "Email"
+msgstr "البريد الإلكتروني"
+
+msgid "Role"
+msgstr "الدور"
+
+msgid "Created"
+msgstr "تم الإنشاء"
+
+msgid "Create Employee"
+msgstr "إنشاء موظف"
+
+msgid "Create Tenant"
+msgstr "إنشاء مستأجر"
+
+msgid "Income"
+msgstr "الدخل"
+
+msgid "Expenses"
+msgstr "المصروفات"
+
+msgid "Profit"
+msgstr "الربح"
+
+msgid "Unleased Properties"
+msgstr "عقارات غير مؤجرة"
+
+msgid "Maintenance Requests > 24h"
+msgstr "طلبات صيانة لأكثر من 24 ساعة"
+
+msgid "Generate Invoice"
+msgstr "إنشاء فاتورة"
+
+msgid "Download"
+msgstr "تحميل"
+
+msgid "Export Excel"
+msgstr "تصدير إكسل"
+
+msgid "Export PDF"
+msgstr "تصدير PDF"
+
+msgid "Maintenance Request"
+msgstr "طلب صيانة"
+
+msgid "Created at"
+msgstr "أُنشئ في"
+
+msgid "Notes"
+msgstr "ملاحظات"
+
+msgid "Back to dashboard"
+msgstr "العودة إلى اللوحة"
+
+msgid "Complaint"
+msgstr "شكوى"
+
+msgid "Maintenance request submitted"
+msgstr "تم إرسال طلب الصيانة"
+
+msgid "Complaint submitted"
+msgstr "تم إرسال الشكوى"
+
+msgid "Contract created"
+msgstr "تم إنشاء العقد"
+
+msgid "Invalid status"
+msgstr "حالة غير صالحة"
+
+msgid "Maintenance request updated"
+msgstr "تم تحديث طلب الصيانة"
+
+msgid "Complaint updated"
+msgstr "تم تحديث الشكوى"
+
+msgid "All fields are required"
+msgstr "كل الحقول مطلوبة"
+
+msgid "Username or email already exists"
+msgstr "اسم المستخدم أو البريد موجود مسبقاً"
+
+msgid "Employee created successfully"
+msgstr "تم إنشاء الموظف بنجاح"
+
+msgid "Tenant created successfully"
+msgstr "تم إنشاء المستأجر بنجاح"
