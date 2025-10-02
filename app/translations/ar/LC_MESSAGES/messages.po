@@ -149,3 +149,71 @@ msgstr "تبديل"
 
 msgid "Payment status updated"
 msgstr "تم تحديث حالة الدفعة"
+
+# Admin navigation and labels
+msgid "Admin"
+msgstr "المدير"
+
+msgid "Users"
+msgstr "المستخدمون"
+
+msgid "Employee"
+msgstr "الموظف"
+
+msgid "Tenant"
+msgstr "المستأجر"
+
+msgid "Accountant"
+msgstr "المحاسب"
+
+# Admin dashboard actions and metrics
+msgid "Add Employee"
+msgstr "إضافة موظف"
+
+msgid "Add Tenant"
+msgstr "إضافة مستأجر"
+
+msgid "Income"
+msgstr "الإيرادات"
+
+msgid "Expenses"
+msgstr "المصروفات"
+
+msgid "Profit"
+msgstr "الأرباح"
+
+msgid "Unleased Properties"
+msgstr "عقارات غير مؤجرة"
+
+msgid "Maintenance Requests > 24h"
+msgstr "طلبات الصيانة لأكثر من 24 ساعة"
+
+# Users list table
+msgid "Total"
+msgstr "الإجمالي"
+
+msgid "Role"
+msgstr "الدور"
+
+msgid "Created"
+msgstr "تاريخ الإنشاء"
+
+# User form actions
+msgid "Create Employee"
+msgstr "إنشاء موظف"
+
+msgid "Create Tenant"
+msgstr "إنشاء مستأجر"
+
+# Admin route flash messages
+msgid "All fields are required"
+msgstr "جميع الحقول مطلوبة"
+
+msgid "Username or email already exists"
+msgstr "اسم المستخدم أو البريد الإلكتروني موجود بالفعل"
+
+msgid "Employee created successfully"
+msgstr "تم إنشاء الموظف بنجاح"
+
+msgid "Tenant created successfully"
+msgstr "تم إنشاء المستأجر بنجاح"
