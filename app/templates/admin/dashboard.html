@@ -74,6 +74,13 @@ a.stat-card-link {
     <span>{{ _('Profit') }}</span>
     <span>{{ profit }}</span>
   </div>
+  <a href="{{ url_for('employee.properties_list') }}" class="stat-card-link">
+    <div class="stat-card bg-house">
+      <i class="bi bi-houses"></i>
+      <span>{{ _('All Properties') }}</span>
+      <span>{{ properties_count }}</span>
+    </div>
+  </a>
   <a href="{{ url_for('employee.properties_list', only='unleased') }}" class="stat-card-link">
     <div class="stat-card bg-house">
       <i class="bi bi-house-door"></i>

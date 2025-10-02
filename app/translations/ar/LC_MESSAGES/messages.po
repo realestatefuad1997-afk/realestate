@@ -357,3 +357,6 @@ msgstr "تم إنشاء الموظف بنجاح"
 
 msgid "Tenant created successfully"
 msgstr "تم إنشاء المستأجر بنجاح"
+
+msgid "All Properties"
+msgstr "كل العقارات"
