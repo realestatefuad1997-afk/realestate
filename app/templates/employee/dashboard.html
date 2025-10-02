@@ -30,11 +30,21 @@
   <!-- Recent Properties -->
   <div class="col-md-6">
     <div class="card-section">
-      <h5><i class="bi bi-building me-1"></i>{{ _('Recent Properties') }}</h5>
+      <div class="d-flex justify-content-between align-items-center">
+        <h5><i class="bi bi-building me-1"></i>{{ _('Recent Properties') }}</h5>
+        <div>
+          <a class="btn btn-sm btn-outline-primary me-2" href="{{ url_for('employee.properties_list') }}">{{ _('View All') }}</a>
+          <a class="btn btn-sm btn-primary" href="{{ url_for('employee.properties_create') }}">{{ _('Add') }}</a>
+        </div>
+      </div>
       <ul class="list-group mt-2">
         {% for p in properties %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
-          {{ p.title }}
+          {% if p.property_type == 'building' %}
+            <a class="text-decoration-none" href="{{ url_for('employee.apartments_list', building_id=p.id) }}">{{ p.title }}</a>
+          {% else %}
+            <a class="text-decoration-none" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">{{ p.title }}</a>
+          {% endif %}
           {% if p.status == 'available' %}
             <span class="badge bg-success badge-status">{{ _('Available') }}</span>
           {% elif p.status == 'occupied' %}
@@ -55,11 +65,17 @@
   <!-- Recent Contracts -->
   <div class="col-md-6">
     <div class="card-section">
-      <h5><i class="bi bi-file-text me-1"></i>{{ _('Recent Contracts') }}</h5>
+      <div class="d-flex justify-content-between align-items-center">
+        <h5><i class="bi bi-file-text me-1"></i>{{ _('Recent Contracts') }}</h5>
+        <div>
+          <a class="btn btn-sm btn-outline-primary me-2" href="{{ url_for('employee.contracts_list') }}">{{ _('View All') }}</a>
+          <a class="btn btn-sm btn-primary" href="{{ url_for('employee.contracts_create') }}">{{ _('Add') }}</a>
+        </div>
+      </div>
       <ul class="list-group mt-2">
         {% for c in contracts %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
-          #{{ c.id }}
+          <a class="text-decoration-none" href="{{ url_for('employee.contracts_list') }}">#{{ c.id }}</a>
           {% if c.status == 'active' %}
             <span class="badge bg-success badge-status">{{ _('Active') }}</span>
           {% elif c.status == 'expired' %}
