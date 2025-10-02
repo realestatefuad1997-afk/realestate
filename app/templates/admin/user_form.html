@@ -50,10 +50,17 @@
         <label class="form-label">{{ _('Username') }}</label>
         <input type="text" name="username" class="form-control" value="{{ username_value|default('') }}" required />
       </div>
+      {% if role == 'tenant' %}
+      <div class="mb-3">
+        <label class="form-label">{{ _('Phone') }}</label>
+        <input type="tel" name="email" class="form-control" value="{{ email_value|default('') }}" required />
+      </div>
+      {% else %}
       <div class="mb-3">
         <label class="form-label">{{ _('Email') }}</label>
         <input type="email" name="email" class="form-control" value="{{ email_value|default('') }}" required />
       </div>
+      {% endif %}
       <div class="mb-3">
         <label class="form-label">{{ _('Password') }}</label>
         <input type="password" name="password" class="form-control" required />
@@ -70,6 +77,10 @@
           {% endfor %}
         </select>
         <div class="form-text">{{ _('Only properties without an active contract are listed.') }}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ _('Rent Amount') }}</label>
+        <input type="number" name="rent_amount" class="form-control" step="0.01" min="0" value="{{ rent_amount_value|default('') }}" required />
       </div>
       {% endif %}
       <div class="d-flex gap-2 mt-3">

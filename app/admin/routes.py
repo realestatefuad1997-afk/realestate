@@ -158,6 +158,7 @@ def create_user(role: str):
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
         selected_property_id = (request.form.get("property_id") or "").strip()
+        rent_amount_str = (request.form.get("rent_amount") or "").strip()
 
         if not username or not email or not password:
             flash(_("All fields are required"), "warning")
@@ -168,6 +169,7 @@ def create_user(role: str):
                 email_value=email,
                 properties=available_properties if role == "tenant" else None,
                 selected_property_id=selected_property_id,
+                rent_amount_value=rent_amount_str,
             )
 
         # ensure unique username/email
@@ -183,6 +185,7 @@ def create_user(role: str):
                 email_value=email,
                 properties=available_properties if role == "tenant" else None,
                 selected_property_id=selected_property_id,
+                rent_amount_value=rent_amount_str,
             )
 
         # For tenants, ensure a property was selected and is still available
@@ -197,6 +200,7 @@ def create_user(role: str):
                     email_value=email,
                     properties=available_properties,
                     selected_property_id=selected_property_id,
+                    rent_amount_value=rent_amount_str,
                 )
             try:
                 pid_int = int(selected_property_id)
@@ -209,6 +213,7 @@ def create_user(role: str):
                     email_value=email,
                     properties=available_properties,
                     selected_property_id=selected_property_id,
+                    rent_amount_value=rent_amount_str,
                 )
             # validate availability again server-side
             property_obj = next((p for p in available_properties if p.id == pid_int), None)
@@ -221,7 +226,17 @@ def create_user(role: str):
                     email_value=email,
                     properties=available_properties,
                     selected_property_id=selected_property_id,
+                    rent_amount_value=rent_amount_str,
                 )
+            # Parse rent amount; fallback to property price if not provided/invalid
+            rent_amount = None
+            if rent_amount_str:
+                try:
+                    rent_amount = float(rent_amount_str)
+                except ValueError:
+                    rent_amount = None
+            if rent_amount is None or rent_amount < 0:
+                rent_amount = float(property_obj.price or 0)
 
         new_user = User(username=username, email=email, role=role)
         new_user.set_password(password)
@@ -234,7 +249,6 @@ def create_user(role: str):
             start_date = date.today()
             # Default to 12 months lease
             end_date = start_date + timedelta(days=365)
-            rent_amount = property_obj.price
             contract = Contract(
                 property_id=property_obj.id,
                 tenant_id=new_user.id,
