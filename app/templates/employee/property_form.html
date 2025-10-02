@@ -15,6 +15,20 @@
     <label class="form-label">{{ _('Description') }}</label>
     <textarea class="form-control" rows="4" name="description">{{ property.description if property else '' }}</textarea>
   </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="mb-3">
+        <label class="form-label">{{ _('Number of apartments') }}</label>
+        <input class="form-control" name="num_apartments" type="number" min="0" step="1" value="{{ property.num_apartments if property and property.num_apartments is not none else '' }}" />
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="mb-3">
+        <label class="form-label">{{ _('Number of floors') }}</label>
+        <input class="form-control" name="num_floors" type="number" min="0" step="1" value="{{ property.num_floors if property and property.num_floors is not none else '' }}" />
+      </div>
+    </div>
+  </div>
   {% if property %}
   <div class="mb-3">
     <label class="form-label">{{ _('Status') }}</label>

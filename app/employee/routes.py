@@ -59,6 +59,11 @@ def properties_create():
         title = request.form.get("title")
         price = request.form.get("price")
         description = request.form.get("description")
+        # Building fields (optional)
+        num_apartments_raw = (request.form.get("num_apartments") or "").strip()
+        num_floors_raw = (request.form.get("num_floors") or "").strip()
+        num_apartments = int(num_apartments_raw) if num_apartments_raw.isdigit() else None
+        num_floors = int(num_floors_raw) if num_floors_raw.isdigit() else None
         images_filenames = []
         images_files = request.files.getlist("images")
         upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
@@ -70,7 +75,15 @@ def properties_create():
                 f.save(path)
                 images_filenames.append(f"properties/{filename}")
         images_value = ",".join(images_filenames) if images_filenames else None
-        prop = Property(title=title, price=price, description=description, status="available", images=images_value)
+        prop = Property(
+            title=title,
+            price=price,
+            description=description,
+            status="available",
+            images=images_value,
+            num_apartments=num_apartments,
+            num_floors=num_floors,
+        )
         db.session.add(prop)
         db.session.commit()
         flash(_("Property created"), "success")
@@ -88,6 +101,11 @@ def properties_edit(prop_id: int):
         prop.price = request.form.get("price")
         prop.description = request.form.get("description")
         prop.status = request.form.get("status") or prop.status
+        # Building fields (optional)
+        num_apartments_raw = (request.form.get("num_apartments") or "").strip()
+        num_floors_raw = (request.form.get("num_floors") or "").strip()
+        prop.num_apartments = int(num_apartments_raw) if num_apartments_raw.isdigit() else None
+        prop.num_floors = int(num_floors_raw) if num_floors_raw.isdigit() else None
         images_files = request.files.getlist("images")
         if images_files:
             upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
