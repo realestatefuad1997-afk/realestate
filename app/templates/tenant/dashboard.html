@@ -39,11 +39,19 @@
     </div>
     <ul class="list-group">
       {% for m in maintenance_requests %}
-      <li class="list-group-item">
+      <li class="list-group-item" style="cursor: pointer" 
+          data-bs-toggle="modal" data-bs-target="#statusModal"
+          data-kind="maintenance" 
+          data-kind-label="{{ _('Maintenance Request') }}"
+          data-title="{{ m.title }}" 
+          data-description="{{ m.description }}" 
+          data-status="{{ m.status }}" 
+          data-created="{{ m.created_at }}">
         <div class="d-flex justify-content-between">
           <div>
             <strong>{{ m.title }}</strong>
             <div class="text-muted small">{{ m.description }}</div>
+            <div class="text-muted small">{{ _('Click to view status') }}</div>
           </div>
           <span class="badge text-bg-secondary">{{ m.status }}</span>
         </div>
@@ -60,11 +68,19 @@
     </div>
     <ul class="list-group">
       {% for c in complaints %}
-      <li class="list-group-item">
+      <li class="list-group-item" style="cursor: pointer" 
+          data-bs-toggle="modal" data-bs-target="#statusModal"
+          data-kind="complaint" 
+          data-kind-label="{{ _('Complaint') }}"
+          data-title="{{ c.subject }}" 
+          data-description="{{ c.description }}" 
+          data-status="{{ c.status }}" 
+          data-created="{{ c.created_at }}">
         <div class="d-flex justify-content-between">
           <div>
             <strong>{{ c.subject }}</strong>
             <div class="text-muted small">{{ c.description }}</div>
+            <div class="text-muted small">{{ _('Click to view status') }}</div>
           </div>
           <span class="badge text-bg-secondary">{{ c.status }}</span>
         </div>
@@ -75,4 +91,61 @@
     </ul>
   </div>
 </div>
+<!-- Status Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="statusModalLabel">{{ _('Status') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2"><strong class="text-muted small">{{ _('Type') }}:</strong> <span id="modalKind"></span></div>
+        <div class="mb-2"><strong class="text-muted small">{{ _('Title') }}:</strong> <span id="modalTitle"></span></div>
+        <div class="mb-2"><strong class="text-muted small">{{ _('Description') }}:</strong> <span id="modalDescription"></span></div>
+        <div class="mb-2"><strong class="text-muted small">{{ _('Submitted on') }}:</strong> <span id="modalCreated"></span></div>
+        <div class="mt-3">
+          <span class="badge" id="modalStatusBadge"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Close') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const statusClassMap = {
+      'new': 'text-bg-secondary',
+      'reviewing': 'text-bg-warning',
+      'in_progress': 'text-bg-warning',
+      'resolved': 'text-bg-success',
+      'closed': 'text-bg-dark'
+    };
+    const modalEl = document.getElementById('statusModal');
+    if (modalEl) {
+      modalEl.addEventListener('show.bs.modal', function (event) {
+        const trigger = event.relatedTarget;
+        if (!trigger) return;
+        const kindLabel = trigger.getAttribute('data-kind-label') || '';
+        const title = trigger.getAttribute('data-title') || '';
+        const description = trigger.getAttribute('data-description') || '';
+        const status = trigger.getAttribute('data-status') || '';
+        const created = trigger.getAttribute('data-created') || '';
+
+        document.getElementById('modalKind').textContent = kindLabel;
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalDescription').textContent = description;
+        document.getElementById('modalCreated').textContent = created;
+
+        const badge = document.getElementById('modalStatusBadge');
+        badge.textContent = status;
+        // reset classes then add mapped class
+        badge.className = 'badge ' + (statusClassMap[status] || 'text-bg-secondary');
+      });
+    }
+  })();
+  </script>
 {% endblock %}
