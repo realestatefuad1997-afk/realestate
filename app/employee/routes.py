@@ -44,17 +44,29 @@ def dashboard():
 @login_required
 @employee_required
 def properties_list():
+    only = (request.args.get("only") or "").strip().lower()
     # Separate buildings and standalone apartments
-    buildings = (
-        Property.query.filter_by(property_type="building")
-        .order_by(Property.created_at.desc())
-        .all()
-    )
-    standalone_apartments = (
-        Property.query.filter_by(property_type="apartment")
-        .order_by(Property.created_at.desc())
-        .all()
-    )
+    base_buildings_q = Property.query.filter_by(property_type="building")
+    base_apartments_q = Property.query.filter_by(property_type="apartment")
+
+    if only == "unleased":
+        # Filter properties that have no active contract covering today
+        from datetime import date
+        today = date.today()
+        active_props_subq = (
+            db.session.query(Contract.property_id)
+            .filter(
+                Contract.status == "active",
+                Contract.start_date <= today,
+                Contract.end_date >= today,
+            )
+            .subquery()
+        )
+        base_buildings_q = base_buildings_q.filter(~Property.id.in_(active_props_subq))
+        base_apartments_q = base_apartments_q.filter(~Property.id.in_(active_props_subq))
+
+    buildings = base_buildings_q.order_by(Property.created_at.desc()).all()
+    standalone_apartments = base_apartments_q.order_by(Property.created_at.desc()).all()
     serializer = URLSafeSerializer(current_app.config["SECRET_KEY"], salt="property-share")
     share_tokens = {p.id: serializer.dumps(p.id) for p in buildings + standalone_apartments}
     return render_template(
@@ -62,6 +74,7 @@ def properties_list():
         buildings=buildings,
         standalone_apartments=standalone_apartments,
         share_tokens=share_tokens,
+        only=only,
     )
 
 

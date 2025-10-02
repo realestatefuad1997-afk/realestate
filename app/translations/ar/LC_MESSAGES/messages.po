@@ -265,6 +265,13 @@ msgstr "عقارات غير مؤجرة"
 msgid "Maintenance Requests > 24h"
 msgstr "طلبات صيانة لأكثر من 24 ساعة"
 
+# Filtering labels
+msgid "Filtered to unleased properties"
+msgstr "مصفاة لعرض العقارات غير المؤجرة"
+
+msgid "Clear filter"
+msgstr "إزالة التصفية"
+
 msgid "Generate Invoice"
 msgstr "إنشاء فاتورة"
 
