@@ -44,6 +44,9 @@
           <div>
             <strong>{{ m.title }}</strong>
             <div class="text-muted small">{{ m.description }}</div>
+            {% if m.notes %}
+            <div class="text-primary small">{{ _('Employee notes') }}: {{ m.notes }}</div>
+            {% endif %}
           </div>
           <span class="badge text-bg-secondary">{{ m.status }}</span>
         </div>
@@ -65,6 +68,9 @@
           <div>
             <strong>{{ c.subject }}</strong>
             <div class="text-muted small">{{ c.description }}</div>
+            {% if c.notes %}
+            <div class="text-primary small">{{ _('Employee notes') }}: {{ c.notes }}</div>
+            {% endif %}
           </div>
           <span class="badge text-bg-secondary">{{ c.status }}</span>
         </div>

@@ -36,11 +36,11 @@
       {% for m in maintenance_requests %}
       <li class="list-group-item d-flex justify-content-between align-items-center">
         <div>
-          <div>{{ m.title }}</div>
+          <div><a class="text-decoration-none" href="{{ url_for('employee.maintenance_update', req_id=m.id) }}">{{ m.title }}</a></div>
           {% if m.notes %}<div class="text-muted small">{{ _('Notes') }}: {{ m.notes }}</div>{% endif %}
         </div>
         <div class="d-flex align-items-center gap-2">
-          <span class="badge text-bg-secondary">{{ m.status }}</span>
+          <a class="badge text-bg-secondary text-decoration-none" href="{{ url_for('employee.maintenance_update', req_id=m.id) }}">{{ m.status }}</a>
           <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.maintenance_update', req_id=m.id) }}">{{ _('Update') }}</a>
         </div>
       </li>
@@ -55,11 +55,11 @@
       {% for c in complaints %}
       <li class="list-group-item d-flex justify-content-between align-items-center">
         <div>
-          <div>{{ c.subject }}</div>
+          <div><a class="text-decoration-none" href="{{ url_for('employee.complaint_update', comp_id=c.id) }}">{{ c.subject }}</a></div>
           {% if c.notes %}<div class="text-muted small">{{ _('Notes') }}: {{ c.notes }}</div>{% endif %}
         </div>
         <div class="d-flex align-items-center gap-2">
-          <span class="badge text-bg-secondary">{{ c.status }}</span>
+          <a class="badge text-bg-secondary text-decoration-none" href="{{ url_for('employee.complaint_update', comp_id=c.id) }}">{{ c.status }}</a>
           <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.complaint_update', comp_id=c.id) }}">{{ _('Update') }}</a>
         </div>
       </li>
