@@ -65,6 +65,9 @@ msgstr "لا توجد بيانات"
 
 msgid "Add Property"
 msgstr "إضافة عقار"
+ 
+msgid "Add Building"
+msgstr "إضافة مبنى"
 
 msgid "Title"
 msgstr "العنوان"
@@ -89,9 +92,32 @@ msgstr "تعديل العقار"
 
 msgid "Create Property"
 msgstr "إنشاء عقار"
+ 
+msgid "Create Building"
+msgstr "إنشاء مبنى"
 
 msgid "Description"
 msgstr "الوصف"
+ 
+msgid "Add Building Options"
+msgstr "إضافة خيارات المبنى"
+ 
+msgid "Number of Apartments"
+msgstr "عدد الشقق"
+ 
+msgid "Number of Floors"
+msgstr "عدد الأدوار"
+msgid "Type"
+msgstr "النوع"
+ 
+msgid "Actions"
+msgstr "إجراءات"
+ 
+msgid "Building"
+msgstr "مبنى"
+ 
+msgid "Unit"
+msgstr "وحدة"
 
 msgid "Available"
 msgstr "متاح"

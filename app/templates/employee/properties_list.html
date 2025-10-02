@@ -3,10 +3,13 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h3>{{ _('Properties') }}</h3>
-  <a class="btn btn-primary" href="{{ url_for('employee.properties_create') }}">{{ _('Add Property') }}</a>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{{ url_for('employee.properties_create') }}">{{ _('Add Property') }}</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('employee.properties_create', type='building') }}">{{ _('Add Building') }}</a>
+  </div>
   </div>
 <table class="table table-striped">
-  <thead><tr><th>#</th><th>{{ _('Title') }}</th><th>{{ _('Price') }}</th><th>{{ _('Status') }}</th><th></th></tr></thead>
+  <thead><tr><th>#</th><th>{{ _('Title') }}</th><th>{{ _('Price') }}</th><th>{{ _('Status') }}</th><th>{{ _('Type') }}</th><th>{{ _('Actions') }}</th></tr></thead>
   <tbody>
     {% for p in properties %}
     <tr>
@@ -14,6 +17,13 @@
       <td>{{ p.title }}</td>
       <td>{{ p.price }}</td>
       <td>{{ p.status }}</td>
+      <td>
+        {% if p.num_apartments or p.num_floors %}
+          {{ _('Building') }}
+        {% else %}
+          {{ _('Unit') }}
+        {% endif %}
+      </td>
       <td>
         <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">{{ _('Edit') }}</a>
         <form method="post" action="{{ url_for('employee.properties_delete', prop_id=p.id) }}" style="display:inline" onsubmit="return confirm('{{ _('Are you sure?') }}');">

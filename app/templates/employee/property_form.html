@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}{{ property and _('Edit Property') or _('Create Property') }}{% endblock %}
+{% block title %}{{ property and _('Edit Property') or (request.args.get('type') == 'building' and _('Create Building') or _('Create Property')) }}{% endblock %}
 {% block content %}
-<h3 class="mb-3">{{ property and _('Edit Property') or _('Create Property') }}</h3>
+<h3 class="mb-3">{{ property and _('Edit Property') or (request.args.get('type') == 'building' and _('Create Building') or _('Create Property')) }}</h3>
 <form method="post" enctype="multipart/form-data">
   <div class="mb-3">
     <label class="form-label">{{ _('Title') }}</label>
@@ -15,6 +15,18 @@
     <label class="form-label">{{ _('Description') }}</label>
     <textarea class="form-control" rows="4" name="description">{{ property.description if property else '' }}</textarea>
   </div>
+  {% if not property and request.args.get('type') == 'building' %}
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6">
+      <label class="form-label">{{ _('Number of Apartments') }}</label>
+      <input class="form-control" type="number" min="0" name="num_apartments" value="{{ request.form.get('num_apartments', '') }}" placeholder="0" inputmode="numeric" />
+    </div>
+    <div class="col-sm-6">
+      <label class="form-label">{{ _('Number of Floors') }}</label>
+      <input class="form-control" type="number" min="0" name="num_floors" value="{{ request.form.get('num_floors', '') }}" placeholder="0" inputmode="numeric" />
+    </div>
+  </div>
+  {% endif %}
   {% if property %}
   <div class="mb-3">
     <label class="form-label">{{ _('Status') }}</label>
@@ -23,6 +35,16 @@
       <option value="occupied" {% if property.status=='occupied' %}selected{% endif %}>{{ _('Occupied') }}</option>
       <option value="maintenance" {% if property.status=='maintenance' %}selected{% endif %}>{{ _('Maintenance') }}</option>
     </select>
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6">
+      <label class="form-label">{{ _('Number of Apartments') }}</label>
+      <input class="form-control" type="number" min="0" name="num_apartments" value="{{ property.num_apartments or '' }}" placeholder="0" inputmode="numeric" />
+    </div>
+    <div class="col-sm-6">
+      <label class="form-label">{{ _('Number of Floors') }}</label>
+      <input class="form-control" type="number" min="0" name="num_floors" value="{{ property.num_floors or '' }}" placeholder="0" inputmode="numeric" />
+    </div>
   </div>
   {% endif %}
   <div class="mb-3">

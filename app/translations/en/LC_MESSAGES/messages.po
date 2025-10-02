@@ -65,6 +65,9 @@ msgstr "No data"
 msgid "Add Property"
 msgstr "Add Property"
 
+msgid "Add Building"
+msgstr "Add Building"
+
 msgid "Title"
 msgstr "Title"
 
@@ -89,8 +92,31 @@ msgstr "Edit Property"
 msgid "Create Property"
 msgstr "Create Property"
 
+msgid "Create Building"
+msgstr "Create Building"
+
 msgid "Description"
 msgstr "Description"
+
+msgid "Add Building Options"
+msgstr "Add Building Options"
+
+msgid "Number of Apartments"
+msgstr "Number of Apartments"
+
+msgid "Number of Floors"
+msgstr "Number of Floors"
+msgid "Type"
+msgstr "Type"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Building"
+msgstr "Building"
+
+msgid "Unit"
+msgstr "Unit"
 
 msgid "Available"
 msgstr "Available"
