@@ -129,12 +129,18 @@ def properties_create():
             images_files = request.files.getlist("images")
             upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
             os.makedirs(upload_dir, exist_ok=True)
+            allowed = current_app.config.get("ALLOWED_IMAGE_EXTENSIONS", {"jpg", "jpeg", "png"})
             for f in images_files:
                 if f and f.filename:
-                    filename = secure_filename(f.filename)
-                    path = os.path.join(upload_dir, filename)
+                    ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+                    if ext not in allowed:
+                        flash(_(f"Invalid image type. Allowed: {', '.join(sorted(allowed))}"), "danger")
+                        return redirect(url_for("employee.properties_create"))
+                    base_name = secure_filename(os.path.splitext(f.filename)[0]) or "image"
+                    unique_name = f"{base_name}-{uuid.uuid4().hex[:8]}.{ext}"
+                    path = os.path.join(upload_dir, unique_name)
                     f.save(path)
-                    images_filenames.append(f"properties/{filename}")
+                    images_filenames.append(f"properties/{unique_name}")
             images_value = ",".join(images_filenames) if images_filenames else None
 
             prop_kwargs.update(
@@ -185,13 +191,19 @@ def properties_edit(prop_id: int):
         if images_files:
             upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
             os.makedirs(upload_dir, exist_ok=True)
+            allowed = current_app.config.get("ALLOWED_IMAGE_EXTENSIONS", {"jpg", "jpeg", "png"})
             new_files = []
             for f in images_files:
                 if f and f.filename:
-                    filename = secure_filename(f.filename)
-                    path = os.path.join(upload_dir, filename)
+                    ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+                    if ext not in allowed:
+                        flash(_(f"Invalid image type. Allowed: {', '.join(sorted(allowed))}"), "danger")
+                        return redirect(url_for("employee.properties_edit", prop_id=prop.id))
+                    base_name = secure_filename(os.path.splitext(f.filename)[0]) or "image"
+                    unique_name = f"{base_name}-{uuid.uuid4().hex[:8]}.{ext}"
+                    path = os.path.join(upload_dir, unique_name)
                     f.save(path)
-                    new_files.append(f"properties/{filename}")
+                    new_files.append(f"properties/{unique_name}")
             if new_files:
                 existing = prop.images.split(",") if prop.images else []
                 prop.images = ",".join(existing + new_files)
@@ -266,12 +278,18 @@ def apartments_create(building_id: int):
         images_files = request.files.getlist("images")
         upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "apartments")
         os.makedirs(upload_dir, exist_ok=True)
+        allowed = current_app.config.get("ALLOWED_IMAGE_EXTENSIONS", {"jpg", "jpeg", "png"})
         for f in images_files:
             if f and f.filename:
-                filename = secure_filename(f.filename)
-                path = os.path.join(upload_dir, filename)
+                ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+                if ext not in allowed:
+                    flash(_(f"Invalid image type. Allowed: {', '.join(sorted(allowed))}"), "danger")
+                    return redirect(url_for("employee.apartments_create", building_id=building.id))
+                base_name = secure_filename(os.path.splitext(f.filename)[0]) or "image"
+                unique_name = f"{base_name}-{uuid.uuid4().hex[:8]}.{ext}"
+                path = os.path.join(upload_dir, unique_name)
                 f.save(path)
-                images_filenames.append(f"apartments/{filename}")
+                images_filenames.append(f"apartments/{unique_name}")
         images_value = ",".join(images_filenames) if images_filenames else None
 
         apt = Apartment(
@@ -315,13 +333,19 @@ def apartments_edit(apt_id: int):
         if images_files:
             upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "apartments")
             os.makedirs(upload_dir, exist_ok=True)
+            allowed = current_app.config.get("ALLOWED_IMAGE_EXTENSIONS", {"jpg", "jpeg", "png"})
             new_files = []
             for f in images_files:
                 if f and f.filename:
-                    filename = secure_filename(f.filename)
-                    path = os.path.join(upload_dir, filename)
+                    ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+                    if ext not in allowed:
+                        flash(_(f"Invalid image type. Allowed: {', '.join(sorted(allowed))}"), "danger")
+                        return redirect(url_for("employee.apartments_edit", apt_id=apt.id))
+                    base_name = secure_filename(os.path.splitext(f.filename)[0]) or "image"
+                    unique_name = f"{base_name}-{uuid.uuid4().hex[:8]}.{ext}"
+                    path = os.path.join(upload_dir, unique_name)
                     f.save(path)
-                    new_files.append(f"apartments/{filename}")
+                    new_files.append(f"apartments/{unique_name}")
             if new_files:
                 existing = apt.images.split(",") if apt.images else []
                 apt.images = ",".join(existing + new_files)

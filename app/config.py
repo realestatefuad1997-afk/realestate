@@ -6,8 +6,15 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'instance', 'app.db')}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
+    # Base directory to store user uploads; served via /uploads/<filename>
+    UPLOAD_FOLDER = os.getenv(
+        "UPLOAD_FOLDER",
+        os.path.join(os.path.dirname(__file__), 'uploads'),
+    )
+    # Allowed file types for generic uploads (e.g., contracts)
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+    # Strict allowed extensions for property/apartment images
+    ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
     MAX_CONTENT_LENGTH = 25 * 1024 * 1024  # 25 MB
     LANGUAGES = {"en": "English", "ar": "العربية"}
     BABEL_DEFAULT_LOCALE = "en"

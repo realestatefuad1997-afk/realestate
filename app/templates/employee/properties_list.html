@@ -3,7 +3,40 @@
 
 {% block content %}
 
-<!-- عنوان -->
+<style>
+/* Responsive grid and square image cards */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.property-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  background: #fff;
+}
+.property-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* square */
+  object-fit: cover;
+  display: block;
+}
+.property-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+}
+.property-status { font-size: 0.8rem; }
+.status-available { color: #198754; }
+.status-occupied { color: #dc3545; }
+.status-other { color: #6c757d; }
+@media (max-width: 576px) {
+  .grid-container { gap: 10px; }
+}
+</style>
+
 <!-- عنوان + زر إضافة -->
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4><i class="bi bi-buildings me-2"></i>{{ _('Buildings') }}</h4>
@@ -17,7 +50,8 @@
   {% for b in buildings %}
   <a href="{{ url_for('employee.apartments_list', building_id=b.id) }}" class="text-decoration-none">
     <div class="property-card">
-      <img src="{{ b.image_url or url_for('static', filename='default-building.jpg') }}" alt="{{ b.title }}">
+      {% set first_b_image = (b.images or '').split(',')[0] %}
+      <img src="{{ first_b_image and url_for('uploaded_file', filename=first_b_image) or url_for('static', filename='default-building.jpg') }}" alt="{{ b.title }}">
       <div class="property-info">
         <span>{{ b.title }}</span>
         {% if b.status == 'available' %}
@@ -42,7 +76,8 @@
   {% for a in standalone_apartments %}
   <a href="{{ url_for('employee.properties_edit', prop_id=a.id) }}" class="text-decoration-none">
     <div class="property-card">
-      <img src="{{ a.image_url or url_for('static', filename='default-apartment.jpg') }}" alt="{{ a.title }}">
+      {% set first_a_image = (a.images or '').split(',')[0] %}
+      <img src="{{ first_a_image and url_for('uploaded_file', filename=first_a_image) or url_for('static', filename='default-apartment.jpg') }}" alt="{{ a.title }}">
       <div class="property-info">
         <span>{{ a.title }}</span>
         {% if a.status == 'available' %}

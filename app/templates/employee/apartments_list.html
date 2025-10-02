@@ -2,6 +2,35 @@
 {% block title %}{{ building.title }}{% endblock %}
 
 {% block content %}
+<style>
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.property-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  background: #fff;
+}
+.property-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* square */
+  object-fit: cover;
+}
+.property-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+}
+.property-status { font-size: 0.8rem; }
+.status-available { color: #198754; }
+.status-occupied { color: #dc3545; }
+.status-other { color: #6c757d; }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0"><i class="bi bi-house-door me-2"></i>{{ building.title }} - {{ _('Apartments') }}</h4>
   <a href="{{ url_for('employee.apartments_create', building_id=building.id) }}" class="btn btn-primary btn-sm">
