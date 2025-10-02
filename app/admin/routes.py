@@ -104,6 +104,16 @@ def dashboard():
     )
 
 
+@admin_bp.route("/properties")
+@login_required
+@admin_required
+def properties_list():
+    """List all properties for admins (managers)."""
+    properties = Property.query.order_by(Property.created_at.desc()).all()
+    # Reuse the employee properties list template for consistency
+    return render_template("employee/properties_list.html", properties=properties)
+
+
 @admin_bp.route("/users")
 @login_required
 @admin_required
