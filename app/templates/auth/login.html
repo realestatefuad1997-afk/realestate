@@ -1,24 +1,65 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Login') }}{% endblock %}
+
 {% block content %}
+
+<!-- Custom Styles -->
+<style>
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    margin-top: 80px;
+}
+
+.card-header {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+    text-align: center;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.btn-primary {
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+}
+
+.form-label {
+    font-weight: 500;
+}
+</style>
+
 <div class="row justify-content-center">
   <div class="col-md-6 col-lg-4">
     <div class="card">
-      <div class="card-header">{{ _('Login') }}</div>
+      <div class="card-header"><i class="bi bi-box-arrow-in-right me-2"></i>{{ _('Login') }}</div>
       <div class="card-body">
         <form method="post">
           <div class="mb-3">
-            <label class="form-label">{{ _('Username') }}</label>
-            <input type="text" name="username" class="form-control" required />
+            <label class="form-label"><i class="bi bi-person me-1"></i>{{ _('Username') }}</label>
+            <input type="text" name="username" class="form-control" placeholder="{{ _('Enter username') }}" required />
           </div>
           <div class="mb-3">
-            <label class="form-label">{{ _('Password') }}</label>
-            <input type="password" name="password" class="form-control" required />
+            <label class="form-label"><i class="bi bi-lock me-1"></i>{{ _('Password') }}</label>
+            <input type="password" name="password" class="form-control" placeholder="{{ _('Enter password') }}" required />
           </div>
-          <button class="btn btn-primary w-100" type="submit">{{ _('Sign in') }}</button>
+          <button class="btn btn-primary w-100" type="submit">
+            <i class="bi bi-box-arrow-in-right me-1"></i>{{ _('Sign in') }}
+          </button>
         </form>
       </div>
     </div>
   </div>
-  </div>
+</div>
+
 {% endblock %}

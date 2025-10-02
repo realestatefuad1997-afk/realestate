@@ -2,17 +2,34 @@
 {% block title %}{{ _('New Complaint') }}{% endblock %}
 {% block content %}
 <h3 class="mb-3">{{ _('New Complaint') }}</h3>
+
 <form method="post">
   <div class="mb-3">
     <label class="form-label">{{ _('Subject') }}</label>
-    <input name="subject" type="text" class="form-control" required />
+    <input name="subject" type="text" class="form-control" placeholder="{{ _('Enter a brief subject') }}" required />
+    <div class="form-text">{{ _('Provide a short, descriptive title for your complaint.') }}</div>
   </div>
+
+  <div class="mb-3">
+    <label class="form-label">{{ _('Type') }}</label>
+    <select name="complaint_type" class="form-select">
+      <option value="maintenance">{{ _('Maintenance') }}</option>
+      <option value="noise">{{ _('Noise') }}</option>
+      <option value="other" selected>{{ _('Other') }}</option>
+    </select>
+    <div class="form-text">{{ _('Optional: Select the category that best fits your complaint.') }}</div>
+  </div>
+
   <div class="mb-3">
     <label class="form-label">{{ _('Description') }}</label>
-    <textarea name="description" class="form-control" rows="4" required></textarea>
+    <textarea name="description" class="form-control" rows="4" placeholder="{{ _('Provide details of your complaint') }}" required></textarea>
   </div>
-  <button class="btn btn-primary" type="submit">{{ _('Submit') }}</button>
-  <a class="btn btn-secondary" href="{{ url_for('tenant.dashboard') }}">{{ _('Cancel') }}</a>
+
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" type="submit">
+      <i class="bi bi-send-fill"></i> {{ _('Submit') }}
+    </button>
+    <a class="btn btn-secondary" href="{{ url_for('tenant.dashboard') }}">{{ _('Cancel') }}</a>
+  </div>
 </form>
 {% endblock %}
-

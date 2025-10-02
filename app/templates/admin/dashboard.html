@@ -1,20 +1,59 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Admin Dashboard') }}{% endblock %}
+
 {% block content %}
+
+<!-- Custom Styles -->
+<style>
+/* بطاقات مع ظل وزوايا مدورة */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* ألوان وأيقونات البيانات */
+.card-body .fs-3 {
+    color: #0d6efd;
+}
+
+.card-body .text-muted {
+    font-weight: 500;
+}
+
+/* أزرار مع ظل */
+.btn-custom {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+</style>
+
+<!-- Header Buttons -->
 <div class="d-flex align-items-center justify-content-between mb-4">
   <h3 class="mb-0">{{ _('Admin Dashboard') }}</h3>
   <div class="d-flex align-items-center gap-2">
-    <a class="btn btn-sm btn-primary" href="{{ url_for('admin.create_user', role='employee') }}">{{ _('Add Employee') }}</a>
-    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.create_user', role='tenant') }}">{{ _('Add Tenant') }}</a>
+    <a class="btn btn-sm btn-primary btn-custom" href="{{ url_for('admin.create_user', role='employee') }}">
+      <i class="bi bi-person-plus me-1"></i> {{ _('Add Employee') }}
+    </a>
+    <a class="btn btn-sm btn-outline-primary btn-custom" href="{{ url_for('admin.create_user', role='tenant') }}">
+      <i class="bi bi-person-plus-fill me-1"></i> {{ _('Add Tenant') }}
+    </a>
   </div>
-  </div>
+</div>
 
+<!-- First Row: Income, Expenses, Profit -->
 <div class="row g-3">
   <div class="col-12 col-md-4">
     <div class="card h-100">
       <div class="card-body">
         <div class="text-muted small mb-1">{{ _('Income') }}</div>
-        <div class="fs-3 fw-semibold">{{ total_income }}</div>
+        <div class="fs-3 fw-semibold">
+          <i class="bi bi-cash-stack me-2"></i>{{ total_income }}
+        </div>
       </div>
     </div>
   </div>
@@ -22,7 +61,9 @@
     <div class="card h-100">
       <div class="card-body">
         <div class="text-muted small mb-1">{{ _('Expenses') }}</div>
-        <div class="fs-3 fw-semibold">{{ total_expenses }}</div>
+        <div class="fs-3 fw-semibold">
+          <i class="bi bi-wallet2 me-2"></i>{{ total_expenses }}
+        </div>
       </div>
     </div>
   </div>
@@ -30,18 +71,23 @@
     <div class="card h-100">
       <div class="card-body">
         <div class="text-muted small mb-1">{{ _('Profit') }}</div>
-        <div class="fs-3 fw-semibold">{{ profit }}</div>
+        <div class="fs-3 fw-semibold">
+          <i class="bi bi-bar-chart-line me-2"></i>{{ profit }}
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="row g-3 mt-1">
+<!-- Second Row: Unleased Properties, Overdue Maintenance -->
+<div class="row g-3 mt-3">
   <div class="col-12 col-md-6">
     <div class="card h-100 position-relative">
       <div class="card-body">
         <div class="text-muted small mb-1">{{ _('Unleased Properties') }}</div>
-        <div class="fs-3 fw-semibold">{{ unleased_properties }}</div>
+        <div class="fs-3 fw-semibold">
+          <i class="bi bi-house-door me-2"></i>{{ unleased_properties }}
+        </div>
         <a class="stretched-link" href="{{ url_for('employee.properties_list', only='unleased') }}" aria-label="{{ _('Unleased Properties') }}"></a>
       </div>
     </div>
@@ -50,9 +96,12 @@
     <div class="card h-100">
       <div class="card-body">
         <div class="text-muted small mb-1">{{ _('Maintenance Requests > 24h') }}</div>
-        <div class="fs-3 fw-semibold">{{ overdue_maintenance_24h }}</div>
+        <div class="fs-3 fw-semibold">
+          <i class="bi bi-tools me-2"></i>{{ overdue_maintenance_24h }}
+        </div>
       </div>
     </div>
   </div>
 </div>
+
 {% endblock %}

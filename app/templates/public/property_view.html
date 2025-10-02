@@ -1,78 +1,124 @@
 {% extends 'base.html' %}
 {% block title %}{{ prop.title }}{% endblock %}
+
 {% block meta %}
-  {# Basic SEO #}
-  <meta name="description" content="{{ (prop.description or '')[:150] }}" />
-  <link rel="canonical" href="{{ request.base_url }}" />
+<meta name="description" content="{{ (prop.description or '')[:150] }}" />
+<link rel="canonical" href="{{ request.base_url }}" />
 
-  {# Open Graph #}
-  <meta property="og:type" content="article" />
-  <meta property="og:locale" content="{{ get_locale() }}" />
-  <meta property="og:title" content="{{ prop.title }}" />
-  <meta property="og:description" content="{{ (prop.description or '')[:200] }}" />
-  <meta property="og:url" content="{{ request.base_url }}" />
-  {% set og_image = images[0] if images and images|length > 0 else None %}
-  {% if og_image %}
-  <meta property="og:image" content="{{ url_for('uploaded_file', filename=og_image, _external=True) }}" />
-  <meta property="og:image:alt" content="{{ prop.title }}" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  {% endif %}
+{# Open Graph #}
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="{{ get_locale() }}" />
+<meta property="og:title" content="{{ prop.title }}" />
+<meta property="og:description" content="{{ (prop.description or '')[:200] }}" />
+<meta property="og:url" content="{{ request.base_url }}" />
+{% set og_image = images[0] if images and images|length > 0 else None %}
+{% if og_image %}
+<meta property="og:image" content="{{ url_for('uploaded_file', filename=og_image, _external=True) }}" />
+<meta property="og:image:alt" content="{{ prop.title }}" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+{% endif %}
 
-  {# Twitter #}
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="{{ prop.title }}" />
-  <meta name="twitter:description" content="{{ (prop.description or '')[:200] }}" />
-  {% if og_image %}
-  <meta name="twitter:image" content="{{ url_for('uploaded_file', filename=og_image, _external=True) }}" />
-  {% endif %}
+{# Twitter #}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ prop.title }}" />
+<meta name="twitter:description" content="{{ (prop.description or '')[:200] }}" />
+{% if og_image %}
+<meta name="twitter:image" content="{{ url_for('uploaded_file', filename=og_image, _external=True) }}" />
+{% endif %}
 {% endblock %}
+
 {% block content %}
 <div class="row">
   <div class="col-lg-7">
     {% if images and images|length > 0 %}
-    <div id="gallery" class="mb-3">
-      <div id="carousel" class="carousel slide" data-bs-ride="carousel">
+    <div id="propertyGallery" class="mb-3">
+      <div id="carouselIndicators" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
           {% for img in images %}
           <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}">
-            <img src="{{ url_for('uploaded_file', filename=img) }}" class="d-block w-100 gallery-image" alt="{{ prop.title }}" />
+            <img src="{{ url_for('uploaded_file', filename=img) }}" class="d-block w-100 gallery-image rounded" alt="{{ prop.title }}" />
           </div>
           {% endfor %}
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev">
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselIndicators" data-bs-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
           <span class="visually-hidden">Previous</span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carousel" data-bs-slide="next">
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselIndicators" data-bs-slide="next">
           <span class="carousel-control-next-icon" aria-hidden="true"></span>
           <span class="visually-hidden">Next</span>
         </button>
       </div>
+      {% if images|length > 1 %}
+      <div class="d-flex justify-content-center mt-2 gap-2">
+        {% for img in images %}
+        <img src="{{ url_for('uploaded_file', filename=img) }}" class="img-thumbnail" style="width:60px; cursor:pointer;"
+          onclick="var idx={{ loop.index0 }}; var carousel=document.getElementById('carouselIndicators'); var carouselInstance=bootstrap.Carousel.getInstance(carousel); carouselInstance.to(idx);">
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
     {% else %}
     <div class="alert alert-info">{{ _('No images available') }}</div>
     {% endif %}
   </div>
+
   <div class="col-lg-5">
     <h1 class="h3 mb-3">{{ prop.title }}</h1>
-    <p class="text-muted mb-2">{{ _('Price') }}: {{ prop.price }}</p>
+
+    <div class="mb-2">
+      <span class="badge {% if prop.status=='available' %}bg-success{% elif prop.status=='occupied' %}bg-warning{% else %}bg-secondary{% endif %}">
+        {{ prop.status|capitalize }}
+      </span>
+    </div>
+
+    <p class="text-muted mb-2">{{ _('Price') }}: {{ "{:,.2f}".format(prop.price) }} {{ _('USD') }}</p>
     <p class="lead text-body-secondary">{{ prop.description }}</p>
+
     {% if prop.property_type == 'building' %}
-      <div class="mt-3">
-        <span class="badge bg-secondary">{{ _('Number of apartments') }}: {{ prop.num_apartments or '-' }}</span>
-        <span class="badge bg-secondary">{{ _('Number of floors') }}: {{ prop.num_floors or '-' }}</span>
-      </div>
-    {% else %}
-      <div class="mt-3">
-        <span class="badge bg-secondary">{{ _('Bedrooms') }}: {{ prop.bedrooms or '-' }}</span>
-        <span class="badge bg-secondary">{{ _('Bathrooms') }}: {{ prop.bathrooms or '-' }}</span>
-        <span class="badge bg-secondary">{{ _('Area (sqm)') }}: {{ prop.area_sqm or '-' }}</span>
-      </div>
-    {% endif %}
     <div class="mt-3">
-      <button class="btn btn-outline-primary" type="button" onclick="navigator.clipboard.writeText(window.location.href); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">{{ _('Copy Link') }}</button>
+      <span class="badge bg-secondary">{{ _('Number of apartments') }}: {{ prop.num_apartments or '-' }}</span>
+      <span class="badge bg-secondary">{{ _('Number of floors') }}: {{ prop.num_floors or '-' }}</span>
+    </div>
+    {% else %}
+    <div class="mt-3">
+      <span class="badge bg-secondary">{{ _('Bedrooms') }}: {{ prop.bedrooms or '-' }}</span>
+      <span class="badge bg-secondary">{{ _('Bathrooms') }}: {{ prop.bathrooms or '-' }}</span>
+      <span class="badge bg-secondary">{{ _('Area (sqm)') }}: {{ prop.area_sqm or '-' }}</span>
+    </div>
+    {% endif %}
+
+    {% if prop.latitude and prop.longitude %}
+    <div class="mt-3">
+      <h6>{{ _('Location') }}</h6>
+      <div id="map" style="width:100%; height:250px;"></div>
+    </div>
+    {% endif %}
+
+    <div class="mt-3">
+      <button class="btn btn-outline-primary" type="button"
+        onclick="navigator.clipboard.writeText(window.location.href); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">
+        {{ _('Copy Link') }}
+      </button>
     </div>
   </div>
 </div>
+
+{% if prop.latitude and prop.longitude %}
+<script>
+  function initMap() {
+    const coords = { lat: {{ prop.latitude }}, lng: {{ prop.longitude }} };
+    const map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 16,
+      center: coords,
+    });
+    new google.maps.Marker({
+      position: coords,
+      map: map,
+    });
+  }
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
+{% endif %}
 {% endblock %}

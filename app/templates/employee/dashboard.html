@@ -1,72 +1,131 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Employee Dashboard') }}{% endblock %}
+
 {% block content %}
-<h3 class="mb-3">{{ _('Employee Dashboard') }}</h3>
+
+<!-- Custom Styles -->
+<style>
+.card-section {
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+}
+
+.list-group-item {
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.badge-status {
+    font-weight: 500;
+    text-transform: capitalize;
+}
+</style>
+
+<h3 class="mb-4"><i class="bi bi-speedometer2 me-1"></i>{{ _('Employee Dashboard') }}</h3>
+
 <div class="row">
+  <!-- Recent Properties -->
   <div class="col-md-6">
-    <h5>{{ _('Recent Properties') }}</h5>
-    <ul class="list-group">
-      {% for p in properties %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        {{ p.title }} <span class="badge text-bg-secondary">{{ p.status }}</span>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+    <div class="card-section">
+      <h5><i class="bi bi-building me-1"></i>{{ _('Recent Properties') }}</h5>
+      <ul class="list-group mt-2">
+        {% for p in properties %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {{ p.title }}
+          {% if p.status == 'available' %}
+            <span class="badge bg-success badge-status">{{ _('Available') }}</span>
+          {% elif p.status == 'occupied' %}
+            <span class="badge bg-warning text-dark badge-status">{{ _('Occupied') }}</span>
+          {% elif p.status == 'maintenance' %}
+            <span class="badge bg-danger badge-status">{{ _('Maintenance') }}</span>
+          {% else %}
+            <span class="badge bg-secondary badge-status">{{ p.status }}</span>
+          {% endif %}
+        </li>
+        {% else %}
+        <li class="list-group-item">{{ _('No data') }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   </div>
+
+  <!-- Recent Contracts -->
   <div class="col-md-6">
-    <h5>{{ _('Recent Contracts') }}</h5>
-    <ul class="list-group">
-      {% for c in contracts %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        #{{ c.id }} <span class="badge text-bg-secondary">{{ c.status }}</span>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+    <div class="card-section">
+      <h5><i class="bi bi-file-text me-1"></i>{{ _('Recent Contracts') }}</h5>
+      <ul class="list-group mt-2">
+        {% for c in contracts %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          #{{ c.id }}
+          {% if c.status == 'active' %}
+            <span class="badge bg-success badge-status">{{ _('Active') }}</span>
+          {% elif c.status == 'expired' %}
+            <span class="badge bg-danger badge-status">{{ _('Expired') }}</span>
+          {% else %}
+            <span class="badge bg-secondary badge-status">{{ c.status }}</span>
+          {% endif %}
+        </li>
+        {% else %}
+        <li class="list-group-item">{{ _('No data') }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   </div>
 </div>
 
-<div class="row mt-4">
+<div class="row">
+  <!-- Recent Maintenance Requests -->
   <div class="col-md-6">
-    <h5>{{ _('Recent Maintenance Requests') }}</h5>
-    <ul class="list-group">
-      {% for m in maintenance_requests %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <div><a class="text-decoration-none" href="{{ url_for('employee.maintenance_update', req_id=m.id) }}">{{ m.title }}</a></div>
-          {% if m.notes %}<div class="text-muted small">{{ _('Notes') }}: {{ m.notes }}</div>{% endif %}
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <a class="badge text-bg-secondary text-decoration-none" href="{{ url_for('employee.maintenance_update', req_id=m.id) }}">{{ m.status }}</a>
-          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.maintenance_update', req_id=m.id) }}">{{ _('Update') }}</a>
-        </div>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+    <div class="card-section">
+      <h5><i class="bi bi-tools me-1"></i>{{ _('Recent Maintenance Requests') }}</h5>
+      <ul class="list-group mt-2">
+        {% for m in maintenance_requests %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <div><a class="text-decoration-none" href="{{ url_for('employee.maintenance_update', req_id=m.id) }}">{{ m.title }}</a></div>
+            {% if m.notes %}<div class="text-muted small">{{ _('Notes') }}: {{ m.notes }}</div>{% endif %}
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-secondary badge-status">{{ m.status }}</span>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.maintenance_update', req_id=m.id) }}">
+              <i class="bi bi-pencil-square me-1"></i>{{ _('Update') }}
+            </a>
+          </div>
+        </li>
+        {% else %}
+        <li class="list-group-item">{{ _('No data') }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   </div>
+
+  <!-- Recent Complaints -->
   <div class="col-md-6">
-    <h5>{{ _('Recent Complaints') }}</h5>
-    <ul class="list-group">
-      {% for c in complaints %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <div><a class="text-decoration-none" href="{{ url_for('employee.complaint_update', comp_id=c.id) }}">{{ c.subject }}</a></div>
-          {% if c.notes %}<div class="text-muted small">{{ _('Notes') }}: {{ c.notes }}</div>{% endif %}
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <a class="badge text-bg-secondary text-decoration-none" href="{{ url_for('employee.complaint_update', comp_id=c.id) }}">{{ c.status }}</a>
-          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.complaint_update', comp_id=c.id) }}">{{ _('Update') }}</a>
-        </div>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+    <div class="card-section">
+      <h5><i class="bi bi-exclamation-triangle me-1"></i>{{ _('Recent Complaints') }}</h5>
+      <ul class="list-group mt-2">
+        {% for c in complaints %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <div><a class="text-decoration-none" href="{{ url_for('employee.complaint_update', comp_id=c.id) }}">{{ c.subject }}</a></div>
+            {% if c.notes %}<div class="text-muted small">{{ _('Notes') }}: {{ c.notes }}</div>{% endif %}
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-secondary badge-status">{{ c.status }}</span>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.complaint_update', comp_id=c.id) }}">
+              <i class="bi bi-pencil-square me-1"></i>{{ _('Update') }}
+            </a>
+          </div>
+        </li>
+        {% else %}
+        <li class="list-group-item">{{ _('No data') }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   </div>
 </div>
+
 {% endblock %}

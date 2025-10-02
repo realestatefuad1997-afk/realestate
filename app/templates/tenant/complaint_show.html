@@ -7,9 +7,15 @@
     <div class="d-flex justify-content-between align-items-start">
       <div>
         <div class="fw-bold">{{ c.subject }}</div>
-        <div class="text-muted small">{{ _('Created at') }}: {{ c.created_at }}</div>
+        <div class="text-muted small"><i class="bi bi-clock"></i> {{ _('Created at') }}: {{ c.created_at }}</div>
       </div>
-      <span class="badge text-bg-secondary">{{ c.status }}</span>
+      {% set badge_class = {
+        'new':'bg-primary', 
+        'reviewing':'bg-warning text-dark', 
+        'resolved':'bg-success', 
+        'closed':'bg-secondary'
+      }[c.status] %}
+      <span class="badge {{ badge_class }}">{{ c.status }}</span>
     </div>
     <hr>
     <p>{{ c.description }}</p>
@@ -21,5 +27,9 @@
     {% endif %}
   </div>
 </div>
-<a class="btn btn-link mt-3" href="{{ url_for('tenant.dashboard') }}">{{ _('Back to dashboard') }}</a>
+
+<div class="mt-3 d-flex gap-2">
+  <a class="btn btn-secondary" href="{{ url_for('tenant.dashboard') }}">{{ _('Back to dashboard') }}</a>
+  <a class="btn btn-primary" href="{{ url_for('tenant.complaint_update', comp_id=c.id) }}">{{ _('Update Complaint') }}</a>
+</div>
 {% endblock %}

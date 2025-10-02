@@ -1,34 +1,86 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Users') }}{% endblock %}
+
 {% block content %}
+
+<!-- Custom Styles -->
+<style>
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.card-header {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 600;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.btn-primary, .btn-outline-primary {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover, .btn-outline-primary:hover {
+    transform: translateY(-2px);
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+</style>
+
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">{{ _('Users') }}</h5>
+    <h5 class="mb-0"><i class="bi bi-people me-2"></i>{{ _('Users') }}</h5>
     <div class="d-flex align-items-center gap-2">
-      <a class="btn btn-sm btn-primary" href="{{ url_for('admin.create_user', role='employee') }}">{{ _('Add Employee') }}</a>
-      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.create_user', role='tenant') }}">{{ _('Add Tenant') }}</a>
-      <div class="d-none d-md-block text-muted">{{ _('Total') }}: {{ users|length }}</div>
+      <a class="btn btn-sm btn-primary" href="{{ url_for('admin.create_user', role='employee') }}">
+        <i class="bi bi-person-plus me-1"></i>{{ _('Add Employee') }}
+      </a>
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.create_user', role='tenant') }}">
+        <i class="bi bi-person-plus-fill me-1"></i>{{ _('Add Tenant') }}
+      </a>
+      <div class="d-none d-md-block text-white">{{ _('Total') }}: {{ users|length }}</div>
     </div>
   </div>
+
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-striped mb-0">
-        <thead><tr><th>#</th><th>{{ _('Username') }}</th><th>{{ _('Email') }}</th><th>{{ _('Role') }}</th><th>{{ _('Created') }}</th></tr></thead>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{ _('Username') }}</th>
+            <th>{{ _('Email') }}</th>
+            <th>{{ _('Role') }}</th>
+            <th>{{ _('Created') }}</th>
+          </tr>
+        </thead>
         <tbody>
           {% for u in users %}
           <tr>
             <td>{{ u.id }}</td>
             <td>{{ u.username }}</td>
             <td>{{ u.email }}</td>
-            <td>{{ u.role }}</td>
-            <td>{{ u.created_at }}</td>
+            <td>{{ u.role|capitalize }}</td>
+            <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="5" class="text-center py-4">{{ _('No data') }}</td></tr>
+          <tr>
+            <td colspan="5" class="text-center py-4">{{ _('No data') }}</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
 {% endblock %}

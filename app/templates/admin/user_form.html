@@ -2,11 +2,46 @@
 {% block title %}
   {% if role == 'employee' %}{{ _('Add Employee') }}{% else %}{{ _('Add Tenant') }}{% endif %}
 {% endblock %}
+
 {% block content %}
-<div class="card">
+
+<!-- Custom Styles -->
+<style>
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.card-header {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 600;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.btn-primary, .btn-secondary {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover, .btn-secondary:hover {
+    transform: translateY(-2px);
+}
+
+.form-label {
+    font-weight: 500;
+}
+</style>
+
+<div class="card mx-auto" style="max-width: 600px;">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="mb-0">
-      {% if role == 'employee' %}{{ _('Add Employee') }}{% else %}{{ _('Add Tenant') }}{% endif %}
+      {% if role == 'employee' %}
+        <i class="bi bi-person-plus me-2"></i>{{ _('Add Employee') }}
+      {% else %}
+        <i class="bi bi-person-plus-fill me-2"></i>{{ _('Add Tenant') }}
+      {% endif %}
     </h5>
   </div>
   <div class="card-body">
@@ -37,7 +72,7 @@
         <div class="form-text">{{ _('Only properties without an active contract are listed.') }}</div>
       </div>
       {% endif %}
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 mt-3">
         <button type="submit" class="btn btn-primary">
           {% if role == 'employee' %}{{ _('Create Employee') }}{% else %}{{ _('Create Tenant') }}{% endif %}
         </button>
@@ -46,5 +81,5 @@
     </form>
   </div>
 </div>
-{% endblock %}
 
+{% endblock %}

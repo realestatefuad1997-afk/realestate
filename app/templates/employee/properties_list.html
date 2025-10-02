@@ -1,11 +1,41 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Properties') }}{% endblock %}
+
 {% block content %}
+
+<!-- Custom Styles -->
+<style>
+.card-section {
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+.badge-status {
+    text-transform: capitalize;
+    font-weight: 500;
+}
+
+.btn-copy:active {
+    transform: scale(0.95);
+}
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h3>{{ _('Properties') }}</h3>
+  <h3><i class="bi bi-building me-1"></i>{{ _('Properties') }}</h3>
   <div class="btn-group">
-    <a class="btn btn-primary" href="{{ url_for('employee.properties_create') }}">{{ _('Add Property') }}</a>
-    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addBuildingModal">{{ _('Add Building') }}</button>
+    <a class="btn btn-primary" href="{{ url_for('employee.properties_create') }}">
+      <i class="bi bi-plus-circle me-1"></i>{{ _('Add Property') }}
+    </a>
+    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addBuildingModal">
+      <i class="bi bi-plus-square me-1"></i>{{ _('Add Building') }}
+    </button>
   </div>
 </div>
 
@@ -13,38 +43,83 @@
 <div class="alert alert-info d-flex justify-content-between align-items-center">
   <div>{{ _('Filtered to unleased properties') }}</div>
   <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('employee.properties_list') }}">{{ _('Clear filter') }}</a>
-  </div>
+</div>
 {% endif %}
 
-<h5 class="mt-3">{{ _('Buildings') }}</h5>
-<table class="table table-striped">
-  <thead><tr><th>#</th><th>{{ _('Title') }}</th><th>{{ _('Price') }}</th><th>{{ _('Status') }}</th><th></th></tr></thead>
+<!-- Buildings Table -->
+<div class="card-section">
+<h5><i class="bi bi-bank me-1"></i>{{ _('Buildings') }}</h5>
+<div class="table-responsive">
+<table class="table table-striped table-hover align-middle">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>{{ _('Title') }}</th>
+      <th>{{ _('Price') }}</th>
+      <th>{{ _('Status') }}</th>
+      <th>{{ _('Actions') }}</th>
+    </tr>
+  </thead>
   <tbody>
     {% for p in buildings %}
     <tr>
       <td>{{ p.id }}</td>
       <td>{{ p.title }}</td>
       <td>{{ p.price }}</td>
-      <td>{{ p.status }}</td>
       <td>
-        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('employee.apartments_list', building_id=p.id) }}">{{ _('Manage Apartments') }}</a>
-        <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">{{ _('Edit') }}</a>
-        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.properties_share', prop_id=p.id) }}">{{ _('Share') }}</a>
-        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ url_for('public_property_view', token=share_tokens[p.id], _external=True) }}'); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">{{ _('Copy Link') }}</button>
+        {% if p.status == 'available' %}
+          <span class="badge bg-success badge-status">{{ _('Available') }}</span>
+        {% elif p.status == 'occupied' %}
+          <span class="badge bg-warning text-dark badge-status">{{ _('Occupied') }}</span>
+        {% else %}
+          <span class="badge bg-secondary badge-status">{{ p.status }}</span>
+        {% endif %}
+      </td>
+      <td>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('employee.apartments_list', building_id=p.id) }}">
+          <i class="bi bi-house-door me-1"></i>{{ _('Manage Apartments') }}
+        </a>
+        <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">
+          <i class="bi bi-pencil-square me-1"></i>{{ _('Edit') }}
+        </a>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.properties_share', prop_id=p.id) }}">
+          <i class="bi bi-share me-1"></i>{{ _('Share') }}
+        </a>
+        <button type="button" class="btn btn-sm btn-outline-secondary btn-copy" 
+                onclick="navigator.clipboard.writeText('{{ url_for('public_property_view', token=share_tokens[p.id], _external=True) }}'); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">
+          <i class="bi bi-clipboard me-1"></i>{{ _('Copy Link') }}
+        </button>
         <form method="post" action="{{ url_for('employee.properties_delete', prop_id=p.id) }}" style="display:inline" onsubmit="return confirm('{{ _('Are you sure?') }}');">
-          <button class="btn btn-sm btn-outline-danger" type="submit">{{ _('Delete') }}</button>
+          <button class="btn btn-sm btn-outline-danger" type="submit">
+            <i class="bi bi-trash me-1"></i>{{ _('Delete') }}
+          </button>
         </form>
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="5">{{ _('No data') }}</td></tr>
+    <tr><td colspan="5" class="text-center py-3">{{ _('No data') }}</td></tr>
     {% endfor %}
   </tbody>
-  </table>
+</table>
+</div>
+</div>
 
-<h5 class="mt-4">{{ _('Standalone Apartments') }}</h5>
-<table class="table table-striped">
-  <thead><tr><th>#</th><th>{{ _('Title') }}</th><th>{{ _('Bedrooms') }}</th><th>{{ _('Bathrooms') }}</th><th>{{ _('Price') }}</th><th>{{ _('Status') }}</th><th></th></tr></thead>
+<!-- Standalone Apartments Table -->
+<div class="card-section">
+<h5><i class="bi bi-house-door me-1"></i>{{ _('Standalone Apartments') }}</h5>
+<div class="table-responsive">
+<table class="table table-striped table-hover align-middle">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>{{ _('Title') }}</th>
+      <th>{{ _('Bedrooms') }}</th>
+      <th>{{ _('Bathrooms') }}</th>
+      <th>{{ _('Price') }}</th>
+      <th>{{ _('Status') }}</th>
+      <th>{{ _('Actions') }}</th>
+    </tr>
+  </thead>
   <tbody>
     {% for p in standalone_apartments %}
     <tr>
@@ -53,21 +128,40 @@
       <td>{{ p.bedrooms or '-' }}</td>
       <td>{{ p.bathrooms or '-' }}</td>
       <td>{{ p.price }}</td>
-      <td>{{ p.status }}</td>
       <td>
-        <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">{{ _('Edit') }}</a>
-        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.properties_share', prop_id=p.id) }}">{{ _('Share') }}</a>
-        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ url_for('public_property_view', token=share_tokens[p.id], _external=True) }}'); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">{{ _('Copy Link') }}</button>
+        {% if p.status == 'available' %}
+          <span class="badge bg-success badge-status">{{ _('Available') }}</span>
+        {% elif p.status == 'occupied' %}
+          <span class="badge bg-warning text-dark badge-status">{{ _('Occupied') }}</span>
+        {% else %}
+          <span class="badge bg-secondary badge-status">{{ p.status }}</span>
+        {% endif %}
+      </td>
+      <td>
+        <a class="btn btn-sm btn-secondary" href="{{ url_for('employee.properties_edit', prop_id=p.id) }}">
+          <i class="bi bi-pencil-square me-1"></i>{{ _('Edit') }}
+        </a>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('employee.properties_share', prop_id=p.id) }}">
+          <i class="bi bi-share me-1"></i>{{ _('Share') }}
+        </a>
+        <button type="button" class="btn btn-sm btn-outline-secondary btn-copy" 
+                onclick="navigator.clipboard.writeText('{{ url_for('public_property_view', token=share_tokens[p.id], _external=True) }}'); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">
+          <i class="bi bi-clipboard me-1"></i>{{ _('Copy Link') }}
+        </button>
         <form method="post" action="{{ url_for('employee.properties_delete', prop_id=p.id) }}" style="display:inline" onsubmit="return confirm('{{ _('Are you sure?') }}');">
-          <button class="btn btn-sm btn-outline-danger" type="submit">{{ _('Delete') }}</button>
+          <button class="btn btn-sm btn-outline-danger" type="submit">
+            <i class="bi bi-trash me-1"></i>{{ _('Delete') }}
+          </button>
         </form>
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="7">{{ _('No data') }}</td></tr>
+    <tr><td colspan="7" class="text-center py-3">{{ _('No data') }}</td></tr>
     {% endfor %}
   </tbody>
 </table>
+</div>
+</div>
 
 <!-- Add Building Modal -->
 <div class="modal fade" id="addBuildingModal" tabindex="-1" aria-hidden="true">
@@ -75,7 +169,7 @@
     <div class="modal-content">
       <form method="post" action="{{ url_for('employee.properties_create') }}" enctype="multipart/form-data">
         <div class="modal-header">
-          <h5 class="modal-title">{{ _('Add Building') }}</h5>
+          <h5 class="modal-title"><i class="bi bi-plus-square me-1"></i>{{ _('Add Building') }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -101,10 +195,11 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
-          <button type="submit" class="btn btn-primary">{{ _('Create Property') }}</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>{{ _('Create Property') }}</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
 {% endblock %}

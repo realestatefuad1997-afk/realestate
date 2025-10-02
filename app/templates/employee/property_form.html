@@ -1,105 +1,130 @@
 {% extends 'base.html' %}
 {% block title %}{{ property and _('Edit Property') or _('Create Property') }}{% endblock %}
+
 {% block content %}
-<h3 class="mb-3">{{ property and _('Edit Property') or _('Create Property') }}</h3>
-<form method="post" enctype="multipart/form-data">
-  <div class="mb-3">
-    <label class="form-label">{{ _('Type') }}</label>
-    <select class="form-select" name="property_type" id="property_type" {% if property %}disabled{% endif %}>
-      <option value="building" {% if not property or property.property_type=='building' %}selected{% endif %}>{{ _('Building') }}</option>
-      <option value="apartment" {% if property and property.property_type=='apartment' %}selected{% endif %}>{{ _('Apartment') }}</option>
-    </select>
+<div class="card shadow-sm">
+  <div class="card-header">
+    <h4 class="mb-0">{{ property and _('Edit Property') or _('Create Property') }}</h4>
   </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _('Title') }}</label>
-    <input class="form-control" name="title" value="{{ property.title if property else '' }}" required />
-  </div>
-  <div class="mb-3" id="price_field">
-    <label class="form-label">{{ _('Price') }}</label>
-    <input class="form-control" id="price_input" name="price" type="number" step="0.01" value="{{ property.price if property else '' }}" />
-  </div>
-  <div class="mb-3" id="description_field">
-    <label class="form-label">{{ _('Description') }}</label>
-    <textarea class="form-control" rows="4" name="description">{{ property.description if property else '' }}</textarea>
-  </div>
-  <div class="row" id="building_fields">
-    <div class="col-md-6">
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      <!-- نوع العقار -->
       <div class="mb-3">
-        <label class="form-label">{{ _('Number of apartments') }}</label>
-        <input class="form-control" name="num_apartments" type="number" min="0" step="1" value="{{ property.num_apartments if property and property.num_apartments is not none else '' }}" />
+        <label class="form-label">{{ _('Type') }}</label>
+        <select class="form-select" id="property_type" name="property_type" {% if property %}disabled{% endif %}>
+          <option value="building" {% if not property or property.property_type=='building' %}selected{% endif %}>{{ _('Building') }}</option>
+          <option value="apartment" {% if property and property.property_type=='apartment' %}selected{% endif %}>{{ _('Apartment') }}</option>
+        </select>
       </div>
-    </div>
-    <div class="col-md-6">
+
+      <!-- العنوان -->
       <div class="mb-3">
-        <label class="form-label">{{ _('Number of floors') }}</label>
-        <input class="form-control" name="num_floors" type="number" min="0" step="1" value="{{ property.num_floors if property and property.num_floors is not none else '' }}" />
+        <label class="form-label">{{ _('Title') }}</label>
+        <input class="form-control" name="title" value="{{ property.title if property else '' }}" required />
       </div>
-    </div>
+
+      <!-- السعر -->
+      <div class="mb-3" id="price_field">
+        <label class="form-label">{{ _('Price') }}</label>
+        <input class="form-control" type="number" step="0.01" id="price_input" name="price" value="{{ property.price if property else '' }}" />
+      </div>
+
+      <!-- الوصف -->
+      <div class="mb-3" id="description_field">
+        <label class="form-label">{{ _('Description') }}</label>
+        <textarea class="form-control" name="description" rows="3">{{ property.description if property else '' }}</textarea>
+      </div>
+
+      <!-- حقول المبنى -->
+      <div class="row" id="building_fields">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">{{ _('Number of apartments') }}</label>
+            <input class="form-control" type="number" min="0" step="1" name="num_apartments" value="{{ property.num_apartments if property and property.num_apartments is not none else '' }}" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">{{ _('Number of floors') }}</label>
+            <input class="form-control" type="number" min="0" step="1" name="num_floors" value="{{ property.num_floors if property and property.num_floors is not none else '' }}" />
+          </div>
+        </div>
+      </div>
+
+      <!-- حقول الشقة -->
+      <div id="apartment_fields">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="mb-3">
+              <label class="form-label">{{ _('Number') }}</label>
+              <input class="form-control" name="number" value="{{ property.number if property else '' }}" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="mb-3">
+              <label class="form-label">{{ _('Floor') }}</label>
+              <input class="form-control" type="number" step="1" name="floor" value="{{ property.floor if property and property.floor is not none else '' }}" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="mb-3">
+              <label class="form-label">{{ _('Area (sqm)') }}</label>
+              <input class="form-control" type="number" step="0.01" name="area_sqm" value="{{ property.area_sqm if property and property.area_sqm is not none else '' }}" />
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">{{ _('Bedrooms') }}</label>
+              <input class="form-control" type="number" step="1" name="bedrooms" value="{{ property.bedrooms if property and property.bedrooms is not none else '' }}" />
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">{{ _('Bathrooms') }}</label>
+              <input class="form-control" type="number" step="1" name="bathrooms" value="{{ property.bathrooms if property and property.bathrooms is not none else '' }}" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- الحالة عند التعديل -->
+      {% if property %}
+      <div class="mb-3">
+        <label class="form-label">{{ _('Status') }}</label>
+        <select class="form-select" name="status">
+          <option value="available" {% if property.status=='available' %}selected{% endif %}>{{ _('Available') }}</option>
+          <option value="occupied" {% if property.status=='occupied' %}selected{% endif %}>{{ _('Occupied') }}</option>
+          <option value="maintenance" {% if property.status=='maintenance' %}selected{% endif %}>{{ _('Maintenance') }}</option>
+        </select>
+      </div>
+      {% endif %}
+
+      <!-- الصور -->
+      <div class="mb-3" id="images_field">
+        <label class="form-label">{{ _('Images') }}</label>
+        <input class="form-control" type="file" name="images" accept="image/*" multiple />
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('employee.properties_list') }}">{{ _('Cancel') }}</a>
+      </div>
+    </form>
   </div>
-  <div id="apartment_fields">
-    <div class="row">
-      <div class="col-md-4">
-        <div class="mb-3">
-          <label class="form-label">{{ _('Number') }}</label>
-          <input class="form-control" name="number" value="{{ property.number if property else '' }}" />
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="mb-3">
-          <label class="form-label">{{ _('Floor') }}</label>
-          <input class="form-control" name="floor" type="number" step="1" value="{{ property.floor if property and property.floor is not none else '' }}" />
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="mb-3">
-          <label class="form-label">{{ _('Area (sqm)') }}</label>
-          <input class="form-control" name="area_sqm" type="number" step="0.01" value="{{ property.area_sqm if property and property.area_sqm is not none else '' }}" />
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-6">
-        <div class="mb-3">
-          <label class="form-label">{{ _('Bedrooms') }}</label>
-          <input class="form-control" name="bedrooms" type="number" step="1" value="{{ property.bedrooms if property and property.bedrooms is not none else '' }}" />
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="mb-3">
-          <label class="form-label">{{ _('Bathrooms') }}</label>
-          <input class="form-control" name="bathrooms" type="number" step="1" value="{{ property.bathrooms if property and property.bathrooms is not none else '' }}" />
-        </div>
-      </div>
-    </div>
-  </div>
-  {% if property %}
-  <div class="mb-3">
-    <label class="form-label">{{ _('Status') }}</label>
-    <select class="form-select" name="status">
-      <option value="available" {% if property.status=='available' %}selected{% endif %}>{{ _('Available') }}</option>
-      <option value="occupied" {% if property.status=='occupied' %}selected{% endif %}>{{ _('Occupied') }}</option>
-      <option value="maintenance" {% if property.status=='maintenance' %}selected{% endif %}>{{ _('Maintenance') }}</option>
-    </select>
-  </div>
-  {% endif %}
-  <div class="mb-3" id="images_field">
-    <label class="form-label">{{ _('Images') }}</label>
-    <input class="form-control" type="file" name="images" accept="image/*" multiple />
-  </div>
-  <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
-  <a class="btn btn-secondary" href="{{ url_for('employee.properties_list') }}">{{ _('Cancel') }}</a>
-</form>
+</div>
+
 <script>
   function toggleTypeFields() {
     var type = document.getElementById('property_type').value;
-    document.getElementById('building_fields').style.display = (type === 'building') ? '' : 'none';
-    document.getElementById('apartment_fields').style.display = (type === 'apartment') ? '' : 'none';
-    // Hide price/description/images for buildings (only title + building fields)
+    document.getElementById('building_fields').style.display = (type === 'building') ? 'flex' : 'none';
+    document.getElementById('apartment_fields').style.display = (type === 'apartment') ? 'block' : 'none';
     document.getElementById('price_field').style.display = (type === 'building') ? 'none' : '';
     document.getElementById('description_field').style.display = (type === 'building') ? 'none' : '';
     document.getElementById('images_field').style.display = (type === 'building') ? 'none' : '';
-    var priceInput = document.getElementById('price_input');
-    if (priceInput) { priceInput.required = (type === 'apartment'); }
+    document.getElementById('price_input').required = (type === 'apartment');
   }
   document.getElementById('property_type').addEventListener('change', toggleTypeFields);
   toggleTypeFields();
