@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Update Complaint') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('Update Complaint') }}</h3>
+<form method="post">
+  <div class="mb-3">
+    <label class="form-label">{{ _('Subject') }}</label>
+    <input type="text" class="form-control" value="{{ c.subject }}" disabled>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Description') }}</label>
+    <textarea class="form-control" rows="3" disabled>{{ c.description }}</textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Status') }}</label>
+    <select name="status" class="form-select">
+      {% set statuses = ['new', 'reviewing', 'resolved', 'closed'] %}
+      {% for s in statuses %}
+      <option value="{{ s }}" {{ 'selected' if c.status==s else '' }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">{{ _('Notes') }}</label>
+    <textarea name="notes" class="form-control" rows="4">{{ c.notes or '' }}</textarea>
+  </div>
+  <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
+  <a class="btn btn-secondary" href="{{ url_for('employee.dashboard') }}">{{ _('Cancel') }}</a>
+</form>
+{% endblock %}
