@@ -28,6 +28,13 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
+/* روابط الكروت لتكون قابلة للنقر بدون تغيير الشكل */
+a.stat-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
 .stat-card i {
   font-size: 2.5rem;
   margin-bottom: 10px;
@@ -67,11 +74,13 @@
     <span>{{ _('Profit') }}</span>
     <span>{{ profit }}</span>
   </div>
-  <div class="stat-card bg-house">
-    <i class="bi bi-house-door"></i>
-    <span>{{ _('Unleased Properties') }}</span>
-    <span>{{ unleased_properties }}</span>
-  </div>
+  <a href="{{ url_for('employee.properties_list', only='unleased') }}" class="stat-card-link">
+    <div class="stat-card bg-house">
+      <i class="bi bi-house-door"></i>
+      <span>{{ _('Unleased Properties') }}</span>
+      <span>{{ unleased_properties }}</span>
+    </div>
+  </a>
   <div class="stat-card bg-maint">
     <i class="bi bi-tools"></i>
     <span>{{ _('Maintenance >24h') }}</span>
@@ -82,11 +91,13 @@
     <span>{{ _('Employees') }}</span>
     <span>{{ total_employees }}</span>
   </div>
-  <div class="stat-card bg-tenant">
-    <i class="bi bi-people"></i>
-    <span>{{ _('Tenants') }}</span>
-    <span>{{ total_tenants }}</span>
-  </div>
+  <a href="{{ url_for('admin.users_list', role='tenant') }}" class="stat-card-link">
+    <div class="stat-card bg-tenant">
+      <i class="bi bi-people"></i>
+      <span>{{ _('Tenants') }}</span>
+      <span>{{ total_tenants }}</span>
+    </div>
+  </a>
 </div>
 
 <!-- أحدث الشكاوى والصيانات -->

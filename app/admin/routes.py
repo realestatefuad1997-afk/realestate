@@ -92,6 +92,10 @@ def dashboard():
             overdue_maintenance_24h = res.scalar() or 0
     except Exception:
         overdue_maintenance_24h = 0
+    # Basic counts for employees and tenants
+    total_employees = User.query.filter_by(role="employee").count()
+    total_tenants = User.query.filter_by(role="tenant").count()
+
     return render_template(
         "admin/dashboard.html",
         properties_count=properties_count,
@@ -101,6 +105,8 @@ def dashboard():
         profit=profit,
         unleased_properties=unleased_properties,
         overdue_maintenance_24h=overdue_maintenance_24h,
+        total_employees=total_employees,
+        total_tenants=total_tenants,
     )
 
 
@@ -109,8 +115,12 @@ def dashboard():
 @admin_required
 def users_list():
     from ..models import User
-
-    users = User.query.order_by(User.created_at.desc()).all()
+    # Optional role filter via query string, e.g., /admin/users?role=tenant
+    role = (request.args.get("role") or "").strip().lower()
+    query = User.query
+    if role in {"employee", "tenant", "accountant", "admin"}:
+        query = query.filter_by(role=role)
+    users = query.order_by(User.created_at.desc()).all()
     return render_template("admin/users_list.html", users=users)
 
 
