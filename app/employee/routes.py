@@ -229,15 +229,12 @@ def properties_edit(prop_id: int):
     return render_template("employee/property_form.html", property=prop)
 
 
-@employee_bp.route("/properties/<int:prop_id>/share", methods=["GET"])  # simple redirect to public link
+@employee_bp.route("/properties/<int:prop_id>/share", methods=["GET"])  # kept for backward compatibility
 @login_required
 @employee_required
 def properties_share(prop_id: int):
-    prop = Property.query.get_or_404(prop_id)
-    serializer = URLSafeSerializer(current_app.config["SECRET_KEY"], salt="property-share")
-    token = serializer.dumps(prop.id)
-    public_url = url_for("public_property_view", token=token, _external=True)
-    flash(_("Share link generated: ") + public_url, "info")
+    # No longer displays the URL; just informs that copying is available via the list page
+    flash(_("Use the Share button to copy the link"), "info")
     return redirect(url_for("employee.properties_list"))
 
 
