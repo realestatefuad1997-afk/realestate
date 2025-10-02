@@ -61,7 +61,7 @@
 <div class="grid-container mb-4">
   {% for b in buildings %}
   <div class="property-item">
-    <a href="{{ url_for('employee.apartments_list', building_id=b.id) }}" class="text-decoration-none">
+    <div class="text-decoration-none">
       <div class="property-card">
         {% set first_b_image = (b.images or '').split(',')[0] %}
         <img src="{{ first_b_image and url_for('uploaded_file', filename=first_b_image) or url_for('static', filename='default-building.jpg') }}" alt="{{ b.title }}">
@@ -76,7 +76,28 @@
           {% endif %}
         </div>
       </div>
-    </a>
+    </div>
+
+    <!-- Apartments dropdown under the building -->
+    <div class="mt-1">
+      <select class="form-select form-select-sm" onchange="if (this.value) window.location.href=this.value">
+        <option value="">{{ _('Select an apartment') }}</option>
+        {% set apts = apartments_by_building.get(b.id, []) %}
+        {% for a in apts %}
+          <option value="{{ url_for('employee.apartments_edit', apt_id=a.id) }}">
+            {{ a.title or (a.number and ( _('Apartment') ~ ' ' ~ a.number )) or _('Apartment') }}
+            {% if a.status == 'available' %}
+              — {{ _('Available') }}
+            {% elif a.status == 'occupied' %}
+              — {{ _('Occupied') }}
+            {% endif %}
+          </option>
+        {% else %}
+          <option value="" disabled>{{ _('No apartments available') }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
     <div class="property-actions">
       <button type="button" class="btn btn-outline-secondary btn-sm"
         onclick="navigator.clipboard.writeText('{{ url_for('public_property_view', token=share_tokens[b.id], _external=True) }}'); this.innerHTML='<i class=&quot;bi bi-clipboard-check me-1&quot;></i>{{ _('Copied') }}'; setTimeout(()=>{ this.innerHTML='<i class=&quot;bi bi-share me-1&quot;></i>{{ _('Share') }}'; }, 1500);">
