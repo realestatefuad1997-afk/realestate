@@ -90,3 +90,25 @@ def complaint_create():
         return redirect(url_for("tenant.dashboard"))
     return render_template("tenant/complaint_form.html")
 
+
+@tenant_bp.route("/maintenance/<int:request_id>")
+@login_required
+@tenant_required
+def maintenance_show(request_id: int):
+    m = (
+        MaintenanceRequest.query.filter_by(id=request_id, tenant_id=current_user.id)
+        .first()
+    )
+    if not m:
+        return abort(404)
+    return render_template("tenant/maintenance_show.html", m=m)
+
+
+@tenant_bp.route("/complaints/<int:complaint_id>")
+@login_required
+@tenant_required
+def complaint_show(complaint_id: int):
+    c = Complaint.query.filter_by(id=complaint_id, tenant_id=current_user.id).first()
+    if not c:
+        return abort(404)
+    return render_template("tenant/complaint_show.html", c=c)
