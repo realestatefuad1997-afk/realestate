@@ -71,6 +71,11 @@
     <span class="badge-status">{{ contracts|length }}</span>
   </div>
 
+  <div class="dashboard-card" onclick="window.location.href='{{ url_for('employee.rent_collection_list') }}'">
+    <i class="bi bi-cash-coin"></i>
+    <span>{{ _('Rent Collection') }}</span>
+  </div>
+
   <div class="dashboard-card" onclick="window.location.href='{{ url_for('employee.maintenance_list') }}'">
     <i class="bi bi-tools"></i>
     <span>{{ _('Maintenance Requests') }}</span>
