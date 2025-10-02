@@ -1,5 +1,32 @@
 {% extends 'base.html' %}
 {% block title %}{{ prop.title }}{% endblock %}
+{% block meta %}
+  {# Basic SEO #}
+  <meta name="description" content="{{ (prop.description or '')[:150] }}" />
+  <link rel="canonical" href="{{ request.base_url }}" />
+
+  {# Open Graph #}
+  <meta property="og:type" content="article" />
+  <meta property="og:locale" content="{{ get_locale() }}" />
+  <meta property="og:title" content="{{ prop.title }}" />
+  <meta property="og:description" content="{{ (prop.description or '')[:200] }}" />
+  <meta property="og:url" content="{{ request.base_url }}" />
+  {% set og_image = images[0] if images and images|length > 0 else None %}
+  {% if og_image %}
+  <meta property="og:image" content="{{ url_for('uploaded_file', filename=og_image, _external=True) }}" />
+  <meta property="og:image:alt" content="{{ prop.title }}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  {% endif %}
+
+  {# Twitter #}
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ prop.title }}" />
+  <meta name="twitter:description" content="{{ (prop.description or '')[:200] }}" />
+  {% if og_image %}
+  <meta name="twitter:image" content="{{ url_for('uploaded_file', filename=og_image, _external=True) }}" />
+  {% endif %}
+{% endblock %}
 {% block content %}
 <div class="row">
   <div class="col-lg-7">
@@ -9,7 +36,7 @@
         <div class="carousel-inner">
           {% for img in images %}
           <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}">
-            <img src="{{ url_for('uploaded_file', filename=img) }}" class="d-block w-100" alt="image" />
+            <img src="{{ url_for('uploaded_file', filename=img) }}" class="d-block w-100 gallery-image" alt="{{ prop.title }}" />
           </div>
           {% endfor %}
         </div>
@@ -28,9 +55,9 @@
     {% endif %}
   </div>
   <div class="col-lg-5">
-    <h3 class="mb-3">{{ prop.title }}</h3>
-    <p class="text-muted">{{ _('Price') }}: {{ prop.price }}</p>
-    <p>{{ prop.description }}</p>
+    <h1 class="h3 mb-3">{{ prop.title }}</h1>
+    <p class="text-muted mb-2">{{ _('Price') }}: {{ prop.price }}</p>
+    <p class="lead text-body-secondary">{{ prop.description }}</p>
     <div class="mt-3">
       <button class="btn btn-outline-primary" type="button" onclick="navigator.clipboard.writeText(window.location.href); this.innerText='{{ _('Copied') }}'; setTimeout(()=>this.innerText='{{ _('Copy Link') }}',1500);">{{ _('Copy Link') }}</button>
     </div>
