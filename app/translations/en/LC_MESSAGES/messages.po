@@ -145,3 +145,12 @@ msgstr "Toggle"
 
 msgid "Payment status updated"
 msgstr "Payment status updated"
+
+msgid "Add Building"
+msgstr "Add Building"
+
+msgid "Number of apartments"
+msgstr "Number of apartments"
+
+msgid "Number of floors"
+msgstr "Number of floors"

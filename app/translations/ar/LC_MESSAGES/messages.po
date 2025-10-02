@@ -277,6 +277,15 @@ msgstr "تصدير إكسل"
 msgid "Export PDF"
 msgstr "تصدير PDF"
 
+msgid "Add Building"
+msgstr "إضافة مبنى"
+
+msgid "Number of apartments"
+msgstr "عدد الشقق"
+
+msgid "Number of floors"
+msgstr "عدد الأدوار"
+
 msgid "Maintenance Request"
 msgstr "طلب صيانة"
 

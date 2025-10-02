@@ -53,6 +53,9 @@ class Property(db.Model, TimestampMixin):
     price = db.Column(db.Numeric(12, 2), nullable=False, default=0)
     status = db.Column(db.String(50), nullable=False, default="available")
     images = db.Column(db.Text)  # store comma-separated file names or JSON
+    # Building-related metadata
+    num_apartments = db.Column(db.Integer, nullable=True)
+    num_floors = db.Column(db.Integer, nullable=True)
 
     contracts = db.relationship("Contract", back_populates="property", lazy="dynamic")
 
