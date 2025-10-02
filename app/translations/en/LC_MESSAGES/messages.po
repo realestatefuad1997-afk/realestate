@@ -149,6 +149,36 @@ msgstr "Payment status updated"
 msgid "Add Building"
 msgstr "Add Building"
 
+msgid "Buildings"
+msgstr "Buildings"
+
+msgid "Properties with building details"
+msgstr "Properties with building details"
+
+msgid "Other Properties"
+msgstr "Other Properties"
+
+msgid "Apartments, villas, lands, etc."
+msgstr "Apartments, villas, lands, etc."
+
+msgid "No image"
+msgstr "No image"
+
+msgid "Apartments"
+msgstr "Apartments"
+
+msgid "Floors"
+msgstr "Floors"
+
+msgid "Copy Link"
+msgstr "Copy Link"
+
+msgid "Copied"
+msgstr "Copied"
+
+msgid "No images available"
+msgstr "No images available"
+
 msgid "Number of apartments"
 msgstr "Number of apartments"
 

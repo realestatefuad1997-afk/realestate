@@ -280,6 +280,36 @@ msgstr "تصدير PDF"
 msgid "Add Building"
 msgstr "إضافة مبنى"
 
+msgid "Buildings"
+msgstr "المباني"
+
+msgid "Properties with building details"
+msgstr "عقارات تحتوي بيانات مبنى"
+
+msgid "Other Properties"
+msgstr "عقارات أخرى"
+
+msgid "Apartments, villas, lands, etc."
+msgstr "شقق، فلل، أراضٍ، وغيرها"
+
+msgid "No image"
+msgstr "لا توجد صورة"
+
+msgid "Apartments"
+msgstr "الشقق"
+
+msgid "Floors"
+msgstr "الأدوار"
+
+msgid "Copy Link"
+msgstr "نسخ الرابط"
+
+msgid "Copied"
+msgstr "تم النسخ"
+
+msgid "No images available"
+msgstr "لا توجد صور متاحة"
+
 msgid "Number of apartments"
 msgstr "عدد الشقق"
 
