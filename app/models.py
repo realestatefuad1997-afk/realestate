@@ -52,7 +52,16 @@ class Property(db.Model, TimestampMixin):
     description = db.Column(db.Text)
     price = db.Column(db.Numeric(12, 2), nullable=False, default=0)
     status = db.Column(db.String(50), nullable=False, default="available")
+    # property_type distinguishes standalone apartment vs building that contains apartments
+    # allowed values: 'building', 'apartment'
+    property_type = db.Column(db.String(20), nullable=False, default="building", index=True)
     images = db.Column(db.Text)  # store comma-separated file names or JSON
+    # Apartment-specific metadata for standalone apartments
+    number = db.Column(db.String(50), nullable=True)
+    floor = db.Column(db.Integer, nullable=True)
+    area_sqm = db.Column(db.Numeric(10, 2), nullable=True)
+    bedrooms = db.Column(db.Integer, nullable=True)
+    bathrooms = db.Column(db.Integer, nullable=True)
     # Building-related metadata
     num_apartments = db.Column(db.Integer, nullable=True)
     num_floors = db.Column(db.Integer, nullable=True)

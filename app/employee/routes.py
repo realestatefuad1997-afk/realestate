@@ -44,11 +44,25 @@ def dashboard():
 @login_required
 @employee_required
 def properties_list():
-    properties = Property.query.order_by(Property.created_at.desc()).all()
-    # Helper to generate share token
+    # Separate buildings and standalone apartments
+    buildings = (
+        Property.query.filter_by(property_type="building")
+        .order_by(Property.created_at.desc())
+        .all()
+    )
+    standalone_apartments = (
+        Property.query.filter_by(property_type="apartment")
+        .order_by(Property.created_at.desc())
+        .all()
+    )
     serializer = URLSafeSerializer(current_app.config["SECRET_KEY"], salt="property-share")
-    tokens = {p.id: serializer.dumps(p.id) for p in properties}
-    return render_template("employee/properties_list.html", properties=properties, share_tokens=tokens)
+    share_tokens = {p.id: serializer.dumps(p.id) for p in buildings + standalone_apartments}
+    return render_template(
+        "employee/properties_list.html",
+        buildings=buildings,
+        standalone_apartments=standalone_apartments,
+        share_tokens=share_tokens,
+    )
 
 
 @employee_bp.route("/properties/create", methods=["GET", "POST"])
@@ -59,11 +73,22 @@ def properties_create():
         title = request.form.get("title")
         price = request.form.get("price")
         description = request.form.get("description")
-        # Building fields (optional)
+        property_type = (request.form.get("property_type") or "building").strip()
+        # Building fields
         num_apartments_raw = (request.form.get("num_apartments") or "").strip()
         num_floors_raw = (request.form.get("num_floors") or "").strip()
         num_apartments = int(num_apartments_raw) if num_apartments_raw.isdigit() else None
         num_floors = int(num_floors_raw) if num_floors_raw.isdigit() else None
+        # Standalone apartment fields
+        apt_number = (request.form.get("number") or "").strip() or None
+        floor_raw = (request.form.get("floor") or "").strip()
+        area_raw = (request.form.get("area_sqm") or "").strip()
+        bedrooms_raw = (request.form.get("bedrooms") or "").strip()
+        bathrooms_raw = (request.form.get("bathrooms") or "").strip()
+        floor_val = int(floor_raw) if floor_raw.isdigit() else None
+        bedrooms_val = int(bedrooms_raw) if bedrooms_raw.isdigit() else None
+        bathrooms_val = int(bathrooms_raw) if bathrooms_raw.isdigit() else None
+        area_val = area_raw or None
         images_filenames = []
         images_files = request.files.getlist("images")
         upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
@@ -75,15 +100,25 @@ def properties_create():
                 f.save(path)
                 images_filenames.append(f"properties/{filename}")
         images_value = ",".join(images_filenames) if images_filenames else None
-        prop = Property(
+        prop_kwargs = dict(
             title=title,
             price=price,
             description=description,
             status="available",
             images=images_value,
-            num_apartments=num_apartments,
-            num_floors=num_floors,
+            property_type=property_type,
         )
+        if property_type == "building":
+            prop_kwargs.update(num_apartments=num_apartments, num_floors=num_floors)
+        else:
+            prop_kwargs.update(
+                number=apt_number,
+                floor=floor_val,
+                area_sqm=area_val,
+                bedrooms=bedrooms_val,
+                bathrooms=bathrooms_val,
+            )
+        prop = Property(**prop_kwargs)
         db.session.add(prop)
         db.session.commit()
         flash(_("Property created"), "success")
@@ -101,11 +136,22 @@ def properties_edit(prop_id: int):
         prop.price = request.form.get("price")
         prop.description = request.form.get("description")
         prop.status = request.form.get("status") or prop.status
-        # Building fields (optional)
+        # Building fields
         num_apartments_raw = (request.form.get("num_apartments") or "").strip()
         num_floors_raw = (request.form.get("num_floors") or "").strip()
         prop.num_apartments = int(num_apartments_raw) if num_apartments_raw.isdigit() else None
         prop.num_floors = int(num_floors_raw) if num_floors_raw.isdigit() else None
+        # Standalone apartment fields
+        if prop.property_type == "apartment":
+            prop.number = (request.form.get("number") or "").strip() or None
+            floor_raw = (request.form.get("floor") or "").strip()
+            area_raw = (request.form.get("area_sqm") or "").strip()
+            bedrooms_raw = (request.form.get("bedrooms") or "").strip()
+            bathrooms_raw = (request.form.get("bathrooms") or "").strip()
+            prop.floor = int(floor_raw) if floor_raw.isdigit() else None
+            prop.area_sqm = area_raw or None
+            prop.bedrooms = int(bedrooms_raw) if bedrooms_raw.isdigit() else None
+            prop.bathrooms = int(bathrooms_raw) if bathrooms_raw.isdigit() else None
         images_files = request.files.getlist("images")
         if images_files:
             upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "properties")
