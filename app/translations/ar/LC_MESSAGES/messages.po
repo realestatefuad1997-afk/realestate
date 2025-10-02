@@ -117,6 +117,9 @@ msgstr "تم تحديث العقار"
 msgid "Property deleted"
 msgstr "تم حذف العقار"
 
+msgid "Images"
+msgstr "الصور"
+
 msgid "Tenant Dashboard"
 msgstr "لوحة تحكم المستأجر"
 

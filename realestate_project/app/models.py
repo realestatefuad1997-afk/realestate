@@ -15,3 +15,17 @@ class Property(db.Model):
     price = db.Column(db.Float)
     is_rented = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # Relationship to property images
+    images = db.relationship(
+        "PropertyImage",
+        backref="property",
+        cascade="all, delete-orphan",
+        lazy=True,
+    )
+
+
+class PropertyImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    property_id = db.Column(db.Integer, db.ForeignKey("property.id"), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
