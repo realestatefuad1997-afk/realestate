@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2 class="mb-3">إضافة عقار جديد</h2>
+  <form method="post" enctype="multipart/form-data" class="card p-3">
+    <div class="mb-3">
+      <label class="form-label">العنوان</label>
+      <input type="text" name="title" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">الوصف</label>
+      <textarea name="description" class="form-control" rows="4"></textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">السعر</label>
+      <input type="number" step="0.01" name="price" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">صور العقار</label>
+      <input type="file" name="images" class="form-control" accept="image/*" multiple>
+      <div class="form-text">يسمح بالامتدادات: PNG, JPG, JPEG, GIF, WEBP</div>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">حفظ</button>
+      <a href="{{ url_for('properties.list_properties') }}" class="btn btn-secondary">إلغاء</a>
+    </div>
+  </form>
+{% endblock %}

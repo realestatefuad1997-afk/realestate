@@ -1,10 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
-  <h2>قائمة العقارات</h2>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">قائمة العقارات</h2>
+    <a href="{{ url_for('properties.create_property') }}" class="btn btn-success">+ إضافة عقار</a>
+  </div>
   <div class="row">
     {% for p in properties %}
       <div class="col-md-4">
         <div class="card mb-3">
+          {% if p.images and p.images|length > 0 %}
+            <img src="{{ url_for('static', filename='uploads/' ~ p.images[0].filename) }}" class="card-img-top" alt="صورة العقار">
+          {% endif %}
           <div class="card-body">
             <h5 class="card-title">{{ p.title }}</h5>
             <p class="card-text">{{ p.description or "لا وصف" }}</p>
