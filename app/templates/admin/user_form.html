@@ -50,10 +50,17 @@
         <label class="form-label">{{ _('Username') }}</label>
         <input type="text" name="username" class="form-control" value="{{ username_value|default('') }}" required />
       </div>
+      {% if role == 'employee' %}
       <div class="mb-3">
         <label class="form-label">{{ _('Email') }}</label>
         <input type="email" name="email" class="form-control" value="{{ email_value|default('') }}" required />
       </div>
+      {% else %}
+      <div class="mb-3">
+        <label class="form-label">{{ _('Phone') }}</label>
+        <input type="tel" name="phone" class="form-control" value="{{ phone_value|default('') }}" required />
+      </div>
+      {% endif %}
       <div class="mb-3">
         <label class="form-label">{{ _('Password') }}</label>
         <input type="password" name="password" class="form-control" required />
@@ -61,15 +68,24 @@
       {% if role == 'tenant' %}
       <div class="mb-3">
         <label class="form-label">{{ _('Property to lease') }}</label>
-        <select class="form-select" name="property_id" required>
+        <select class="form-select" id="propertySelect" name="property_id" required>
           <option value="">{{ _('Select a property') }}</option>
           {% for p in properties or [] %}
-            <option value="{{ p.id }}" {% if selected_property_id and (selected_property_id|string) == (p.id|string) %}selected{% endif %}>
-              {{ p.title }} - {{ _('Price') }}: {{ p.price }}
+            <option value="{{ p.id }}" data-type="{{ p.property_type }}" {% if selected_property_id and (selected_property_id|string) == (p.id|string) %}selected{% endif %}>
+              {% if p.property_type == 'building' %}🏢{% else %}🏠{% endif %}
+              {{ p.title }}
+              {% if p.property_type == 'apartment' %}- {{ _('Price') }}: {{ p.price }}{% endif %}
             </option>
           {% endfor %}
         </select>
-        <div class="form-text">{{ _('Only properties without an active contract are listed.') }}</div>
+        <div class="form-text">{{ _('Buildings will require selecting an apartment') }}</div>
+      </div>
+      <div class="mb-3" id="apartmentGroup" style="display:none;">
+        <label class="form-label">{{ _('Apartment in building') }}</label>
+        <select class="form-select" id="apartmentSelect" name="apartment_id">
+          <option value="">{{ _('Select an apartment') }}</option>
+        </select>
+        <div class="form-text">{{ _('Only available apartments are listed.') }}</div>
       </div>
       {% endif %}
       <div class="d-flex gap-2 mt-3">
@@ -82,4 +98,48 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+{% if role == 'tenant' %}
+<script>
+  const propertySelect = document.getElementById('propertySelect');
+  const apartmentGroup = document.getElementById('apartmentGroup');
+  const apartmentSelect = document.getElementById('apartmentSelect');
+
+  async function loadApartments(buildingId) {
+    apartmentSelect.innerHTML = `<option value="">${"{{ _('Select an apartment') }}"}</option>`;
+    try {
+      const resp = await fetch(`{{ url_for('admin.api_building_apartments', building_id=0) }}`.replace('/0/', `/${buildingId}/`) + '?status=available');
+      if (!resp.ok) return;
+      const data = await resp.json();
+      for (const a of data) {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.label;
+        if ('{{ selected_apartment_id|default('') }}' && '{{ selected_apartment_id|default('') }}' == String(a.id)) {
+          opt.selected = true;
+        }
+        apartmentSelect.appendChild(opt);
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function onPropertyChange() {
+    const selected = propertySelect.options[propertySelect.selectedIndex];
+    const type = selected?.dataset?.type;
+    if (type === 'building') {
+      apartmentGroup.style.display = '';
+      loadApartments(propertySelect.value);
+    } else {
+      apartmentGroup.style.display = 'none';
+      apartmentSelect.innerHTML = `<option value="">${"{{ _('Select an apartment') }}"}</option>`;
+    }
+  }
+
+  propertySelect?.addEventListener('change', onPropertyChange);
+  // Initialize on load if preselected
+  onPropertyChange();
+</script>
+{% endif %}
 {% endblock %}
