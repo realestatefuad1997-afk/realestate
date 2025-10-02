@@ -2,117 +2,122 @@
 {% block title %}{{ _('Tenant Dashboard') }}{% endblock %}
 
 {% block content %}
+<style>
+/* شبكة الكروت */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* كرت المعلومات */
+.card-tenant {
+  border-radius: 15px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  transition: 0.3s;
+  cursor: pointer;
+}
+.card-tenant:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+}
+
+.card-tenant h6 {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.card-tenant .badge {
+  font-size: 0.85rem;
+}
+
+.card-tenant .small-text {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+/* ألوان الحالة */
+.bg-new { background-color: #0d6efd; color: #fff; }
+.bg-in_progress { background-color: #ffc107; color: #212529; }
+.bg-resolved { background-color: #198754; color: #fff; }
+.bg-closed { background-color: #6c757d; color: #fff; }
+.bg-active { background-color: #198754; color: #fff; }
+.bg-pending { background-color: #ffc107; color: #212529; }
+.bg-expired { background-color: #6c757d; color: #fff; }
+.bg-paid { background-color: #198754; color: #fff; }
+.bg-unpaid { background-color: #ffc107; color: #212529; }
+
+.card-header {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+</style>
+
 <h3 class="mb-4">{{ _('Tenant Dashboard') }}</h3>
 
-<div class="row">
-
-  <!-- My Contracts -->
-  <div class="col-md-6 mb-4">
-    <h5>{{ _('My Contracts') }}</h5>
-    <ul class="list-group">
-      {% for c in contracts %}
-      {% set badge_class = {
-          'active':'bg-success',
-          'pending':'bg-warning text-dark',
-          'expired':'bg-secondary'
-      }[c.status] %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <strong>#{{ c.id }} - {{ c.property.title }}</strong>
-          <div class="text-muted small">{{ _('Start') }}: {{ c.start_date }} — {{ _('End') }}: {{ c.end_date }}</div>
-        </div>
-        <span class="badge {{ badge_class }}">{{ c.status }}</span>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+<!-- عقودي والمدفوعات -->
+<div class="dashboard-grid">
+  {% for c in contracts %}
+  <div class="card-tenant">
+    <h6>{{ _('Contract') }} #{{ c.id }} - {{ c.property.title }}</h6>
+    <div class="small-text">{{ _('Start') }}: {{ c.start_date }} — {{ _('End') }}: {{ c.end_date }}</div>
+    {% set status_class = {
+        'active':'bg-active',
+        'pending':'bg-pending',
+        'expired':'bg-expired'
+    }[c.status] %}
+    <span class="badge {{ status_class }}">{{ c.status }}</span>
   </div>
+  {% else %}
+  <div class="card-tenant">{{ _('No contracts available') }}</div>
+  {% endfor %}
 
-  <!-- Invoices & Payments -->
-  <div class="col-md-6 mb-4">
-    <h5>{{ _('Invoices & Payments') }}</h5>
-    <ul class="list-group">
-      {% for p in payments %}
-      {% set badge_class = 'text-bg-success' if p.status=='paid' else 'text-bg-warning' %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <strong>{{ _('Amount') }}: {{ p.amount }}</strong>
-          <div class="text-muted small">{{ _('Due') }}: {{ p.due_date }}</div>
-        </div>
-        <span class="badge {{ badge_class }}">{{ p.status }}</span>
-      </li>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+  {% for p in payments %}
+  <div class="card-tenant">
+    <h6>{{ _('Payment') }} #{{ p.id }}</h6>
+    <div class="small-text">{{ _('Amount') }}: {{ p.amount }}</div>
+    <div class="small-text">{{ _('Due') }}: {{ p.due_date }}</div>
+    {% set pay_class = 'bg-paid' if p.status=='paid' else 'bg-unpaid' %}
+    <span class="badge {{ pay_class }}">{{ p.status }}</span>
   </div>
-
+  {% else %}
+  <div class="card-tenant">{{ _('No payments available') }}</div>
+  {% endfor %}
 </div>
 
-<div class="row">
-
-  <!-- My Maintenance Requests -->
-  <div class="col-md-6 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h5>{{ _('My Maintenance Requests') }}</h5>
-      <a class="btn btn-sm btn-primary" href="{{ url_for('tenant.maintenance_create') }}">{{ _('New Request') }}</a>
-    </div>
-    <ul class="list-group">
-      {% for m in maintenance_requests %}
-      {% set badge_class = {
-          'new':'bg-primary',
-          'in_progress':'bg-warning text-dark',
-          'resolved':'bg-success',
-          'closed':'bg-secondary'
-      }[m.status] %}
-      <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-start" href="{{ url_for('tenant.maintenance_show', request_id=m.id) }}">
-        <div>
-          <strong>{{ m.title }}</strong>
-          <div class="text-muted small">{{ m.description }}</div>
-          {% if m.notes %}
-          <div class="text-primary small">{{ _('Employee notes') }}: {{ m.notes }}</div>
-          {% endif %}
-          <div class="text-muted small"><i class="bi bi-clock"></i> {{ _('Created at') }}: {{ m.created_at }}</div>
-        </div>
-        <span class="badge {{ badge_class }}">{{ m.status }}</span>
-      </a>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+<!-- طلبات الصيانة والشكاوى -->
+<h5 class="mb-3">{{ _('Maintenance & Complaints') }}</h5>
+<div class="dashboard-grid">
+  {% for m in maintenance_requests %}
+  <div class="card-tenant" onclick="window.location.href='{{ url_for('tenant.maintenance_show', request_id=m.id) }}'">
+    <h6>{{ m.title }}</h6>
+    <div class="small-text">{{ m.description }}</div>
+    {% if m.notes %}
+    <div class="small-text text-primary">{{ _('Employee notes') }}: {{ m.notes }}</div>
+    {% endif %}
+    <div class="small-text"><i class="bi bi-clock"></i> {{ _('Created at') }}: {{ m.created_at }}</div>
+    <span class="badge {{ m.status }}">{{ m.status }}</span>
   </div>
+  {% else %}
+  <div class="card-tenant">{{ _('No maintenance requests') }}</div>
+  {% endfor %}
 
-  <!-- My Complaints -->
-  <div class="col-md-6 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h5>{{ _('My Complaints') }}</h5>
-      <a class="btn btn-sm btn-primary" href="{{ url_for('tenant.complaint_create') }}">{{ _('New Complaint') }}</a>
-    </div>
-    <ul class="list-group">
-      {% for c in complaints %}
-      {% set badge_class = {
-          'new':'bg-primary',
-          'reviewing':'bg-warning text-dark',
-          'resolved':'bg-success',
-          'closed':'bg-secondary'
-      }[c.status] %}
-      <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-start" href="{{ url_for('tenant.complaint_show', complaint_id=c.id) }}">
-        <div>
-          <strong>{{ c.subject }}</strong>
-          <div class="text-muted small">{{ c.description }}</div>
-          {% if c.notes %}
-          <div class="text-primary small">{{ _('Employee notes') }}: {{ c.notes }}</div>
-          {% endif %}
-          <div class="text-muted small"><i class="bi bi-clock"></i> {{ _('Created at') }}: {{ c.created_at }}</div>
-        </div>
-        <span class="badge {{ badge_class }}">{{ c.status }}</span>
-      </a>
-      {% else %}
-      <li class="list-group-item">{{ _('No data') }}</li>
-      {% endfor %}
-    </ul>
+  {% for c in complaints %}
+  <div class="card-tenant" onclick="window.location.href='{{ url_for('tenant.complaint_show', complaint_id=c.id) }}'">
+    <h6>{{ c.subject }}</h6>
+    <div class="small-text">{{ c.description }}</div>
+    {% if c.notes %}
+    <div class="small-text text-primary">{{ _('Employee notes') }}: {{ c.notes }}</div>
+    {% endif %}
+    <div class="small-text"><i class="bi bi-clock"></i> {{ _('Created at') }}: {{ c.created_at }}</div>
+    <span class="badge {{ c.status }}">{{ c.status }}</span>
   </div>
-
+  {% else %}
+  <div class="card-tenant">{{ _('No complaints') }}</div>
+  {% endfor %}
 </div>
+
 {% endblock %}

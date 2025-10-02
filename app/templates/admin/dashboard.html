@@ -2,35 +2,41 @@
 {% block title %}{{ _('Admin Dashboard') }}{% endblock %}
 
 {% block content %}
-<!-- Custom CSS -->
 <style>
-.dashboard-header {
-  background: linear-gradient(135deg, #0d6efd, #6610f2);
-  color: #fff;
-  padding: 25px;
-  border-radius: 15px;
-  margin-bottom: 30px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-.dashboard-header h2 {
-  margin: 0;
-  font-weight: 700;
+/* شبكة الكروت */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
+/* كرت الإحصائية */
 .stat-card {
-  border: none;
   border-radius: 15px;
   padding: 20px;
   color: #fff;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
   transition: 0.3s;
 }
 .stat-card:hover {
   transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
-.stat-icon {
-  font-size: 2rem;
-  opacity: 0.8;
+
+.stat-card i {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+
+.stat-card span {
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .bg-income { background: linear-gradient(135deg, #28a745, #20c997); }
@@ -38,132 +44,73 @@
 .bg-profit { background: linear-gradient(135deg, #0d6efd, #6ea8fe); }
 .bg-house { background: linear-gradient(135deg, #6f42c1, #a56eff); }
 .bg-maint { background: linear-gradient(135deg, #fd7e14, #ffb86c); }
-
-.table-card {
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-}
+.bg-employee { background: linear-gradient(135deg, #20c997, #0dcaf0); }
+.bg-tenant { background: linear-gradient(135deg, #ffc107, #ffca2c); }
 </style>
 
-<!-- Header -->
-<div class="dashboard-header d-flex justify-content-between align-items-center">
-  <h2>{{ _('Admin Dashboard') }}</h2>
-  <div>
-    <a class="btn btn-light btn-sm me-2" href="{{ url_for('admin.create_user', role='employee') }}">
-      <i class="bi bi-person-plus"></i> {{ _('Add Employee') }}
-    </a>
-    <a class="btn btn-outline-light btn-sm" href="{{ url_for('admin.create_user', role='tenant') }}">
-      <i class="bi bi-person-plus-fill"></i> {{ _('Add Tenant') }}
-    </a>
+<h2 class="mb-4">{{ _('Admin Dashboard') }}</h2>
+
+<!-- شبكة كروت الإحصائيات -->
+<div class="dashboard-grid">
+  <div class="stat-card bg-income">
+    <i class="bi bi-cash-stack"></i>
+    <span>{{ _('Income') }}</span>
+    <span>{{ total_income }}</span>
+  </div>
+  <div class="stat-card bg-expense">
+    <i class="bi bi-wallet2"></i>
+    <span>{{ _('Expenses') }}</span>
+    <span>{{ total_expenses }}</span>
+  </div>
+  <div class="stat-card bg-profit">
+    <i class="bi bi-graph-up"></i>
+    <span>{{ _('Profit') }}</span>
+    <span>{{ profit }}</span>
+  </div>
+  <div class="stat-card bg-house">
+    <i class="bi bi-house-door"></i>
+    <span>{{ _('Unleased Properties') }}</span>
+    <span>{{ unleased_properties }}</span>
+  </div>
+  <div class="stat-card bg-maint">
+    <i class="bi bi-tools"></i>
+    <span>{{ _('Maintenance >24h') }}</span>
+    <span>{{ overdue_maintenance_24h }}</span>
+  </div>
+  <div class="stat-card bg-employee">
+    <i class="bi bi-person"></i>
+    <span>{{ _('Employees') }}</span>
+    <span>{{ total_employees }}</span>
+  </div>
+  <div class="stat-card bg-tenant">
+    <i class="bi bi-people"></i>
+    <span>{{ _('Tenants') }}</span>
+    <span>{{ total_tenants }}</span>
   </div>
 </div>
 
-<!-- Stats Row -->
-<div class="row g-3">
-  <div class="col-md-4">
-    <div class="stat-card bg-income">
-      <div class="d-flex justify-content-between">
-        <div>
-          <h6>{{ _('Income') }}</h6>
-          <h3>{{ total_income }}</h3>
-        </div>
-        <i class="bi bi-cash-stack stat-icon"></i>
-      </div>
-    </div>
+<!-- أحدث الشكاوى والصيانات -->
+<h5 class="mt-4 mb-2">{{ _('Latest Complaints & Maintenance') }}</h5>
+<div class="dashboard-grid">
+  {% for c in latest_complaints %}
+  <div class="stat-card bg-secondary text-dark">
+    <i class="bi bi-exclamation-triangle"></i>
+    <span>{{ c.subject }}</span>
+    <span>#{{ c.id }} - {{ c.status }}</span>
   </div>
-  <div class="col-md-4">
-    <div class="stat-card bg-expense">
-      <div class="d-flex justify-content-between">
-        <div>
-          <h6>{{ _('Expenses') }}</h6>
-          <h3>{{ total_expenses }}</h3>
-        </div>
-        <i class="bi bi-wallet2 stat-icon"></i>
-      </div>
-    </div>
+  {% else %}
+  <div class="stat-card bg-light text-dark">{{ _('No complaints') }}</div>
+  {% endfor %}
+
+  {% for m in latest_maintenance %}
+  <div class="stat-card bg-light text-dark">
+    <i class="bi bi-tools"></i>
+    <span>{{ m.title }}</span>
+    <span>#{{ m.id }} - {{ m.status }}</span>
   </div>
-  <div class="col-md-4">
-    <div class="stat-card bg-profit">
-      <div class="d-flex justify-content-between">
-        <div>
-          <h6>{{ _('Profit') }}</h6>
-          <h3>{{ profit }}</h3>
-        </div>
-        <i class="bi bi-graph-up stat-icon"></i>
-      </div>
-    </div>
-  </div>
+  {% else %}
+  <div class="stat-card bg-light text-dark">{{ _('No maintenance requests') }}</div>
+  {% endfor %}
 </div>
 
-<div class="row g-3 mt-2">
-  <div class="col-md-6">
-    <div class="stat-card bg-house">
-      <div class="d-flex justify-content-between">
-        <div>
-          <h6>{{ _('Unleased Properties') }}</h6>
-          <h3>{{ unleased_properties }}</h3>
-        </div>
-        <i class="bi bi-house-door stat-icon"></i>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="stat-card bg-maint">
-      <div class="d-flex justify-content-between">
-        <div>
-          <h6>{{ _('Maintenance Requests > 24h') }}</h6>
-          <h3>{{ overdue_maintenance_24h }}</h3>
-        </div>
-        <i class="bi bi-tools stat-icon"></i>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Latest Data -->
-<div class="row mt-4">
-  <div class="col-md-6">
-    <div class="card table-card">
-      <div class="card-header fw-bold">{{ _('Latest Complaints') }}</div>
-      <div class="card-body p-0">
-        <table class="table mb-0">
-          <thead><tr><th>ID</th><th>{{ _('Subject') }}</th><th>{{ _('Status') }}</th></tr></thead>
-          <tbody>
-            {% for c in latest_complaints %}
-            <tr>
-              <td>#{{ c.id }}</td>
-              <td>{{ c.subject }}</td>
-              <td><span class="badge bg-secondary">{{ c.status }}</span></td>
-            </tr>
-            {% else %}
-            <tr><td colspan="3">{{ _('No data') }}</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-6">
-    <div class="card table-card">
-      <div class="card-header fw-bold">{{ _('Latest Maintenance Requests') }}</div>
-      <div class="card-body p-0">
-        <table class="table mb-0">
-          <thead><tr><th>ID</th><th>{{ _('Title') }}</th><th>{{ _('Status') }}</th></tr></thead>
-          <tbody>
-            {% for m in latest_maintenance %}
-            <tr>
-              <td>#{{ m.id }}</td>
-              <td>{{ m.title }}</td>
-              <td><span class="badge bg-secondary">{{ m.status }}</span></td>
-            </tr>
-            {% else %}
-            <tr><td colspan="3">{{ _('No data') }}</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
 {% endblock %}
