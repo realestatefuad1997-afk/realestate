@@ -112,9 +112,10 @@
   const apartmentGroup = document.getElementById('apartmentGroup');
   const apartmentSelect = document.getElementById('apartmentSelect');
   const apartmentNumberInput = document.getElementById('apartmentNumberInput');
+  const SELECT_APT_TEXT = "{{ _('Select an apartment') }}";
 
   async function loadApartments(buildingId) {
-    apartmentSelect.innerHTML = `<option value="">${"{{ _('Select an apartment') }}"}</option>`;
+    apartmentSelect.innerHTML = `<option value="">${SELECT_APT_TEXT}</option>`;
     try {
       const resp = await fetch(`{{ url_for('admin.api_building_apartments', building_id=0) }}`.replace('/0/', `/${buildingId}/`) + '?status=available');
       if (!resp.ok) return;
@@ -123,10 +124,16 @@
         const opt = document.createElement('option');
         opt.value = a.id;
         opt.textContent = a.label;
+        opt.dataset.number = a.number || '';
         if ('{{ selected_apartment_id|default('') }}' && '{{ selected_apartment_id|default('') }}' == String(a.id)) {
           opt.selected = true;
         }
         apartmentSelect.appendChild(opt);
+      }
+      // If an apartment is preselected or has just been selected, reflect its number
+      const selectedOpt = apartmentSelect.options[apartmentSelect.selectedIndex];
+      if (selectedOpt && selectedOpt.value && apartmentNumberInput) {
+        apartmentNumberInput.value = selectedOpt.dataset.number || '';
       }
     } catch (e) { /* ignore */ }
   }
@@ -135,16 +142,23 @@
     const selected = propertySelect.options[propertySelect.selectedIndex];
     const type = selected?.dataset?.type;
     if (type === 'building') {
-      apartmentGroup.style.display = '';
+      apartmentGroup.style.display = 'block';
+      if (apartmentNumberInput) apartmentNumberInput.value = '';
       loadApartments(propertySelect.value);
     } else {
       apartmentGroup.style.display = 'none';
-      apartmentSelect.innerHTML = `<option value="">${"{{ _('Select an apartment') }}"}</option>`;
+      apartmentSelect.innerHTML = `<option value="">${SELECT_APT_TEXT}</option>`;
       if (apartmentNumberInput) apartmentNumberInput.value = '';
     }
   }
 
   propertySelect?.addEventListener('change', onPropertyChange);
+  apartmentSelect?.addEventListener('change', () => {
+    const opt = apartmentSelect.options[apartmentSelect.selectedIndex];
+    if (apartmentNumberInput) {
+      apartmentNumberInput.value = opt?.dataset?.number || '';
+    }
+  });
   // Initialize on load if preselected
   onPropertyChange();
 </script>
