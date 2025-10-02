@@ -70,6 +70,20 @@
 
 <h3 class="mb-4">{{ _('Tenant Dashboard') }}</h3>
 
+<!-- إجراءات سريعة -->
+<div class="dashboard-grid mb-4">
+  <a class="card-tenant text-decoration-none text-dark" href="{{ url_for('tenant.maintenance_create') }}">
+    <i class="bi bi-tools icon"></i>
+    <h6>{{ _('New Maintenance Request') }}</h6>
+    <div class="small-text">{{ _('Report an issue or request service') }}</div>
+  </a>
+  <a class="card-tenant text-decoration-none text-dark" href="{{ url_for('tenant.complaint_create') }}">
+    <i class="bi bi-exclamation-triangle icon"></i>
+    <h6>{{ _('New Complaint') }}</h6>
+    <div class="small-text">{{ _('Submit a complaint to management') }}</div>
+  </a>
+</div>
+
 <!-- عقودي ومدفوعاتي -->
 <div class="dashboard-grid">
   {% for c in contracts %}
@@ -115,7 +129,13 @@
     <div class="small-text text-primary">{{ _('Employee notes') }}: {{ m.notes }}</div>
     {% endif %}
     <div class="small-text"><i class="bi bi-clock"></i> {{ _('Created at') }}: {{ m.created_at }}</div>
-    <span class="badge-status {{ m.status }}">{{ m.status }}</span>
+    {% set m_class = {
+      'new': 'bg-new',
+      'in_progress': 'bg-in_progress',
+      'resolved': 'bg-resolved',
+      'closed': 'bg-closed'
+    }[m.status] %}
+    <span class="badge-status {{ m_class }}">{{ m.status }}</span>
   </div>
   {% else %}
   <div class="card-tenant">{{ _('No maintenance requests') }}</div>
@@ -130,7 +150,13 @@
     <div class="small-text text-primary">{{ _('Employee notes') }}: {{ c.notes }}</div>
     {% endif %}
     <div class="small-text"><i class="bi bi-clock"></i> {{ _('Created at') }}: {{ c.created_at }}</div>
-    <span class="badge-status {{ c.status }}">{{ c.status }}</span>
+    {% set c_class = {
+      'new': 'bg-new',
+      'reviewing': 'bg-in_progress',
+      'resolved': 'bg-resolved',
+      'closed': 'bg-closed'
+    }[c.status] %}
+    <span class="badge-status {{ c_class }}">{{ c.status }}</span>
   </div>
   {% else %}
   <div class="card-tenant">{{ _('No complaints') }}</div>
