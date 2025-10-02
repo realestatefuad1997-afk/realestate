@@ -2,16 +2,21 @@
 {% block title %}{{ building.title }}{% endblock %}
 
 {% block content %}
-<h4 class="mb-3"><i class="bi bi-house-door me-2"></i>{{ building.title }} - {{ _('Apartments') }}</h4>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0"><i class="bi bi-house-door me-2"></i>{{ building.title }} - {{ _('Apartments') }}</h4>
+  <a href="{{ url_for('employee.apartments_create', building_id=building.id) }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-circle me-1"></i>{{ _('Add Apartment') }}
+  </a>
+</div>
 
 <div class="grid-container">
   {% for a in apartments %}
-  <a href="{{ url_for('employee.apartments_list', building_id=building.id) }}" class="text-decoration-none">
-
+  {% set first_image = (a.images or '').split(',')[0] %}
+  <a href="{{ url_for('employee.apartments_edit', apt_id=a.id) }}" class="text-decoration-none">
     <div class="property-card">
-      <img src="{{ a.image_url or url_for('static', filename='default-apartment.jpg') }}" alt="{{ a.title }}">
+      <img src="{{ first_image and url_for('uploaded_file', filename=first_image) or url_for('static', filename='default-apartment.jpg') }}" alt="{{ a.title or (a.number and ( _('Apartment') ~ ' ' ~ a.number )) or _('Apartment') }}">
       <div class="property-info">
-        <span>{{ a.title }}</span>
+        <span>{{ a.title or (a.number and ( _('Apartment') ~ ' ' ~ a.number )) or _('Apartment') }}</span>
         {% if a.status == 'available' %}
           <span class="property-status status-available">{{ _('Available') }}</span>
         {% elif a.status == 'occupied' %}
