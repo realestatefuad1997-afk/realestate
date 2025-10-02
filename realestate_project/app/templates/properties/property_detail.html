@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">تفاصيل العقار</h2>
+    <div class="d-flex gap-2">
+      <a class="btn btn-secondary" href="{{ url_for('properties.list_properties') }}">رجوع</a>
+      <button class="btn btn-outline-primary" data-share-url="{{ share_url }}" data-share-title="{{ property.title }}" id="share-button">
+        مشاركة
+      </button>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="row g-0">
+      <div class="col-md-6">
+        {% if property.images and property.images|length > 0 %}
+          <img src="{{ url_for('static', filename='uploads/' ~ property.images[0].filename) }}" class="img-fluid rounded-start w-100" alt="صورة العقار">
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center bg-light h-100" style="min-height:240px;">
+            <span class="text-muted">لا توجد صور</span>
+          </div>
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <div class="card-body">
+          <h5 class="card-title">{{ property.title }}</h5>
+          <p class="card-text">{{ property.description or "لا وصف" }}</p>
+          <p class="card-text"><strong>السعر:</strong> {{ property.price or "-" }}</p>
+          <p class="card-text"><small class="text-muted">تم الإنشاء: {{ property.created_at.strftime('%Y-%m-%d %H:%M') if property.created_at else '-' }}</small></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if property.images and property.images|length > 1 %}
+    <div class="row">
+      {% for img in property.images[1:] %}
+        <div class="col-6 col-md-3 mb-3">
+          <img src="{{ url_for('static', filename='uploads/' ~ img.filename) }}" class="img-fluid rounded" alt="صورة إضافية">
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

@@ -15,6 +15,10 @@
             <h5 class="card-title">{{ p.title }}</h5>
             <p class="card-text">{{ p.description or "لا وصف" }}</p>
             <p class="card-text"><strong>السعر:</strong> {{ p.price or "-" }}</p>
+            <div class="d-flex gap-2 mt-2">
+              <a class="btn btn-primary btn-sm" href="{{ url_for('properties.property_detail', property_id=p.id) }}">عرض التفاصيل</a>
+              <button class="btn btn-outline-secondary btn-sm share-btn" data-share-url="{{ url_for('properties.property_detail', property_id=p.id, _external=True) }}" data-share-title="{{ p.title }}">مشاركة</button>
+            </div>
           </div>
         </div>
       </div>

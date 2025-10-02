@@ -61,3 +61,14 @@ def create_property():
         return redirect(url_for("properties.list_properties"))
 
     return render_template("properties/new_property.html")
+
+
+@properties_bp.route("/<int:property_id>")
+def property_detail(property_id: int):
+    prop = Property.query.get_or_404(property_id)
+    share_url = url_for(
+        "properties.property_detail", property_id=property_id, _external=True
+    )
+    return render_template(
+        "properties/property_detail.html", property=prop, share_url=share_url
+    )
