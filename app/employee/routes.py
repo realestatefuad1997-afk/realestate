@@ -86,11 +86,24 @@ def properties_list():
     standalone_apartments = base_apartments_q.order_by(Property.created_at.desc()).all()
     serializer = URLSafeSerializer(current_app.config["SECRET_KEY"], salt="property-share")
     share_tokens = {p.id: serializer.dumps(p.id) for p in buildings + standalone_apartments}
+
+    # Preload apartments for each building to render nested dropdowns
+    apartments_by_building = {}
+    if buildings:
+        building_ids = [b.id for b in buildings]
+        apts = (
+            Apartment.query.filter(Apartment.building_id.in_(building_ids))
+            .order_by(Apartment.number.asc(), Apartment.created_at.desc())
+            .all()
+        )
+        for a in apts:
+            apartments_by_building.setdefault(a.building_id, []).append(a)
     return render_template(
         "employee/properties_list.html",
         buildings=buildings,
         standalone_apartments=standalone_apartments,
         share_tokens=share_tokens,
+        apartments_by_building=apartments_by_building,
         only=only,
     )
 
