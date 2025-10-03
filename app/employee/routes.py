@@ -2,11 +2,12 @@ from flask import Blueprint, render_template, abort, request, redirect, url_for,
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from ..extensions import db
-from ..models import Property, Contract, MaintenanceRequest, Complaint, Apartment, Payment, User
+from ..models import Property, Contract, MaintenanceRequest, Complaint, Apartment, Payment, User, Expense
 from werkzeug.utils import secure_filename
 import uuid
 import os
 from itsdangerous import URLSafeSerializer
+from decimal import Decimal, InvalidOperation
 
 
 employee_bp = Blueprint("employee", __name__)
@@ -476,6 +477,10 @@ def maintenance_update(req_id: int):
     if request.method == "POST":
         status = (request.form.get("status") or "").strip()
         notes = request.form.get("notes")
+        # Optional expense fields
+        expense_amount_raw = (request.form.get("expense_amount") or "").strip()
+        expense_desc = (request.form.get("expense_description") or "").strip() or None
+        expense_date_raw = (request.form.get("expense_date") or "").strip()
         allowed_statuses = {"new", "in_progress", "resolved", "closed"}
         if status and status not in allowed_statuses:
             flash(_("Invalid status"), "danger")
@@ -483,8 +488,44 @@ def maintenance_update(req_id: int):
         if status:
             m.status = status
         m.notes = (notes or "").strip()
+        # Record expense if amount provided and valid
+        if expense_amount_raw:
+            try:
+                amount_val = Decimal(expense_amount_raw)
+            except (InvalidOperation, ValueError):
+                flash(_("Invalid expense amount"), "danger")
+                return redirect(url_for("employee.maintenance_update", req_id=req_id))
+            if amount_val <= 0:
+                flash(_("Expense amount must be greater than zero"), "danger")
+                return redirect(url_for("employee.maintenance_update", req_id=req_id))
+            from datetime import date as _date
+            expense_date_val = None
+            if expense_date_raw:
+                try:
+                    # expect YYYY-MM-DD
+                    parts = [int(p) for p in expense_date_raw.split("-")]
+                    expense_date_val = _date(parts[0], parts[1], parts[2])
+                except Exception:
+                    flash(_("Invalid expense date"), "danger")
+                    return redirect(url_for("employee.maintenance_update", req_id=req_id))
+            else:
+                expense_date_val = _date.today()
+
+            exp = Expense(
+                amount=amount_val,
+                description=expense_desc,
+                category="maintenance",
+                maintenance_request_id=m.id,
+                property_id=m.property_id,
+                date=expense_date_val,
+                recorded_by=current_user.id,
+            )
+            db.session.add(exp)
         db.session.commit()
-        flash(_("Maintenance request updated"), "success")
+        if expense_amount_raw:
+            flash(_("Maintenance expense recorded and request updated"), "success")
+        else:
+            flash(_("Maintenance request updated"), "success")
         return redirect(url_for("employee.dashboard"))
     return render_template("employee/maintenance_update.html", m=m)
 
