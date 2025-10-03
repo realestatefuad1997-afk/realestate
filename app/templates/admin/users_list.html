@@ -19,17 +19,28 @@
     padding: 1rem 1.5rem;
 }
 
-.card-header h5 {
-    font-size: 1.25rem;
-}
-
-.btn-primary, .btn-outline-primary, .btn-success {
-    border-radius: 8px;
+.btn-primary, .btn-success {
+    border-radius: 10px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.12);
     transition: all 0.25s ease-in-out;
 }
 
-.btn-primary:hover, .btn-outline-primary:hover, .btn-success:hover {
+.btn-outline-primary {
+    border-radius: 10px;
+    border: 2px solid #198754;
+    color: #198754;
+    background-color: #e9fbe9;
+    font-weight: 500;
+    transition: all 0.25s ease-in-out;
+}
+
+.btn-outline-primary:hover {
+    background-color: #198754;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-primary:hover, .btn-success:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
@@ -53,26 +64,39 @@
     vertical-align: middle;
 }
 
+/* Badge Roles */
 .badge-role {
     padding: 0.4em 0.8em;
     border-radius: 8px;
     font-size: 0.8rem;
 }
 .badge-employee { background-color: #ffe69c; color: #856404; }
-.badge-tenant { background-color: #c7f9cc; color: #056608; }
+.badge-tenant { background-color: #b6f7c1; color: #056608; }
+
+/* Responsive */
+@media (max-width: 767px) {
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    .header-actions a, .header-actions span {
+        width: 100%;
+        text-align: center;
+    }
+}
 </style>
 
 <div class="card">
   <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
     <h5 class="mb-2 mb-md-0"><i class="bi bi-people-fill me-2"></i>{{ _('Users Management') }}</h5>
-    <div class="d-flex flex-wrap align-items-center gap-2">
+    <div class="d-flex flex-wrap align-items-center gap-2 header-actions">
       <a class="btn btn-sm btn-primary" href="{{ url_for('admin.create_user', role='employee') }}">
         <i class="bi bi-person-plus me-1"></i>{{ _('Add Employee') }}
       </a>
       <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.create_user', role='tenant') }}">
         <i class="bi bi-person-plus-fill me-1"></i>{{ _('Add Tenant') }}
       </a>
-      <span class="badge bg-light text-dark ms-md-3">{{ _('Total') }}: {{ users|length }}</span>
+      <span class="badge bg-light text-dark">{{ _('Total') }}: {{ users|length }}</span>
     </div>
   </div>
 
