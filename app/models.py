@@ -168,3 +168,23 @@ class Complaint(db.Model, TimestampMixin):
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), nullable=False, default="new")  # new, reviewing, resolved, closed
     notes = db.Column(db.Text)
+
+
+class Expense(db.Model, TimestampMixin):
+    __tablename__ = "expenses"
+
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(100), nullable=False, default="maintenance")
+    maintenance_request_id = db.Column(
+        db.Integer, db.ForeignKey("maintenance_requests.id"), nullable=True, index=True
+    )
+    property_id = db.Column(db.Integer, db.ForeignKey("properties.id"), nullable=True, index=True)
+    date = db.Column(db.Date, nullable=True)
+    recorded_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+    # Relationships (optional, convenient for queries/templates)
+    maintenance_request = db.relationship("MaintenanceRequest", backref="expenses")
+    property = db.relationship("Property")
+    recorded_by_user = db.relationship("User")
