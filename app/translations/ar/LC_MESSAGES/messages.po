@@ -229,6 +229,9 @@ msgstr "لوحة تحكم المشرف"
 msgid "Add Employee"
 msgstr "إضافة موظف"
 
+msgid "Add Employee / Accountant"
+msgstr "إضافة موظف / محاسب"
+
 msgid "Add Tenant"
 msgstr "إضافة مستأجر"
 
@@ -354,6 +357,9 @@ msgstr "اسم المستخدم أو البريد موجود مسبقاً"
 
 msgid "Employee created successfully"
 msgstr "تم إنشاء الموظف بنجاح"
+
+msgid "Accountant created successfully"
+msgstr "تم إنشاء محاسب بنجاح"
 
 msgid "Tenant created successfully"
 msgstr "تم إنشاء المستأجر بنجاح"

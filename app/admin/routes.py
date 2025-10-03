@@ -165,6 +165,10 @@ def create_user(role: str):
         email = (request.form.get("email", "").strip() or None)
         phone = (request.form.get("phone", "").strip() or None)
         password = request.form.get("password", "")
+        # For employee creation, allow selecting between employee and accountant
+        selected_user_role = (request.form.get("user_role") or role).strip().lower()
+        if role == "employee" and selected_user_role not in {"employee", "accountant"}:
+            selected_user_role = "employee"
         selected_property_id = (request.form.get("property_id") or "").strip()
         selected_apartment_id = (request.form.get("apartment_id") or "").strip()
         entered_apartment_number = (request.form.get("apartment_number") or "").strip()
@@ -178,6 +182,7 @@ def create_user(role: str):
                     role=role,
                     username_value=username,
                     email_value=email or "",
+                    selected_user_role=selected_user_role,
                     properties=None,
                 )
         else:  # tenant
@@ -340,7 +345,7 @@ def create_user(role: str):
 
         # Create user
         if role == "employee":
-            new_user = User(username=username, email=email, role=role)
+            new_user = User(username=username, email=email, role=selected_user_role)
         else:
             new_user = User(username=username, phone=phone, email=email, role=role)
         new_user.set_password(password)
@@ -348,7 +353,11 @@ def create_user(role: str):
         db.session.commit()
 
         if role == "employee":
-            flash(_("Employee created successfully"), "success")
+            # Tailor success message based on selected role
+            if selected_user_role == "accountant":
+                flash(_("Accountant created successfully"), "success")
+            else:
+                flash(_("Employee created successfully"), "success")
         else:
             # Auto-create a contract for the selected property (and apartment if building)
             start_date = date.today()
