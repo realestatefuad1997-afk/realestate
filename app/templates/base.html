@@ -40,7 +40,13 @@
             <li class="nav-item"><a class="nav-link" href="{{ url_for('tenant.dashboard') }}">{{ _('Tenant') }}</a></li>
             {% endif %}
             {% if current_user.role == 'accountant' %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('accountant.dashboard') }}">{{ _('Accountant') }}</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="acctDropdown" role="button" data-bs-toggle="dropdown">{{ _('Accountant') }}</a>
+              <ul class="dropdown-menu" aria-labelledby="acctDropdown">
+                <li><a class="dropdown-item" href="{{ url_for('accountant.dashboard') }}">{{ _('Payments') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.financial_overview') }}">{{ _('Financial Overview') }}</a></li>
+              </ul>
+            </li>
             {% endif %}
             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">{{ _('Logout') }}</a></li>
             {% endif %}

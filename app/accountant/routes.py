@@ -9,6 +9,8 @@ from reportlab.lib.pagesizes import A4
 from openpyxl import Workbook
 import io
 import os
+from datetime import date
+from sqlalchemy import text
 
 
 accountant_bp = Blueprint("accountant", __name__)
@@ -142,3 +144,115 @@ def export_payments_pdf():
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name="payments.pdf", mimetype="application/pdf")
 
+
+@accountant_bp.route("/overview")
+@login_required
+@accountant_required
+def financial_overview():
+    """Comprehensive financial overview: totals and last 12 months breakdown."""
+    # --- Totals ---
+    total_income = (
+        db.session.query(db.func.coalesce(db.func.sum(Payment.amount), 0))
+        .filter_by(status="paid")
+        .scalar()
+        or 0
+    )
+
+    # Expenses may be in an optional "expenses" table
+    total_expenses = 0
+    monthly_expenses: list[float] = []
+    expenses_date_column = None
+    try:
+        inspector = db.inspect(db.engine)
+        if inspector.has_table("expenses"):
+            # Sum total expenses
+            res = db.session.execute(text("SELECT COALESCE(SUM(amount), 0) FROM expenses"))
+            total_expenses = res.scalar() or 0
+            # Try to detect a usable date column for monthly breakdown
+            cols = inspector.get_columns("expenses")
+            names = {c.get("name") for c in cols}
+            for candidate in ("spent_at", "date", "created_at"):
+                if candidate in names:
+                    expenses_date_column = candidate
+                    break
+    except Exception:
+        total_expenses = 0
+        expenses_date_column = None
+
+    # --- Build last 12 month ranges (ascending) ---
+    def add_months(year: int, month: int, delta: int) -> tuple[int, int]:
+        total = year * 12 + (month - 1) + delta
+        y = total // 12
+        m = (total % 12) + 1
+        return y, m
+
+    def first_of_month(y: int, m: int) -> date:
+        return date(y, m, 1)
+
+    def next_month_start(y: int, m: int) -> date:
+        y2, m2 = add_months(y, m, 1)
+        return date(y2, m2, 1)
+
+    y0, m0 = date.today().year, date.today().month
+    month_ranges: list[tuple[date, date]] = []
+    month_labels: list[str] = []
+    for k in range(11, -1, -1):
+        yk, mk = add_months(y0, m0, -k)
+        start = first_of_month(yk, mk)
+        end = next_month_start(yk, mk)
+        month_ranges.append((start, end))
+        month_labels.append(f"{yk:04d}-{mk:02d}")
+
+    # --- Monthly income ---
+    monthly_income: list[float] = []
+    for start, end in month_ranges:
+        total = (
+            db.session.query(db.func.coalesce(db.func.sum(Payment.amount), 0))
+            .filter(
+                Payment.status == "paid",
+                db.or_(
+                    db.and_(Payment.paid_date != None, Payment.paid_date >= start, Payment.paid_date < end),
+                    db.and_(Payment.paid_date == None, Payment.due_date >= start, Payment.due_date < end),
+                ),
+            )
+            .scalar()
+            or 0
+        )
+        try:
+            monthly_income.append(float(total))
+        except Exception:
+            monthly_income.append(0.0)
+
+    # --- Monthly expenses (if table and date column exist) ---
+    if expenses_date_column is not None:
+        monthly_expenses = []
+        for start, end in month_ranges:
+            q = text(
+                f"SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE {expenses_date_column} >= :start AND {expenses_date_column} < :end"
+            )
+            try:
+                r = db.session.execute(q, {"start": start, "end": end})
+                monthly_expenses.append(float(r.scalar() or 0))
+            except Exception:
+                monthly_expenses.append(0.0)
+    else:
+        monthly_expenses = [0.0 for _ in month_ranges]
+
+    # --- Profits ---
+    try:
+        profit_total = float(total_income) - float(total_expenses)
+    except Exception:
+        profit_total = 0.0
+
+    monthly_profit = [round((monthly_income[i] - monthly_expenses[i]), 2) for i in range(len(month_ranges))]
+
+    return render_template(
+        "accountant/financial_overview.html",
+        total_income=total_income,
+        total_expenses=total_expenses,
+        profit_total=profit_total,
+        month_labels=month_labels,
+        monthly_income=monthly_income,
+        monthly_expenses=monthly_expenses,
+        monthly_profit=monthly_profit,
+    )

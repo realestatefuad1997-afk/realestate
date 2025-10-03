@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Financial Overview') }}{% endblock %}
+{% block content %}
+<h3 class="mb-4">{{ _('Financial Overview') }}</h3>
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted">{{ _('Total Income') }}</span>
+          <span class="fs-5 fw-bold">{{ total_income }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted">{{ _('Total Expenses') }}</span>
+          <span class="fs-5 fw-bold">{{ total_expenses }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted">{{ _('Total Profit') }}</span>
+          <span class="fs-5 fw-bold">{{ profit_total }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>{{ _('Last 12 months') }}</span>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered align-middle mb-0 text-center">
+        <thead>
+          <tr>
+            <th>{{ _('Month') }}</th>
+            <th>{{ _('Income') }}</th>
+            <th>{{ _('Expenses') }}</th>
+            <th>{{ _('Profit') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in range(month_labels|length) %}
+          <tr>
+            <td>{{ month_labels[i] }}</td>
+            <td class="text-success">{{ monthly_income[i] }}</td>
+            <td class="text-danger">{{ monthly_expenses[i] }}</td>
+            <td class="fw-semibold">{{ monthly_profit[i] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex gap-2">
+  <a class="btn btn-outline-secondary" href="{{ url_for('accountant.dashboard') }}">{{ _('Back to Payments') }}</a>
+</div>
+{% endblock %}
