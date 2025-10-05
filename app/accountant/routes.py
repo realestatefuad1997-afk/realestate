@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, abort, request, redirect, url_for,
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from ..extensions import db
-from ..models import Payment, Invoice, Account, JournalEntry, JournalLine, Expense, Contract
+from ..models import Payment, Invoice, Account, JournalEntry, JournalLine, Expense, Contract, User
 from flask import current_app, send_file
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -147,6 +147,96 @@ def dashboard():
         monthly_income=monthly_income,
         monthly_expenses=monthly_expenses,
         monthly_profit=monthly_profit,
+    )
+
+
+# -----------------------
+# Tenants: list + detail/statement
+# -----------------------
+
+
+@accountant_bp.route("/tenants")
+@login_required
+@accountant_required
+def tenants_list():
+    """List all tenants with quick search."""
+    q = (request.args.get("q") or "").strip()
+    tenants_q = User.query.filter_by(role="tenant")
+    if q:
+        from sqlalchemy import or_
+
+        like = f"%{q}%"
+        tenants_q = tenants_q.filter(or_(User.username.ilike(like), User.phone.ilike(like)))
+    tenants = tenants_q.order_by(User.created_at.desc()).all()
+    return render_template("accountant/tenants_list.html", tenants=tenants, q=q)
+
+
+@accountant_bp.route("/tenants/<int:tenant_id>", methods=["GET", "POST"])
+@login_required
+@accountant_required
+def tenant_detail(tenant_id: int):
+    """Show tenant statement and allow recording payments."""
+    tenant = User.query.get_or_404(tenant_id)
+    if tenant.role != "tenant":
+        return abort(404)
+
+    # Create a payment for this tenant (against a selected contract)
+    if request.method == "POST":
+        contract_id = request.form.get("contract_id", type=int)
+        amount = request.form.get("amount", type=float)
+        due_date = request.form.get("due_date")
+        method = (request.form.get("method") or "").strip() or None
+        status = (request.form.get("status") or "unpaid").strip().lower()
+
+        contract = Contract.query.get(contract_id) if contract_id else None
+        if not (contract and contract.tenant_id == tenant.id and amount and amount > 0 and due_date):
+            flash(_("Invalid payment data"), "danger")
+            return redirect(url_for("accountant.tenant_detail", tenant_id=tenant.id))
+
+        p = Payment(
+            contract_id=contract.id,
+            amount=amount,
+            due_date=due_date,
+            method=method,
+            status=("paid" if status == "paid" else "unpaid"),
+        )
+        # If marked as paid now, set paid_date and attempt journal posting later via mark toggle
+        if p.status == "paid":
+            from datetime import date as _date
+
+            p.paid_date = _date.today()
+        db.session.add(p)
+        db.session.commit()
+        # If paid, try to post cash receipt journal entry
+        try:
+            if p.status == "paid":
+                _post_payment_cash_receipt(p)
+        except Exception:
+            pass
+        flash(_("Payment recorded for tenant"), "success")
+        return redirect(url_for("accountant.tenant_detail", tenant_id=tenant.id))
+
+    # Data for statement
+    contracts = Contract.query.filter_by(tenant_id=tenant.id).order_by(Contract.created_at.desc()).all()
+    payments = (
+        Payment.query.join(Contract, Payment.contract_id == Contract.id)
+        .filter(Contract.tenant_id == tenant.id)
+        .order_by(Payment.due_date.desc())
+        .all()
+    )
+
+    total_amount = sum(float(p.amount or 0) for p in payments)
+    total_paid_amount = sum(float(p.amount or 0) for p in payments if (p.status or "").lower() == "paid")
+    total_unpaid_amount = round(total_amount - total_paid_amount, 2)
+
+    return render_template(
+        "accountant/tenant_detail.html",
+        tenant=tenant,
+        contracts=contracts,
+        payments=payments,
+        total_amount=round(total_amount, 2),
+        total_paid_amount=round(total_paid_amount, 2),
+        total_unpaid_amount=total_unpaid_amount,
     )
 
 

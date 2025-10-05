@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Tenant Statement') }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0">{{ _('Tenant') }}: {{ tenant.username }}</h3>
+    <div class="text-muted">{{ _('Phone') }}: {{ tenant.phone or '-' }}</div>
+  </div>
+  <div class="text-end">
+    <div class="badge text-bg-secondary">{{ _('Total') }}: {{ total_amount }}</div>
+    <div class="badge text-bg-success">{{ _('Paid') }}: {{ total_paid_amount }}</div>
+    <div class="badge text-bg-warning">{{ _('Unpaid') }}: {{ total_unpaid_amount }}</div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">{{ _('Record Payment') }}</div>
+  <div class="card-body">
+    <form method="post" class="row gy-2 gx-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">{{ _('Contract') }}</label>
+        <select class="form-select" name="contract_id" required>
+          <option value="">--</option>
+          {% for c in contracts %}
+          <option value="{{ c.id }}">#{{ c.id }} — {{ c.property.title }} — {{ c.rent_amount }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ _('Amount') }}</label>
+        <input class="form-control" name="amount" type="number" step="0.01" required />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ _('Due Date') }}</label>
+        <input class="form-control" name="due_date" type="date" required />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ _('Method') }}</label>
+        <select class="form-select" name="method">
+          <option value="">--</option>
+          <option value="cash">{{ _('Cash') }}</option>
+          <option value="card">{{ _('Card') }}</option>
+          <option value="transfer">{{ _('Bank Transfer') }}</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ _('Status') }}</label>
+        <select class="form-select" name="status">
+          <option value="unpaid">{{ _('Unpaid') }}</option>
+          <option value="paid">{{ _('Paid') }}</option>
+        </select>
+      </div>
+      <div class="col-md-1">
+        <button class="btn btn-success w-100" type="submit">{{ _('Add') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{ _('Due Date') }}</th>
+        <th>{{ _('Amount') }}</th>
+        <th>{{ _('Status') }}</th>
+        <th class="text-end">{{ _('Actions') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.due_date }}</td>
+        <td>{{ p.amount }}</td>
+        <td>
+          <span class="badge {{ 'text-bg-success' if p.status=='paid' else 'text-bg-warning' }}">{{ p.status }}</span>
+        </td>
+        <td class="text-end">
+          <form class="d-inline" method="post" action="{{ url_for('accountant.mark_payment', payment_id=p.id) }}">
+            <input type="hidden" name="status" value="{{ 'unpaid' if p.status=='paid' else 'paid' }}">
+            <button class="btn btn-sm btn-outline-primary" type="submit">{{ _('Toggle') }}</button>
+          </form>
+          <a class="btn btn-sm btn-outline-dark" href="{{ url_for('accountant.generate_invoice', payment_id=p.id) }}">{{ _('Generate Invoice') }}</a>
+          {% if p.invoice %}
+          <a class="btn btn-sm btn-outline-success" href="{{ url_for('accountant.download_invoice', payment_id=p.id) }}">{{ _('Download') }}</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" class="text-center text-muted py-4">{{ _('No data') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
