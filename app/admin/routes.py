@@ -29,6 +29,7 @@ def admin_required(func):
 @login_required
 @admin_required
 def dashboard():
+    # Super Admin dashboard now moved to /superadmin
     # Total units = standalone apartments + apartments within buildings (exclude buildings)
     standalone_apartments_count = Property.query.filter(Property.property_type == "apartment").count()
     building_apartments_count = Apartment.query.count()

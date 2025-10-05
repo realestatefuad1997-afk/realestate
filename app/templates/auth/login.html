@@ -45,6 +45,17 @@ body {
       <div class="card-header"><i class="bi bi-box-arrow-in-right me-2"></i>{{ _('Login') }}</div>
       <div class="card-body">
         <form method="post">
+          {% if companies %}
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-buildings me-1"></i>{{ _('Company') }}</label>
+            <select name="company_id" class="form-select" required>
+              <option value="">{{ _('Select company') }}</option>
+              {% for c in companies %}
+              <option value="{{ c.id }}">{{ c.name }} ({{ c.subdomain }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
           <div class="mb-3">
             <label class="form-label"><i class="bi bi-person me-1"></i>{{ _('Username') }}</label>
             <input type="text" name="username" class="form-control" placeholder="{{ _('Enter username') }}" required />
