@@ -203,6 +203,23 @@ def properties_create():
             )
         prop = Property(**prop_kwargs)
         db.session.add(prop)
+
+        # Auto-create apartments for buildings when a number is provided
+        if property_type == "building":
+            # Ensure we have the property ID assigned before creating apartments
+            db.session.flush()
+            num_apts_to_create = (prop.num_apartments or 0)
+            if num_apts_to_create > 0:
+                apartments_bulk = [
+                    Apartment(
+                        building_id=prop.id,
+                        number=str(i),
+                        status="available",
+                    )
+                    for i in range(1, num_apts_to_create + 1)
+                ]
+                db.session.add_all(apartments_bulk)
+
         db.session.commit()
         flash(_("Property created"), "success")
         return redirect(url_for("employee.properties_list"))
