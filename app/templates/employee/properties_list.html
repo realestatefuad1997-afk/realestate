@@ -61,7 +61,7 @@
 <div class="grid-container mb-4">
   {% for b in buildings %}
   <div class="property-item">
-    <div class="text-decoration-none">
+    <a href="{{ url_for('employee.apartments_list', building_id=b.id) }}" class="text-decoration-none">
       <div class="property-card">
         {% set first_b_image = (b.images or '').split(',')[0] %}
         <img src="{{ first_b_image and url_for('uploaded_file', filename=first_b_image) or url_for('static', filename='default-building.jpg') }}" alt="{{ b.title }}">
@@ -76,7 +76,7 @@
           {% endif %}
         </div>
       </div>
-    </div>
+    </a>
 
     <!-- Apartments dropdown under the building -->
     <div class="mt-1">
