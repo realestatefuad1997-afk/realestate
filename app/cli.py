@@ -29,6 +29,24 @@ def register_cli(app: Flask) -> None:
         db.session.commit()
         click.echo("Admin created")
 
+    @app.cli.command("create-superadmin")
+    @click.option("--username", prompt=True)
+    @click.option("--email", prompt=True)
+    @click.option("--password", prompt=True, hide_input=True, confirmation_prompt=True)
+    def create_superadmin(username: str, email: str, password: str):
+        """Create a global superadmin user in the current (bound) tenant DB.
+
+        Note: Login routes automatically bind to a company DB. Ensure you have selected or are writing to the intended tenant DB when creating users.
+        """
+        if User.query.filter((User.username == username) | (User.email == email)).first():
+            click.echo("User with same username or email already exists")
+            return
+        user = User(username=username, email=email, role="superadmin")
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        click.echo("Superadmin created")
+
     @app.cli.command("seed-data")
     def seed_data():
         # Basic roles users

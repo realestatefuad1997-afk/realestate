@@ -34,6 +34,10 @@ class User(UserMixin, db.Model, TimestampMixin):
         return self.role == "admin"
 
     @property
+    def is_superadmin(self) -> bool:
+        return self.role == "superadmin"
+
+    @property
     def is_employee(self) -> bool:
         return self.role == "employee"
 

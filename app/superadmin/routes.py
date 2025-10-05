@@ -17,7 +17,7 @@ def superadmin_required(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if not current_user.is_authenticated or (current_user.role or "").lower() != "admin":
+        if not current_user.is_authenticated or not current_user.is_superadmin:
             from flask import abort
             return abort(403)
         return func(*args, **kwargs)

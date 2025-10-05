@@ -105,6 +105,7 @@ def create_app(config_class: type = Config) -> Flask:
         if not current_user.is_authenticated:
             return redirect(url_for("auth.login"))
         role_redirect = {
+            "superadmin": "superadmin.dashboard",
             "admin": "admin.dashboard",
             "employee": "employee.dashboard",
             "tenant": "tenant.dashboard",
