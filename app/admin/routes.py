@@ -29,7 +29,10 @@ def admin_required(func):
 @login_required
 @admin_required
 def dashboard():
-    properties_count = Property.query.count()
+    # Total units = standalone apartments + apartments within buildings (exclude buildings)
+    standalone_apartments_count = Property.query.filter(Property.property_type == "apartment").count()
+    building_apartments_count = Apartment.query.count()
+    properties_count = (standalone_apartments_count or 0) + (building_apartments_count or 0)
     # Active contracts overall (legacy metric kept)
     active_contracts = Contract.query.filter_by(status="active").count()
 
@@ -53,9 +56,10 @@ def dashboard():
     # Profit = income - expenses
     profit = (total_income or 0) - (total_expenses or 0)
 
-    # Unleased properties: properties with no active contract covering today
+    # Unleased units: standalone apartments without active contract + building apartments without active contract
     today = date.today()
-    active_props_subq = (
+    # Standalone apartments without active contract
+    active_apartment_props_subq = (
         db.session.query(Contract.property_id)
         .filter(
             Contract.status == "active",
@@ -64,11 +68,46 @@ def dashboard():
         )
         .subquery()
     )
-    unleased_properties = (
+    standalone_unleased = (
         db.session.query(db.func.count(Property.id))
-        .filter(~Property.id.in_(active_props_subq))
+        .filter(
+            Property.property_type == "apartment",
+            ~Property.id.in_(active_apartment_props_subq),
+        )
         .scalar()
     )
+
+    # Building apartments without active contract
+    active_building_apts_subq = (
+        db.session.query(Contract.apartment_id)
+        .filter(
+            Contract.status == "active",
+            Contract.start_date <= today,
+            Contract.end_date >= today,
+            Contract.apartment_id != None,
+        )
+        .subquery()
+    )
+    # Buildings that are fully leased via a building-level contract (no apartment specified)
+    active_leased_buildings_subq = (
+        db.session.query(Contract.property_id)
+        .filter(
+            Contract.status == "active",
+            Contract.start_date <= today,
+            Contract.end_date >= today,
+            Contract.apartment_id == None,
+        )
+        .subquery()
+    )
+    building_apartments_unleased = (
+        db.session.query(db.func.count(Apartment.id))
+        .filter(
+            ~Apartment.id.in_(active_building_apts_subq),
+            ~Apartment.building_id.in_(active_leased_buildings_subq),
+        )
+        .scalar()
+    )
+    unleased_properties = (standalone_unleased or 0) + (building_apartments_unleased or 0)
 
     # Maintenance requests older than 24 hours (optional table)
     overdue_maintenance_24h = 0
