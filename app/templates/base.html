@@ -44,6 +44,14 @@
               <a class="nav-link dropdown-toggle" href="#" id="acctDropdown" role="button" data-bs-toggle="dropdown">{{ _('Accountant') }}</a>
               <ul class="dropdown-menu" aria-labelledby="acctDropdown">
                 <li><a class="dropdown-item" href="{{ url_for('accountant.dashboard') }}">{{ _('Payments') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.accounts') }}">{{ _('Chart of Accounts') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.expenses') }}">{{ _('Expenses') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.journal_new') }}">{{ _('New Journal Entry') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.ledger') }}">{{ _('General Ledger') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.trial_balance') }}">{{ _('Trial Balance') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.income_statement') }}">{{ _('Income Statement') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.balance_sheet') }}">{{ _('Balance Sheet') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.ar_aging') }}">{{ _('AR Aging') }}</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('accountant.financial_overview') }}">{{ _('Financial Overview') }}</a></li>
               </ul>
             </li>

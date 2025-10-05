@@ -159,6 +159,67 @@ class MaintenanceRequest(db.Model, TimestampMixin):
     notes = db.Column(db.Text)
 
 
+# --- Accounting domain ---
+
+
+class Account(db.Model, TimestampMixin):
+    __tablename__ = "accounts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(32), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(200), nullable=False)
+    # One of: asset, liability, equity, income, expense
+    type = db.Column(db.String(20), nullable=False, index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=True)
+
+    parent = db.relationship("Account", remote_side=[id], backref="children")
+
+    def is_debit_normal(self) -> bool:
+        return self.type in {"asset", "expense"}
+
+
+class JournalEntry(db.Model, TimestampMixin):
+    __tablename__ = "journal_entries"
+
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, nullable=False, default=date.today)
+    memo = db.Column(db.String(255))
+    # Optional linkage to a source object (e.g., payment)
+    source = db.Column(db.String(50))
+    source_id = db.Column(db.Integer)
+
+    lines = db.relationship(
+        "JournalLine",
+        back_populates="entry",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )
+
+
+class JournalLine(db.Model, TimestampMixin):
+    __tablename__ = "journal_lines"
+
+    id = db.Column(db.Integer, primary_key=True)
+    entry_id = db.Column(db.Integer, db.ForeignKey("journal_entries.id"), nullable=False, index=True)
+    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=False, index=True)
+    debit = db.Column(db.Numeric(12, 2), nullable=False, default=0)
+    credit = db.Column(db.Numeric(12, 2), nullable=False, default=0)
+
+    entry = db.relationship("JournalEntry", back_populates="lines")
+    account = db.relationship("Account")
+
+
+class Expense(db.Model, TimestampMixin):
+    __tablename__ = "expenses"
+
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(255), nullable=False)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
+    category = db.Column(db.String(100))
+    vendor = db.Column(db.String(100))
+    spent_at = db.Column(db.Date, nullable=False, default=date.today)
+
+
 class Complaint(db.Model, TimestampMixin):
     __tablename__ = "complaints"
 

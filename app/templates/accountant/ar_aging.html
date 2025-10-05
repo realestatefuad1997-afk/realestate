@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('AR Aging') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('Accounts Receivable Aging') }}</h3>
+<div class="table-responsive mb-3">
+  <table class="table table-bordered align-middle text-center">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{ _('Tenant') }}</th>
+        <th>{{ _('Due Date') }}</th>
+        <th>{{ _('Amount') }}</th>
+        <th>{{ _('Days Past Due') }}</th>
+        <th>{{ _('Bucket') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.payment.id }}</td>
+        <td>{{ r.tenant }}</td>
+        <td>{{ r.payment.due_date }}</td>
+        <td>{{ r.amount }}</td>
+        <td>{{ r.days }}</td>
+        <td>{{ r.bucket }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">{{ _('No data') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="card">
+  <div class="card-header">{{ _('Summary') }}</div>
+  <div class="card-body">
+    <div class="row g-2">
+      <div class="col"><div class="card"><div class="card-body">{{ _('Current') }}: {{ buckets['current'] }}</div></div></div>
+      <div class="col"><div class="card"><div class="card-body">1-30: {{ buckets['1-30'] }}</div></div></div>
+      <div class="col"><div class="card"><div class="card-body">31-60: {{ buckets['31-60'] }}</div></div></div>
+      <div class="col"><div class="card"><div class="card-body">61-90: {{ buckets['61-90'] }}</div></div></div>
+      <div class="col"><div class="card"><div class="card-body">&gt;90: {{ buckets['>90'] }}</div></div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
