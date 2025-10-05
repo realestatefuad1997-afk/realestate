@@ -128,16 +128,24 @@ def create_app(config_class: type = Config) -> Flask:
         from sqlalchemy import create_engine
         company_id = flask_session.get("company_id")
         # Ensure master bind exists
-        db.engines["master"]  # type: ignore[index]
+        engines = db.engines  # type: ignore[attr-defined]
+        engines["master"]  # ensure master engine is initialized
         if not company_id:
+            # No tenant selected → restore global default engine
+            global_engine = engines.get("__global__")
+            if global_engine is not None:
+                engines[None] = global_engine
             return
         company = Company.query.get(company_id)
         if not company or not company.is_active or company.is_archived:
+            # Invalid tenant selection → restore global default engine
+            global_engine = engines.get("__global__")
+            if global_engine is not None:
+                engines[None] = global_engine
             return
         uri = company.db_uri
         # Create or reuse an engine for this tenant under bind key = company.subdomain
         bind_key = company.subdomain
-        engines = db.engines  # type: ignore[attr-defined]
         if bind_key not in engines:
             engines[bind_key] = create_engine(uri, pool_pre_ping=True)
         # Point the default engine to this tenant for ORM operations
@@ -185,6 +193,16 @@ def create_app(config_class: type = Config) -> Flask:
             inspector = sa_inspect(db.engines[None])  # ensure default engine exists
             if not inspector.has_table('users'):
                 db.create_all()
+        except Exception:
+            pass
+
+        # Capture and cache the global default engine so we can restore it
+        # on requests where no tenant is selected. Do this after ensuring the
+        # default engine has been realized by SQLAlchemy.
+        try:
+            engines = db.engines  # type: ignore[attr-defined]
+            _ = engines[None]
+            engines["__global__"] = engines[None]
         except Exception:
             pass
 
