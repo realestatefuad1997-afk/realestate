@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import datetime
-from flask import render_template, request, redirect, url_for, flash, send_file
+from flask import render_template, request, redirect, url_for, flash, send_file, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import text
 
@@ -10,6 +10,7 @@ from ..extensions import db
 from ..models import Company
 from ..tenant_manager import TenantManager
 from . import superadmin_bp
+from itsdangerous import URLSafeTimedSerializer
 
 
 def superadmin_required(func):
@@ -98,10 +99,22 @@ def company_create():
         # Ensure tenant DB exists and create schema
         _provision_tenant_db(db_uri)
 
-        flash("Company created and database provisioned", "success")
-        return redirect(url_for("superadmin.companies_list"))
+        # Redirect to setup link page for manager onboarding
+        return redirect(url_for("superadmin.company_setup_link", company_id=c.id))
 
     return render_template("superadmin/company_form.html")
+
+
+@superadmin_bp.route("/companies/<int:company_id>/setup-link")
+@login_required
+@superadmin_required
+def company_setup_link(company_id: int):
+    company = Company.query.get_or_404(company_id)
+    # Generate a time-limited setup token for manager onboarding
+    serializer = URLSafeTimedSerializer(current_app.config.get("SECRET_KEY"), salt="company-setup")
+    token = serializer.dumps(company.id)
+    link = url_for("auth.company_setup", token=token, _external=True)
+    return render_template("superadmin/company_setup_link.html", company=company, setup_link=link)
 
 
 @superadmin_bp.route("/companies/<int:company_id>/edit", methods=["GET", "POST"])
