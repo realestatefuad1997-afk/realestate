@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Tenants') }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">{{ _('Tenants') }}</h3>
+  <form method="get" class="d-flex gap-2">
+    <input class="form-control" type="text" name="q" value="{{ q or '' }}" placeholder="{{ _('Search by name or phone') }}" />
+    <button class="btn btn-primary" type="submit">{{ _('Search') }}</button>
+  </form>
+</div>
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{ _('Name') }}</th>
+        <th>{{ _('Phone') }}</th>
+        <th>{{ _('Contracts') }}</th>
+        <th class="text-end">{{ _('Actions') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tenants %}
+      <tr>
+        <td>{{ t.id }}</td>
+        <td>{{ t.username }}</td>
+        <td>{{ t.phone or '' }}</td>
+        <td>{{ t.contracts.count() }}</td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('accountant.tenant_detail', tenant_id=t.id) }}">{{ _('Open') }}</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" class="text-center text-muted py-4">{{ _('No data') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
