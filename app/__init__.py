@@ -13,7 +13,17 @@ def create_app(config_class: type = Config) -> Flask:
     os.makedirs(app.config.get("UPLOAD_FOLDER", "uploads"), exist_ok=True)
 
     # --- Initialize Extensions ---
+    # Initialize MASTER and TENANT dbs
+    # MASTER holds global registry (companies, super admins)
+    app.config.setdefault("SQLALCHEMY_BINDS", {})
+    app.config.setdefault("SQLALCHEMY_DATABASE_URI", config_class.SQLALCHEMY_DATABASE_URI)
+    app.config.setdefault("MASTER_DATABASE_URI", config_class.MASTER_DATABASE_URI)
+    # Configure master engine explicitly
+    app.config["SQLALCHEMY_BINDS"]["master"] = app.config["MASTER_DATABASE_URI"]
+
     db.init_app(app)
+    # single db instance manages both binds
+    # Run migrations against TENANT db by default; master has its own simple create_all
     migrate.init_app(app, db)
     login_manager.init_app(app)
     babel.init_app(app, locale_selector=select_locale)
@@ -23,7 +33,7 @@ def create_app(config_class: type = Config) -> Flask:
     login_manager.login_message_category = "warning"
 
     # --- Import Models after db init ---
-    from .models import User  # noqa: WPS433
+    from .models import User, Company  # noqa: WPS433
 
     @login_manager.user_loader
     def load_user(user_id: str):
@@ -35,8 +45,10 @@ def create_app(config_class: type = Config) -> Flask:
     from .employee.routes import employee_bp
     from .tenant.routes import tenant_bp
     from .accountant.routes import accountant_bp
+    from .superadmin.routes import superadmin_bp
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(superadmin_bp, url_prefix="/superadmin")
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(employee_bp, url_prefix="/employee")
     app.register_blueprint(tenant_bp, url_prefix="/tenant")
@@ -50,6 +62,25 @@ def create_app(config_class: type = Config) -> Flask:
     @app.context_processor
     def inject_get_locale():
         return {"get_locale": lambda: str(babel_get_locale())}
+
+    # Inject company theming into g for templates
+    @app.before_request
+    def inject_company_theme():
+        from flask import session as flask_session
+        from .models import Company
+        company_id = flask_session.get("company_id")
+        theme = None
+        if company_id:
+            company = Company.query.get(company_id)
+            if company:
+                theme = {
+                    "name": company.name,
+                    "logo_path": company.logo_path,
+                    "primary_color": company.primary_color,
+                    "secondary_color": company.secondary_color,
+                    "font_family": company.font_family,
+                }
+        g.company_theme = theme
 
     # --- Routes ---
     @app.route("/")
@@ -66,6 +97,52 @@ def create_app(config_class: type = Config) -> Flask:
         }
         return redirect(url_for(role_redirect.get(current_user.role, "auth.login")))
 
+    # --- Tenancy binding per request ---
+    @app.before_request
+    def bind_tenant_database():
+        """Bind the tenant engine to db.session based on selected company in session.
+
+        Strategy:
+        - Read company id from session (or subdomain header in future)
+        - Load Company from master DB
+        - Reflect/ensure SQLAlchemy has an engine for that URI
+        - Re-bind db.engines[None] to the tenant engine for this app context
+        """
+        from flask import session as flask_session
+        from sqlalchemy import create_engine
+        company_id = flask_session.get("company_id")
+        # Ensure master bind exists
+        db.engines["master"]  # type: ignore[index]
+        if not company_id:
+            return
+        company = Company.query.get(company_id)
+        if not company or not company.is_active or company.is_archived:
+            return
+        uri = company.db_uri
+        # Create or reuse an engine for this tenant under bind key = company.subdomain
+        bind_key = company.subdomain
+        engines = db.engines  # type: ignore[attr-defined]
+        if bind_key not in engines:
+            engines[bind_key] = create_engine(uri, pool_pre_ping=True)
+        # Point the default engine to this tenant for ORM operations
+        engines[None] = engines[bind_key]
+        # Ensure all tenant-bound tables exist (first-run convenience)
+        try:
+            from sqlalchemy import inspect as sa_inspect
+            inspector = sa_inspect(engines[None])
+            # Heuristic: if no 'users' table, create all
+            if not inspector.has_table('users'):
+                prev = None
+                try:
+                    prev = engines.get(None)
+                    engines[None] = engines[bind_key]
+                    db.create_all()
+                finally:
+                    if prev is not None:
+                        engines[None] = prev
+        except Exception:
+            pass
+
     @app.route("/set-lang/<lang_code>")
     def set_language(lang_code: str):
         if lang_code in app.config.get("LANGUAGES", {}):
@@ -76,6 +153,14 @@ def create_app(config_class: type = Config) -> Flask:
     def uploaded_file(filename: str):
         upload_folder = app.config.get("UPLOAD_FOLDER", "uploads")
         return send_from_directory(upload_folder, filename, as_attachment=False)
+
+    # --- Initialize master tables if not present ---
+    with app.app_context():
+        try:
+            # Create only master-bound tables (e.g., Company)
+            db.create_all(bind="master")
+        except Exception:
+            pass
 
     # --- Public Share Route for Property Details ---
     def _get_property_share_serializer() -> URLSafeSerializer:

@@ -13,19 +13,31 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     <style>
+      :root {
+        --brand-primary: {{ (g.get('company_theme') or {}).get('primary_color', '#0d6efd') }};
+        --brand-secondary: {{ (g.get('company_theme') or {}).get('secondary_color', '#6c757d') }};
+        --brand-font: {{ (g.get('company_theme') or {}).get('font_family', 'system-ui, -apple-system, Segoe UI, Roboto') }};
+      }
+      body { font-family: var(--brand-font); }
+      .navbar { background-color: var(--brand-primary) !important; }
+      .btn-primary { background-color: var(--brand-primary); border-color: var(--brand-primary); }
+      .btn-secondary { background-color: var(--brand-secondary); border-color: var(--brand-secondary); }
       html[dir="rtl"] .dropdown-menu { text-align: right; }
     </style>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/">{{ _('Real Estate') }}</a>
+        <a class="navbar-brand" href="/">{{ (g.get('company_theme') or {}).get('name', _('Real Estate')) }}</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             {% if current_user.is_authenticated %}
+            {% if current_user.role == 'admin' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('superadmin.dashboard') }}">{{ _('Super Admin') }}</a></li>
+            {% endif %}
             {% if current_user.role == 'admin' %}
             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.dashboard') }}">{{ _('Admin') }}</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.users_list') }}">{{ _('Users') }}</a></li>
