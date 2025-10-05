@@ -177,6 +177,16 @@ def create_app(config_class: type = Config) -> Flask:
         except Exception:
             pass
 
+        # Ensure default tenant tables exist on first run (when no company bound)
+        # This prevents "no such table: users" before any migrations run
+        try:
+            from sqlalchemy import inspect as sa_inspect
+            inspector = sa_inspect(db.engines[None])  # ensure default engine exists
+            if not inspector.has_table('users'):
+                db.create_all()
+        except Exception:
+            pass
+
     # --- Public Share Route for Property Details ---
     def _get_property_share_serializer() -> URLSafeSerializer:
         secret_key = app.config.get("SECRET_KEY")
