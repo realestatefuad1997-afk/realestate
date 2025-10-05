@@ -13,7 +13,15 @@ def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-        # Try to authenticate across active companies automatically
+
+        # أولا: تحقق من المدير العام
+        user = User.query.filter_by(username=username, role="superadmin").first()
+        if user and user.check_password(password):
+            login_user(user)
+            flash(_("Welcome back, Super Admin %(user)s", user=user.username), "success")
+            return redirect(url_for("superadmin.dashboard"))  # ← هنا التوجيه الصحيح
+
+        # ثانيا: تحقق من المستخدمين داخل الشركات
         active_companies = (
             Company.query.filter_by(is_archived=False, is_active=True)
             .order_by(Company.created_at.asc())
@@ -25,25 +33,25 @@ def login():
         previous_default = engines.get(None)
         try:
             for c in active_companies:
-                # Reuse cached engine per company when available
                 engine = engines.get(c.subdomain)
                 if engine is None:
                     engine = create_engine(c.db_uri, pool_pre_ping=True)
                     engines[c.subdomain] = engine
-                # Temporarily bind ORM to this company's database
                 engines[None] = engine
                 user = User.query.filter_by(username=username).first()
                 if user and user.check_password(password):
                     flask_session["company_id"] = c.id
                     login_user(user)
                     flash(_("Welcome back, %(user)s", user=user.username), "success")
-                    next_url = request.args.get("next") or url_for("index")
-                    return redirect(next_url)
+                    return redirect(url_for("index"))  # ← هنا مدير الشركة أو باقي المستخدمين
         finally:
             if previous_default is not None:
                 engines[None] = previous_default
+
         flash(_("Invalid credentials"), "danger")
+
     return render_template("auth/login.html")
+
 
 
 @auth_bp.route("/logout")
