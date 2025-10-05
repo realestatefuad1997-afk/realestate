@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Income Statement') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('Income Statement') }}</h3>
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">{{ _('Income') }}</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <tbody>
+            {% for acc, d, c in income_rows %}
+            <tr>
+              <td>{{ acc.code }} - {{ acc.name }}</td>
+              <td class="text-end">{{ c - d }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2">{{ _('No data') }}</td></tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>{{ _('Total Income') }}</th>
+              <th class="text-end">{{ income_total }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">{{ _('Expenses') }}</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <tbody>
+            {% for acc, d, c in expense_rows %}
+            <tr>
+              <td>{{ acc.code }} - {{ acc.name }}</td>
+              <td class="text-end">{{ d - c }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2">{{ _('No data') }}</td></tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>{{ _('Total Expenses') }}</th>
+              <th class="text-end">{{ expense_total }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="card mt-4">
+  <div class="card-body d-flex justify-content-between">
+    <strong>{{ _('Net Income') }}</strong>
+    <strong>{{ net_income }}</strong>
+  </div>
+</div>
+{% endblock %}

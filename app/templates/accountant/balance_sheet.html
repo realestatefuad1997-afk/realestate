@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Balance Sheet') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('Balance Sheet') }}</h3>
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header">{{ _('Assets') }}</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <tbody>
+            {% for acc, bal in assets_rows %}
+            <tr>
+              <td>{{ acc.code }} - {{ acc.name }}</td>
+              <td class="text-end">{{ bal }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2">{{ _('No data') }}</td></tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>{{ _('Total Assets') }}</th>
+              <th class="text-end">{{ assets_total }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header">{{ _('Liabilities') }}</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <tbody>
+            {% for acc, bal in liabilities_rows %}
+            <tr>
+              <td>{{ acc.code }} - {{ acc.name }}</td>
+              <td class="text-end">{{ bal }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2">{{ _('No data') }}</td></tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>{{ _('Total Liabilities') }}</th>
+              <th class="text-end">{{ liabilities_total }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header">{{ _('Equity') }}</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <tbody>
+            {% for acc, bal in equity_rows %}
+            <tr>
+              <td>{{ acc.code }} - {{ acc.name }}</td>
+              <td class="text-end">{{ bal }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2">{{ _('No data') }}</td></tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>{{ _('Total Equity') }}</th>
+              <th class="text-end">{{ equity_total }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

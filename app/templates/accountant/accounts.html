@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Chart of Accounts') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('Chart of Accounts') }}</h3>
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="post" class="row gy-2 gx-2 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label">{{ _('Code') }}</label>
+        <input class="form-control" name="code" required />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ _('Name') }}</label>
+        <input class="form-control" name="name" required />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ _('Type') }}</label>
+        <select class="form-select" name="type" required>
+          <option value="asset">{{ _('Asset') }}</option>
+          <option value="liability">{{ _('Liability') }}</option>
+          <option value="equity">{{ _('Equity') }}</option>
+          <option value="income">{{ _('Income') }}</option>
+          <option value="expense">{{ _('Expense') }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary" type="submit">{{ _('Add Account') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{ _('Code') }}</th>
+        <th>{{ _('Name') }}</th>
+        <th>{{ _('Type') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in accounts %}
+      <tr>
+        <td>{{ a.id }}</td>
+        <td>{{ a.code }}</td>
+        <td>{{ a.name }}</td>
+        <td>{{ a.type }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">{{ _('No data') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

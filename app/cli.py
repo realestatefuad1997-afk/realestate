@@ -2,7 +2,7 @@ from datetime import date, timedelta
 import click
 from flask import Flask
 from .extensions import db
-from .models import User, Property, Contract, Payment
+from .models import User, Property, Contract, Payment, Account
 import subprocess
 import sys
 
@@ -52,6 +52,20 @@ def register_cli(app: Flask) -> None:
             db.session.flush()
 
         db.session.commit()
+
+        # Seed minimal chart of accounts
+        def _get_or_create_account(code: str, name: str, acc_type: str) -> Account:
+            acc = Account.query.filter_by(code=code).first()
+            if not acc:
+                acc = Account(code=code, name=name, type=acc_type)
+                db.session.add(acc)
+                db.session.commit()
+            return acc
+
+        _get_or_create_account("1000", "Cash", "asset")
+        _get_or_create_account("1100", "Accounts Receivable", "asset")
+        _get_or_create_account("4000", "Rental Income", "income")
+        _get_or_create_account("5000", "General Expenses", "expense")
 
         # Contracts and payments
         tenant = User.query.filter_by(role="tenant").first()
