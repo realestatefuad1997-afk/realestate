@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
-{% block title %}{{ _('Admin Dashboard') }}{% endblock %}
+{% block title %}لوحة المدير{% endblock %}
 
 {% block content %}
 <style>
-/* شبكة الكروت */
+/* ===== الشبكة العامة ===== */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
 }
 
-/* كرت الإحصائية */
+/* ===== كرت الإحصائية ===== */
 .stat-card {
-  border-radius: 15px;
+  border-radius: 18px;
   padding: 20px;
   color: #fff;
   display: flex;
@@ -21,114 +21,137 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  transition: 0.3s;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
 
-/* روابط الكروت لتكون قابلة للنقر بدون تغيير الشكل */
+/* ===== روابط الكروت ===== */
 a.stat-card-link {
-  display: block;
   text-decoration: none;
   color: inherit;
 }
 
+/* ===== الأيقونات ===== */
 .stat-card i {
   font-size: 2.5rem;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   opacity: 0.9;
 }
 
+/* ===== النصوص ===== */
 .stat-card span {
   font-weight: 600;
   font-size: 1rem;
 }
 
-.bg-income { background: linear-gradient(135deg, #28a745, #20c997); }
-.bg-expense { background: linear-gradient(135deg, #dc3545, #ff6b6b); }
-.bg-profit { background: linear-gradient(135deg, #0d6efd, #6ea8fe); }
+/* ===== الألوان الجديدة ===== */
+.bg-income { background: linear-gradient(135deg, #4caf50, #81c784); }
+.bg-expense { background: linear-gradient(135deg, #e53935, #ff6f61); }
+.bg-profit { background: linear-gradient(135deg, #1e88e5, #64b5f6); }
 .bg-house { background: linear-gradient(135deg, #6f42c1, #a56eff); }
-.bg-maint { background: linear-gradient(135deg, #fd7e14, #ffb86c); }
-.bg-employee { background: linear-gradient(135deg, #20c997, #0dcaf0); }
-.bg-tenant { background: linear-gradient(135deg, #ffc107, #ffca2c); }
+.bg-unleased { background: linear-gradient(135deg, #9c27b0, #ce93d8); }
+.bg-maint { background: linear-gradient(135deg, #fb8c00, #ffb74d); }
+.bg-employee { background: linear-gradient(135deg, #26a69a, #4dd0e1); }
+.bg-tenant { background: linear-gradient(135deg, #fbc02d, #ffe082); }
+.bg-complaint { background: linear-gradient(135deg, #ab47bc, #ba68c8); }
+.bg-light-card { background: #f8f9fa; color: #333; }
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #6f42c1;
+  margin: 25px 0 10px;
+}
 </style>
 
-<h2 class="mb-4">{{ _('Admin Dashboard') }}</h2>
+<h2 class="mb-4 text-primary">📊 لوحة المدير</h2>
 
 <!-- شبكة كروت الإحصائيات -->
 <div class="dashboard-grid">
+
   <div class="stat-card bg-income">
     <i class="bi bi-cash-stack"></i>
-    <span>{{ _('Income') }}</span>
-    <span>{{ total_income }}</span>
+    <span>إجمالي الدخل</span>
+    <span>{{ total_income }} ر.ع</span>
   </div>
+
   <div class="stat-card bg-expense">
     <i class="bi bi-wallet2"></i>
-    <span>{{ _('Expenses') }}</span>
-    <span>{{ total_expenses }}</span>
+    <span>إجمالي المصاريف</span>
+    <span>{{ total_expenses }} ر.ع</span>
   </div>
+
   <div class="stat-card bg-profit">
     <i class="bi bi-graph-up"></i>
-    <span>{{ _('Profit') }}</span>
-    <span>{{ profit }}</span>
+    <span>صافي الربح</span>
+    <span>{{ profit }} ر.ع</span>
   </div>
+
   <a href="{{ url_for('employee.properties_list') }}" class="stat-card-link">
     <div class="stat-card bg-house">
       <i class="bi bi-houses"></i>
-      <span>{{ _('All Properties') }}</span>
+      <span>جميع العقارات</span>
       <span>{{ properties_count }}</span>
     </div>
   </a>
+
   <a href="{{ url_for('employee.properties_list', only='unleased') }}" class="stat-card-link">
-    <div class="stat-card bg-house">
+    <div class="stat-card bg-unleased">
       <i class="bi bi-house-door"></i>
-      <span>{{ _('Unleased Properties') }}</span>
+      <span>العقارات غير المؤجرة</span>
       <span>{{ unleased_properties }}</span>
     </div>
   </a>
+
   <div class="stat-card bg-maint">
     <i class="bi bi-tools"></i>
-    <span>{{ _('Maintenance >24h') }}</span>
+    <span>طلبات الصيانة المتأخرة</span>
     <span>{{ overdue_maintenance_24h }}</span>
   </div>
+
   <div class="stat-card bg-employee">
-    <i class="bi bi-person"></i>
-    <span>{{ _('Employees') }}</span>
+    <i class="bi bi-person-badge"></i>
+    <span>عدد الموظفين</span>
     <span>{{ total_employees }}</span>
   </div>
+
   <a href="{{ url_for('admin.users_list', role='tenant') }}" class="stat-card-link">
     <div class="stat-card bg-tenant">
       <i class="bi bi-people"></i>
-      <span>{{ _('Tenants') }}</span>
+      <span>عدد المستأجرين</span>
       <span>{{ total_tenants }}</span>
     </div>
   </a>
+
 </div>
 
 <!-- أحدث الشكاوى والصيانات -->
-<h5 class="mt-4 mb-2">{{ _('Latest Complaints & Maintenance') }}</h5>
+<h5 class="section-title">🛠️ أحدث الشكاوى وطلبات الصيانة</h5>
 <div class="dashboard-grid">
+
   {% for c in latest_complaints %}
-  <div class="stat-card bg-secondary text-dark">
+  <div class="stat-card bg-complaint">
     <i class="bi bi-exclamation-triangle"></i>
     <span>{{ c.subject }}</span>
-    <span>#{{ c.id }} - {{ c.status }}</span>
+    <span>رقم #{{ c.id }} - {{ c.status }}</span>
   </div>
   {% else %}
-  <div class="stat-card bg-light text-dark">{{ _('No complaints') }}</div>
+  <div class="stat-card bg-light-card">لا توجد شكاوى حالياً</div>
   {% endfor %}
 
   {% for m in latest_maintenance %}
-  <div class="stat-card bg-light text-dark">
+  <div class="stat-card bg-light-card">
     <i class="bi bi-tools"></i>
     <span>{{ m.title }}</span>
-    <span>#{{ m.id }} - {{ m.status }}</span>
+    <span>رقم #{{ m.id }} - {{ m.status }}</span>
   </div>
   {% else %}
-  <div class="stat-card bg-light text-dark">{{ _('No maintenance requests') }}</div>
+  <div class="stat-card bg-light-card">لا توجد طلبات صيانة حالياً</div>
   {% endfor %}
-</div>
 
+</div>
 {% endblock %}
