@@ -43,7 +43,10 @@
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="acctDropdown" role="button" data-bs-toggle="dropdown">{{ _('Accountant') }}</a>
               <ul class="dropdown-menu" aria-labelledby="acctDropdown">
-                <li><a class="dropdown-item" href="{{ url_for('accountant.dashboard') }}">{{ _('Payments') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.payments_list') }}">{{ _('Payments') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.dashboard') }}">{{ _('Dashboard') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.report_unpaid') }}">{{ _('Unpaid') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.invoices_list') }}">{{ _('Invoices') }}</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('accountant.accounts') }}">{{ _('Chart of Accounts') }}</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('accountant.expenses') }}">{{ _('Expenses') }}</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('accountant.journal_new') }}">{{ _('New Journal Entry') }}</a></li>
