@@ -174,10 +174,15 @@ def register_cli(app: Flask) -> None:
         if uri is None:
             click.echo("Failed to build DB URI")
             return
-        # Create master record
+        # Ensure master schema exists (companies table)
+        try:
+            db.create_all(bind="master")
+        except Exception:
+            pass
+        # Create master record (Company is bound to 'master')
         c = Company(name=name, subdomain=subdomain, db_uri=uri)
-        db_master.session.add(c)
-        db_master.session.commit()
+        db.session.add(c)
+        db.session.commit()
         # Ensure DB exists and create schema
         from sqlalchemy import create_engine
         engine = create_engine(uri, pool_pre_ping=True)
@@ -214,8 +219,8 @@ def register_cli(app: Flask) -> None:
             click.echo("Company not found")
             return
         uri = c.db_uri
-        db_master.session.delete(c)
-        db_master.session.commit()
+        db.session.delete(c)
+        db.session.commit()
         tm = TenantManager()
         if uri.startswith("sqlite"):
             tm.delete_sqlite(uri)

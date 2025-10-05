@@ -18,6 +18,21 @@ def create_app(config_class: type = Config) -> Flask:
     app.config.setdefault("SQLALCHEMY_BINDS", {})
     app.config.setdefault("SQLALCHEMY_DATABASE_URI", config_class.SQLALCHEMY_DATABASE_URI)
     app.config.setdefault("MASTER_DATABASE_URI", config_class.MASTER_DATABASE_URI)
+    # Ensure on-disk SQLite directories exist for both default and master URIs
+    def _ensure_sqlite_dir(uri: str) -> None:
+        if isinstance(uri, str) and uri.startswith("sqlite///"):
+            # Handle accidental schema like 'sqlite///' (rare)
+            path = uri.replace("sqlite///", "", 1)
+        elif isinstance(uri, str) and uri.startswith("sqlite:///"):
+            path = uri.replace("sqlite:///", "", 1)
+        else:
+            return
+        import os as _os
+        _os.makedirs(_os.path.dirname(path), exist_ok=True)
+
+    _ensure_sqlite_dir(app.config["SQLALCHEMY_DATABASE_URI"])
+    _ensure_sqlite_dir(app.config["MASTER_DATABASE_URI"])
+
     # Configure master engine explicitly
     app.config["SQLALCHEMY_BINDS"]["master"] = app.config["MASTER_DATABASE_URI"]
 
