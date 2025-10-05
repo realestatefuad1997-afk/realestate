@@ -52,10 +52,6 @@
       </div>
       {% if role == 'employee' %}
       <div class="mb-3">
-        <label class="form-label">{{ _('Email') }}</label>
-        <input type="email" name="email" class="form-control" value="{{ email_value|default('') }}" required />
-      </div>
-      <div class="mb-3">
         <label class="form-label">{{ _('Role') }}</label>
         <select name="user_role" class="form-select" required>
           <option value="employee" {% if (selected_user_role|default('employee')) == 'employee' %}selected{% endif %}>{{ _('Employee') }}</option>

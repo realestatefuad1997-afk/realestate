@@ -162,7 +162,9 @@ def create_user(role: str):
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
-        email = (request.form.get("email", "").strip() or None)
+        # For employees, ignore any provided email and force None
+        raw_email = (request.form.get("email", "").strip() or None)
+        email = None if role == "employee" else raw_email
         phone = (request.form.get("phone", "").strip() or None)
         password = request.form.get("password", "")
         # For employee creation, allow selecting between employee and accountant
@@ -175,13 +177,13 @@ def create_user(role: str):
 
         # Basic required validation
         if role == "employee":
-            if not username or not email or not password:
+            # Email is not required nor stored for employees
+            if not username or not password:
                 flash(_("All fields are required"), "warning")
                 return render_template(
                     "admin/user_form.html",
                     role=role,
                     username_value=username,
-                    email_value=email or "",
                     selected_user_role=selected_user_role,
                     properties=None,
                 )
@@ -203,8 +205,8 @@ def create_user(role: str):
         from sqlalchemy import or_
         conditions = [User.username == username]
         if role == "employee":
-            if email:
-                conditions.append(User.email == email)
+            # No email uniqueness needed for employees
+            pass
         else:
             if phone:
                 conditions.append(User.phone == phone)
@@ -212,12 +214,12 @@ def create_user(role: str):
                 conditions.append(User.email == email)
         existing_user = User.query.filter(or_(*conditions)).first()
         if existing_user:
-            flash(_("Username or email already exists") if role == "employee" else _("Username or phone already exists"), "danger")
+            # For employees, only username is considered in uniqueness check
+            flash(_("Username already exists"), "danger") if role == "employee" else flash(_("Username or phone already exists"), "danger")
             return render_template(
                 "admin/user_form.html",
                 role=role,
                 username_value=username,
-                email_value=email or "",
                 phone_value=phone or "",
                 properties=available_properties if role == "tenant" else None,
                 selected_property_id=selected_property_id,
@@ -345,7 +347,7 @@ def create_user(role: str):
 
         # Create user
         if role == "employee":
-            new_user = User(username=username, email=email, role=selected_user_role)
+            new_user = User(username=username, email=None, role=selected_user_role)
         else:
             new_user = User(username=username, phone=phone, email=email, role=role)
         new_user.set_password(password)
