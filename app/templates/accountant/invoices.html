@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Invoices') }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ _('Invoices') }}</h3>
+<div class="card mb-3">
+  <div class="card-body d-flex justify-content-between align-items-center">
+    <form method="get" class="d-flex align-items-end gap-2">
+      <div>
+        <label class="form-label">{{ _('Has Invoice') }}</label>
+        <select class="form-select" name="has_invoice">
+          <option value="">{{ _('All') }}</option>
+          <option value="yes" {% if has_invoice=='yes' %}selected{% endif %}>{{ _('Yes') }}</option>
+          <option value="no" {% if has_invoice=='no' %}selected{% endif %}>{{ _('No') }}</option>
+        </select>
+      </div>
+      <div>
+        <button class="btn btn-primary" type="submit">{{ _('Filter') }}</button>
+      </div>
+    </form>
+    <div>
+      <a class="btn btn-sm btn-outline-success" href="{{ url_for('accountant.export_invoices_excel') }}">{{ _('Export Excel') }}</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('accountant.export_invoices_pdf') }}">{{ _('Export PDF') }}</a>
+    </div>
+  </div>
+</div>
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{ _('Due Date') }}</th>
+        <th>{{ _('Amount') }}</th>
+        <th>{{ _('Status') }}</th>
+        <th>{{ _('Invoice') }}</th>
+        <th class="text-end">{{ _('Actions') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.due_date }}</td>
+        <td>{{ p.amount }}</td>
+        <td>
+          <span class="badge {{ 'text-bg-success' if p.status=='paid' else 'text-bg-warning' }}">{{ p.status }}</span>
+        </td>
+        <td>
+          {% if p.invoice %}
+            <span class="badge text-bg-success">{{ _('Exists') }}</span>
+          {% else %}
+            <span class="badge text-bg-secondary">{{ _('None') }}</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-dark" href="{{ url_for('accountant.generate_invoice', payment_id=p.id) }}">{{ _('Generate Invoice') }}</a>
+          {% if p.invoice %}
+          <a class="btn btn-sm btn-outline-success" href="{{ url_for('accountant.download_invoice', payment_id=p.id) }}">{{ _('Download') }}</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted py-4">{{ _('No data') }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

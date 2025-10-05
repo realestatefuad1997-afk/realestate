@@ -2,14 +2,14 @@ from flask import Blueprint, render_template, abort, request, redirect, url_for,
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from ..extensions import db
-from ..models import Payment, Invoice, Account, JournalEntry, JournalLine, Expense
+from ..models import Payment, Invoice, Account, JournalEntry, JournalLine, Expense, Contract
 from flask import current_app, send_file
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from openpyxl import Workbook
 import io
 import os
-from datetime import date
+from datetime import date, timedelta
 from sqlalchemy import text
 
 
@@ -32,13 +32,122 @@ def accountant_required(func):
 @login_required
 @accountant_required
 def dashboard():
+    """Accountant dashboard with KPIs, monthly chart, and alerts."""
+    # Payments listing (all)
     payments = Payment.query.order_by(Payment.due_date.asc()).all()
-    total_paid = (
+
+    # KPI cards
+    total_income = (
         db.session.query(db.func.coalesce(db.func.sum(Payment.amount), 0))
-        .filter_by(status="paid")
+        .filter(Payment.status == "paid")
         .scalar()
+        or 0
     )
-    return render_template("accountant/dashboard.html", payments=payments, total_paid=total_paid)
+
+    # Expenses total (if table exists)
+    total_expenses = 0
+    try:
+        total_expenses = (
+            db.session.query(db.func.coalesce(db.func.sum(Expense.amount), 0)).scalar() or 0
+        )
+    except Exception:
+        total_expenses = 0
+
+    net_profit = float(total_income) - float(total_expenses)
+
+    # Unpaid count
+    unpaid_count = db.session.query(db.func.count()).select_from(Payment).filter(Payment.status != "paid").scalar() or 0
+
+    # Alerts: due soon (within 3 days) and overdue
+    today = date.today()
+    in_3 = today + timedelta(days=3)
+    due_soon = (
+        db.session.query(Payment)
+        .filter(Payment.status != "paid", Payment.due_date >= today, Payment.due_date <= in_3)
+        .order_by(Payment.due_date.asc())
+        .all()
+    )
+    overdue = (
+        db.session.query(Payment)
+        .filter(Payment.status != "paid", Payment.due_date < today)
+        .order_by(Payment.due_date.asc())
+        .all()
+    )
+
+    # Monthly income/expenses/profit for last 12 months
+    def add_months(year: int, month: int, delta: int) -> tuple[int, int]:
+        total = year * 12 + (month - 1) + delta
+        y = total // 12
+        m = (total % 12) + 1
+        return y, m
+
+    def first_of_month(y: int, m: int) -> date:
+        return date(y, m, 1)
+
+    def next_month_start(y: int, m: int) -> date:
+        y2, m2 = add_months(y, m, 1)
+        return date(y2, m2, 1)
+
+    y0, m0 = today.year, today.month
+    month_ranges: list[tuple[date, date]] = []
+    month_labels: list[str] = []
+    for k in range(11, -1, -1):
+        yk, mk = add_months(y0, m0, -k)
+        start = first_of_month(yk, mk)
+        end = next_month_start(yk, mk)
+        month_ranges.append((start, end))
+        month_labels.append(f"{yk:04d}-{mk:02d}")
+
+    monthly_income: list[float] = []
+    for start, end in month_ranges:
+        total = (
+            db.session.query(db.func.coalesce(db.func.sum(Payment.amount), 0))
+            .filter(
+                Payment.status == "paid",
+                db.or_(
+                    db.and_(Payment.paid_date != None, Payment.paid_date >= start, Payment.paid_date < end),  # noqa: E711
+                    db.and_(Payment.paid_date == None, Payment.due_date >= start, Payment.due_date < end),  # noqa: E711
+                ),
+            )
+            .scalar()
+            or 0
+        )
+        try:
+            monthly_income.append(float(total))
+        except Exception:
+            monthly_income.append(0.0)
+
+    monthly_expenses: list[float] = []
+    for start, end in month_ranges:
+        try:
+            total = (
+                db.session.query(db.func.coalesce(db.func.sum(Expense.amount), 0))
+                .filter(Expense.spent_at >= start, Expense.spent_at < end)
+                .scalar()
+                or 0
+            )
+            monthly_expenses.append(float(total))
+        except Exception:
+            monthly_expenses.append(0.0)
+
+    monthly_profit = [round((monthly_income[i] - monthly_expenses[i]), 2) for i in range(len(month_ranges))]
+
+    return render_template(
+        "accountant/dashboard.html",
+        payments=payments,
+        total_paid=total_income,
+        total_income=total_income,
+        total_expenses=total_expenses,
+        net_profit=net_profit,
+        unpaid_count=unpaid_count,
+        today=today,
+        due_soon=due_soon,
+        overdue=overdue,
+        month_labels=month_labels,
+        monthly_income=monthly_income,
+        monthly_expenses=monthly_expenses,
+        monthly_profit=monthly_profit,
+    )
 
 
 @accountant_bp.route("/payments/<int:payment_id>/mark", methods=["POST"])
@@ -156,6 +265,173 @@ def export_payments_pdf():
     c.save()
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name="payments.pdf", mimetype="application/pdf")
+
+
+# -----------------------
+# Invoices: list + exports
+# -----------------------
+
+
+@accountant_bp.route("/invoices")
+@login_required
+@accountant_required
+def invoices_list():
+    # Show payments with optional invoice attached; allow filter has_invoice
+    has_invoice = request.args.get("has_invoice")
+    q = Payment.query.order_by(Payment.due_date.desc())
+    if has_invoice == "yes":
+        q = q.join(Invoice, isouter=True).filter(Invoice.id != None)  # noqa: E711
+    elif has_invoice == "no":
+        q = q.join(Invoice, isouter=True).filter(Invoice.id == None)  # noqa: E711
+    payments = q.all()
+    return render_template("accountant/invoices.html", payments=payments, has_invoice=has_invoice)
+
+
+@accountant_bp.route("/invoices/export.xlsx")
+@login_required
+@accountant_required
+def export_invoices_excel():
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Invoices"
+    ws.append(["PaymentID", "HasInvoice", "DueDate", "Amount", "Status", "InvoicePath"])
+    rows = (
+        db.session.query(Payment, Invoice)
+        .join(Invoice, Payment.id == Invoice.payment_id, isouter=True)
+        .order_by(Payment.due_date.desc())
+        .all()
+    )
+    for p, inv in rows:
+        ws.append([p.id, "yes" if inv else "no", str(p.due_date), float(p.amount), p.status, (inv.file_path if inv else "")])
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output, as_attachment=True, download_name="invoices.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+
+@accountant_bp.route("/invoices/export.pdf")
+@login_required
+@accountant_required
+def export_invoices_pdf():
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(72, height - 72, "Invoices Report")
+    c.setFont("Helvetica", 11)
+    y = height - 110
+    rows = (
+        db.session.query(Payment, Invoice)
+        .join(Invoice, Payment.id == Invoice.payment_id, isouter=True)
+        .order_by(Payment.due_date.desc())
+        .all()
+    )
+    for p, inv in rows:
+        line = f"P#{p.id} Due:{p.due_date} Amount:{p.amount} Status:{p.status} HasInv:{'yes' if inv else 'no'}"
+        c.drawString(72, y, line)
+        y -= 18
+        if y < 72:
+            c.showPage()
+            y = height - 72
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name="invoices.pdf", mimetype="application/pdf")
+
+
+# -----------------------
+# Payments: list + create
+# -----------------------
+
+
+@accountant_bp.route("/payments", methods=["GET", "POST"])
+@login_required
+@accountant_required
+def payments_list():
+    if request.method == "POST":
+        contract_id = request.form.get("contract_id", type=int)
+        amount = request.form.get("amount", type=float)
+        due_date = request.form.get("due_date")
+        method = (request.form.get("method") or "").strip() or None
+        if not (contract_id and amount and amount > 0 and due_date):
+            flash(_("Invalid payment data"), "danger")
+            return redirect(url_for("accountant.payments_list"))
+        if not Contract.query.get(contract_id):
+            flash(_("Contract not found"), "danger")
+            return redirect(url_for("accountant.payments_list"))
+        p = Payment(contract_id=contract_id, amount=amount, due_date=due_date, method=method, status="unpaid")
+        db.session.add(p)
+        db.session.commit()
+        flash(_("Payment created"), "success")
+        return redirect(url_for("accountant.payments_list"))
+
+    status = request.args.get("status")
+    q = Payment.query
+    if status in {"paid", "unpaid"}:
+        q = q.filter(Payment.status == status)
+    q = q.order_by(Payment.due_date.asc())
+    payments = q.all()
+    return render_template("accountant/payments.html", payments=payments, selected_status=status)
+
+
+# -----------------------
+# Expenses export (Excel/PDF)
+# -----------------------
+
+
+@accountant_bp.route("/expenses/export.xlsx")
+@login_required
+@accountant_required
+def export_expenses_excel():
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Expenses"
+    ws.append(["ID", "Date", "Description", "Category", "Vendor", "Amount"])
+    for e in Expense.query.order_by(Expense.spent_at.desc()).all():
+        ws.append([e.id, str(e.spent_at), e.description, e.category or "", e.vendor or "", float(e.amount)])
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output, as_attachment=True, download_name="expenses.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+
+@accountant_bp.route("/expenses/export.pdf")
+@login_required
+@accountant_required
+def export_expenses_pdf():
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(72, height - 72, "Expenses Report")
+    c.setFont("Helvetica", 11)
+    y = height - 110
+    for e in Expense.query.order_by(Expense.spent_at.desc()).all():
+        line = f"#{e.id} {e.spent_at} {e.description} {e.category or ''} {e.vendor or ''} {e.amount}"
+        c.drawString(72, y, line)
+        y -= 18
+        if y < 72:
+            c.showPage()
+            y = height - 72
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name="expenses.pdf", mimetype="application/pdf")
+
+
+# -----------------------
+# Unpaid report shortcut
+# -----------------------
+
+
+@accountant_bp.route("/reports/unpaid")
+@login_required
+@accountant_required
+def report_unpaid():
+    payments = (
+        Payment.query.filter(Payment.status != "paid").order_by(Payment.due_date.asc()).all()
+    )
+    return render_template("accountant/payments.html", payments=payments, selected_status="unpaid")
 
 
 @accountant_bp.route("/overview")

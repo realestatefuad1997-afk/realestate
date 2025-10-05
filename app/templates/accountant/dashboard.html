@@ -2,38 +2,180 @@
 {% block title %}{{ _('Accountant Dashboard') }}{% endblock %}
 {% block content %}
 <h3 class="mb-3">{{ _('Accountant Dashboard') }}</h3>
-<div class="mb-3 d-flex justify-content-between align-items-center">
-  <div class="card"><div class="card-body">{{ _('Total Paid') }}: {{ total_paid }}</div></div>
-  <div>
-    <a class="btn btn-sm btn-outline-success" href="{{ url_for('accountant.export_payments_excel') }}">{{ _('Export Excel') }}</a>
-    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('accountant.export_payments_pdf') }}">{{ _('Export PDF') }}</a>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted small">{{ _('Total Income') }}</div>
+            <div class="h5 mb-0">{{ total_income }}</div>
+          </div>
+          <i class="bi bi-cash-stack fs-2 text-success"></i>
+        </div>
+      </div>
+    </div>
   </div>
+  <div class="col-12 col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted small">{{ _('Total Expenses') }}</div>
+            <div class="h5 mb-0">{{ total_expenses }}</div>
+          </div>
+          <i class="bi bi-receipt fs-2 text-danger"></i>
+        </div>
+      </div>
+    </div>
   </div>
-<table class="table table-hover">
-  <thead><tr><th>#</th><th>{{ _('Due Date') }}</th><th>{{ _('Amount') }}</th><th>{{ _('Status') }}</th><th></th></tr></thead>
-  <tbody>
-    {% for p in payments %}
-    <tr>
-      <td>{{ p.id }}</td>
-      <td>{{ p.due_date }}</td>
-      <td>{{ p.amount }}</td>
-      <td>
-        <span class="badge {{ 'text-bg-success' if p.status=='paid' else 'text-bg-warning' }}">{{ p.status }}</span>
-      </td>
-      <td>
-        <form method="post" action="{{ url_for('accountant.mark_payment', payment_id=p.id) }}">
-          <input type="hidden" name="status" value="{{ 'unpaid' if p.status=='paid' else 'paid' }}">
-          <button class="btn btn-sm btn-outline-primary" type="submit">{{ _('Toggle') }}</button>
-        </form>
-        <a class="btn btn-sm btn-outline-dark" href="{{ url_for('accountant.generate_invoice', payment_id=p.id) }}">{{ _('Generate Invoice') }}</a>
-        {% if p.invoice %}
-        <a class="btn btn-sm btn-outline-success" href="{{ url_for('accountant.download_invoice', payment_id=p.id) }}">{{ _('Download') }}</a>
-        {% endif %}
-      </td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">{{ _('No data') }}</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+  <div class="col-12 col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted small">{{ _('Net Profit') }}</div>
+            <div class="h5 mb-0">{{ net_profit }}</div>
+          </div>
+          <i class="bi bi-graph-up-arrow fs-2 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-muted small">{{ _('Unpaid Payments') }}</div>
+            <div class="h5 mb-0">{{ unpaid_count }}</div>
+          </div>
+          <i class="bi bi-exclamation-triangle fs-2 text-warning"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12 col-lg-8">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>{{ _('Monthly Income vs Expenses vs Profit') }}</span>
+        <div>
+          <a class="btn btn-sm btn-outline-success" href="{{ url_for('accountant.export_payments_excel') }}">{{ _('Export Excel') }}</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('accountant.export_payments_pdf') }}">{{ _('Export PDF') }}</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <canvas id="chartMonthly" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-4">
+    <div class="card h-100">
+      <div class="card-header">{{ _('Alerts') }}</div>
+      <div class="card-body">
+        <h6 class="text-muted">{{ _('Due Soon (next 3 days)') }}</h6>
+        <ul class="list-group mb-3">
+          {% for p in due_soon %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>#{{ p.id }} — {{ p.due_date }}</span>
+            <span class="badge text-bg-warning">{{ p.amount }}</span>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted">{{ _('No upcoming dues') }}</li>
+          {% endfor %}
+        </ul>
+        <h6 class="text-muted">{{ _('Overdue') }}</h6>
+        <ul class="list-group">
+          {% for p in overdue %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>#{{ p.id }} — {{ p.due_date }}</span>
+            <span class="badge text-bg-danger">{{ p.amount }}</span>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted">{{ _('No overdue items') }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">{{ _('All Payments') }}</div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{ _('Due Date') }}</th>
+            <th>{{ _('Amount') }}</th>
+            <th>{{ _('Status') }}</th>
+            <th class="text-end">{{ _('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.due_date }}</td>
+            <td>{{ p.amount }}</td>
+            <td>
+              <span class="badge {{ 'text-bg-success' if p.status=='paid' else 'text-bg-warning' }}">{{ p.status }}</span>
+            </td>
+            <td class="text-end">
+              <form class="d-inline" method="post" action="{{ url_for('accountant.mark_payment', payment_id=p.id) }}">
+                <input type="hidden" name="status" value="{{ 'unpaid' if p.status=='paid' else 'paid' }}">
+                <button class="btn btn-sm btn-outline-primary" type="submit">{{ _('Toggle') }}</button>
+              </form>
+              <a class="btn btn-sm btn-outline-dark" href="{{ url_for('accountant.generate_invoice', payment_id=p.id) }}">{{ _('Generate Invoice') }}</a>
+              {% if p.invoice %}
+              <a class="btn btn-sm btn-outline-success" href="{{ url_for('accountant.download_invoice', payment_id=p.id) }}">{{ _('Download') }}</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="text-center text-muted py-4">{{ _('No data') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = {{ month_labels|tojson }};
+  const income = {{ monthly_income|tojson }};
+  const expenses = {{ monthly_expenses|tojson }};
+  const profit = {{ monthly_profit|tojson }};
+  const ctx = document.getElementById('chartMonthly').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {label: '{{ _('Income') }}', data: income, borderColor: '#198754', backgroundColor: 'rgba(25,135,84,0.1)', tension: 0.25},
+        {label: '{{ _('Expenses') }}', data: expenses, borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,0.1)', tension: 0.25},
+        {label: '{{ _('Profit') }}', data: profit, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,0.1)', tension: 0.25}
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+</script>
 {% endblock %}
