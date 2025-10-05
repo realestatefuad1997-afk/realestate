@@ -16,7 +16,7 @@ def admin_required(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin:
+        if not current_user.is_authenticated or not (current_user.is_admin or current_user.is_superadmin):
             from flask import abort
 
             return abort(403)
