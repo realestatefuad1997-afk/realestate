@@ -1,62 +1,74 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Expenses') }}{% endblock %}
+
 {% block content %}
-<h3 class="mb-3">{{ _('Expenses') }}</h3>
-<div class="card mb-4">
+<h3 class="mb-4 text-primary">{{ _('Expenses') }}</h3>
+
+<!-- نموذج إضافة مصروف -->
+<div class="card shadow-sm mb-4 border-0">
   <div class="card-body">
-    <form method="post" class="row gy-2 gx-2 align-items-end">
+    <form method="post" class="row gy-3 gx-3 align-items-end">
       <div class="col-md-4">
-        <label class="form-label">{{ _('Description') }}</label>
-        <input class="form-control" name="description" required />
+        <label class="form-label fw-bold">{{ _('Description') }}</label>
+        <input class="form-control" name="description" placeholder="{{ _('Enter description') }}" required />
       </div>
       <div class="col-md-2">
-        <label class="form-label">{{ _('Amount') }}</label>
-        <input class="form-control" name="amount" type="number" step="0.01" required />
+        <label class="form-label fw-bold">{{ _('Amount') }}</label>
+        <input class="form-control" name="amount" type="number" step="0.01" placeholder="0.00" required />
       </div>
       <div class="col-md-2">
-        <label class="form-label">{{ _('Category') }}</label>
-        <input class="form-control" name="category" />
+        <label class="form-label fw-bold">{{ _('Category') }}</label>
+        <input class="form-control" name="category" placeholder="{{ _('Optional') }}" />
       </div>
       <div class="col-md-2">
-        <label class="form-label">{{ _('Vendor') }}</label>
-        <input class="form-control" name="vendor" />
+        <label class="form-label fw-bold">{{ _('Vendor') }}</label>
+        <input class="form-control" name="vendor" placeholder="{{ _('Optional') }}" />
       </div>
       <div class="col-md-2">
-        <label class="form-label">{{ _('Date') }}</label>
+        <label class="form-label fw-bold">{{ _('Date') }}</label>
         <input class="form-control" name="spent_at" type="date" />
       </div>
-      <div class="col-12 mt-2">
-        <button class="btn btn-primary" type="submit">{{ _('Add Expense') }}</button>
+      <div class="col-12 text-end">
+        <button class="btn btn-primary fw-bold" type="submit">
+          <i class="bi bi-plus-circle me-1"></i>{{ _('Add Expense') }}
+        </button>
       </div>
     </form>
   </div>
 </div>
-<div class="table-responsive">
-  <table class="table table-striped align-middle">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>{{ _('Date') }}</th>
-        <th>{{ _('Description') }}</th>
-        <th>{{ _('Category') }}</th>
-        <th>{{ _('Vendor') }}</th>
-        <th class="text-end">{{ _('Amount') }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for e in expenses %}
-      <tr>
-        <td>{{ e.id }}</td>
-        <td>{{ e.spent_at }}</td>
-        <td>{{ e.description }}</td>
-        <td>{{ e.category or '' }}</td>
-        <td>{{ e.vendor or '' }}</td>
-        <td class="text-end">{{ e.amount }}</td>
-      </tr>
-      {% else %}
-      <tr><td colspan="6">{{ _('No data') }}</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+
+<!-- جدول المصروفات -->
+<div class="card shadow-sm border-0">
+  <div class="card-body table-responsive">
+    <table class="table table-hover table-striped align-middle mb-0">
+      <thead class="table-dark text-center">
+        <tr>
+          <th>#</th>
+          <th>{{ _('Date') }}</th>
+          <th>{{ _('Description') }}</th>
+          <th>{{ _('Category') }}</th>
+          <th>{{ _('Vendor') }}</th>
+          <th>{{ _('Amount') }}</th>
+        </tr>
+      </thead>
+      <tbody class="text-center">
+        {% for e in expenses %}
+        <tr>
+          <td>{{ e.id }}</td>
+          <td>{{ e.spent_at }}</td>
+          <td>{{ e.description }}</td>
+          <td>{{ e.category or '-' }}</td>
+          <td>{{ e.vendor or '-' }}</td>
+          <td class="text-end text-danger fw-bold">{{ e.amount }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted">{{ _('No data') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
+
 {% endblock %}

@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Trial Balance') }}{% endblock %}
+
 {% block content %}
-<h3 class="mb-3">{{ _('Trial Balance') }}</h3>
-<div class="table-responsive">
-  <table class="table table-striped align-middle">
-    <thead>
+<h3 class="mb-4 text-primary">{{ _('Trial Balance') }}</h3>
+
+<div class="table-responsive shadow-sm rounded">
+  <table class="table table-striped table-bordered align-middle text-center mb-0">
+    <thead class="table-light">
       <tr>
         <th>{{ _('Code') }}</th>
-        <th>{{ _('Account') }}</th>
+        <th class="text-start">{{ _('Account') }}</th>
         <th class="text-end">{{ _('Debits') }}</th>
         <th class="text-end">{{ _('Credits') }}</th>
         <th class="text-end">{{ _('Balance') }}</th>
@@ -17,16 +19,18 @@
       {% for r in rows %}
       <tr>
         <td>{{ r.account.code }}</td>
-        <td>{{ r.account.name }}</td>
+        <td class="text-start">{{ r.account.name }}</td>
         <td class="text-end">{{ r.debits }}</td>
         <td class="text-end">{{ r.credits }}</td>
-        <td class="text-end">{{ r.balance }}</td>
+        <td class="text-end fw-bold">{{ r.balance }}</td>
       </tr>
       {% else %}
-      <tr><td colspan="5">{{ _('No data') }}</td></tr>
+      <tr>
+        <td colspan="5" class="text-center text-muted">{{ _('No data') }}</td>
+      </tr>
       {% endfor %}
     </tbody>
-    <tfoot>
+    <tfoot class="table-secondary">
       <tr>
         <th colspan="2" class="text-end">{{ _('Totals') }}</th>
         <th class="text-end">{{ total_debits }}</th>
@@ -36,4 +40,5 @@
     </tfoot>
   </table>
 </div>
+
 {% endblock %}

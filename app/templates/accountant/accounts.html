@@ -1,21 +1,27 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Chart of Accounts') }}{% endblock %}
+
 {% block content %}
-<h3 class="mb-3">{{ _('Chart of Accounts') }}</h3>
-<div class="card mb-4">
+<h3 class="mb-4 text-primary">{{ _('Chart of Accounts') }}</h3>
+
+<!-- إضافة حساب جديد -->
+<div class="card shadow-sm mb-4 border-0">
+  <div class="card-header bg-gradient-primary text-white">
+    {{ _('Add New Account') }}
+  </div>
   <div class="card-body">
-    <form method="post" class="row gy-2 gx-2 align-items-end">
+    <form method="post" class="row g-3 align-items-end">
       <div class="col-md-2">
-        <label class="form-label">{{ _('Code') }}</label>
-        <input class="form-control" name="code" required />
+        <label class="form-label fw-bold">{{ _('Code') }}</label>
+        <input class="form-control form-control-lg" name="code" placeholder="مثال: 101" required />
       </div>
       <div class="col-md-4">
-        <label class="form-label">{{ _('Name') }}</label>
-        <input class="form-control" name="name" required />
+        <label class="form-label fw-bold">{{ _('Name') }}</label>
+        <input class="form-control form-control-lg" name="name" placeholder="مثال: Cash" required />
       </div>
       <div class="col-md-3">
-        <label class="form-label">{{ _('Type') }}</label>
-        <select class="form-select" name="type" required>
+        <label class="form-label fw-bold">{{ _('Type') }}</label>
+        <select class="form-select form-select-lg" name="type" required>
           <option value="asset">{{ _('Asset') }}</option>
           <option value="liability">{{ _('Liability') }}</option>
           <option value="equity">{{ _('Equity') }}</option>
@@ -23,34 +29,52 @@
           <option value="expense">{{ _('Expense') }}</option>
         </select>
       </div>
-      <div class="col-md-3">
-        <button class="btn btn-primary" type="submit">{{ _('Add Account') }}</button>
+      <div class="col-md-3 d-grid">
+        <button class="btn btn-success btn-lg fw-bold" type="submit">
+          <i class="bi bi-plus-circle me-1"></i>{{ _('Add Account') }}
+        </button>
       </div>
     </form>
   </div>
 </div>
-<div class="table-responsive">
-  <table class="table table-striped align-middle">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>{{ _('Code') }}</th>
-        <th>{{ _('Name') }}</th>
-        <th>{{ _('Type') }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for a in accounts %}
-      <tr>
-        <td>{{ a.id }}</td>
-        <td>{{ a.code }}</td>
-        <td>{{ a.name }}</td>
-        <td>{{ a.type }}</td>
-      </tr>
-      {% else %}
-      <tr><td colspan="4">{{ _('No data') }}</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+
+<!-- قائمة الحسابات -->
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-gradient-secondary text-white">
+    {{ _('Accounts List') }}
+  </div>
+  <div class="card-body table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th>#</th>
+          <th>{{ _('Code') }}</th>
+          <th>{{ _('Name') }}</th>
+          <th>{{ _('Type') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in accounts %}
+        <tr>
+          <td>{{ a.id }}</td>
+          <td>{{ a.code }}</td>
+          <td>{{ a.name }}</td>
+          <td>
+            {% if a.type == 'asset' %}<span class="badge bg-success">{{ _('Asset') }}</span>{% endif %}
+            {% if a.type == 'liability' %}<span class="badge bg-danger">{{ _('Liability') }}</span>{% endif %}
+            {% if a.type == 'equity' %}<span class="badge bg-primary">{{ _('Equity') }}</span>{% endif %}
+            {% if a.type == 'income' %}<span class="badge bg-info text-dark">{{ _('Income') }}</span>{% endif %}
+            {% if a.type == 'expense' %}<span class="badge bg-warning text-dark">{{ _('Expense') }}</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="text-center text-muted">{{ _('No data') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
+
 {% endblock %}

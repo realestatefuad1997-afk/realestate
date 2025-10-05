@@ -1,40 +1,58 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('New Journal Entry') }}{% endblock %}
+
 {% block content %}
-<h3 class="mb-3">{{ _('New Journal Entry') }}</h3>
-<form method="post" class="row g-3">
-  <div class="col-md-3">
-    <label class="form-label">{{ _('Date') }}</label>
-    <input class="form-control" type="date" name="date" />
+<h3 class="mb-4 text-primary">{{ _('New Journal Entry') }}</h3>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <form method="post" class="row g-3">
+      
+      <!-- التاريخ والملاحظة -->
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ _('Date') }}</label>
+        <input class="form-control" type="date" name="date" required />
+      </div>
+      <div class="col-md-9">
+        <label class="form-label fw-semibold">{{ _('Memo') }}</label>
+        <input class="form-control" name="memo" placeholder="{{ _('Enter a short description') }}" />
+      </div>
+
+      <!-- حساب الدائن والمدين -->
+      <div class="col-md-5">
+        <label class="form-label fw-semibold">{{ _('Debit Account') }}</label>
+        <select class="form-select" name="debit_account_id" required>
+          <option value="">{{ _('Select Debit Account') }}</option>
+          {% for a in accounts %}
+          <option value="{{ a.id }}">{{ a.code }} - {{ a.name }} ({{ a.type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label fw-semibold">{{ _('Credit Account') }}</label>
+        <select class="form-select" name="credit_account_id" required>
+          <option value="">{{ _('Select Credit Account') }}</option>
+          {% for a in accounts %}
+          <option value="{{ a.id }}">{{ a.code }} - {{ a.name }} ({{ a.type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- المبلغ -->
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">{{ _('Amount') }}</label>
+        <input class="form-control fw-bold text-end" name="amount" type="number" step="0.01" placeholder="0.00" required />
+      </div>
+
+      <!-- زر الحفظ -->
+      <div class="col-12 d-flex justify-content-end">
+        <button class="btn btn-success px-4" type="submit">
+          <i class="bi bi-save me-1"></i>{{ _('Save') }}
+        </button>
+      </div>
+
+    </form>
   </div>
-  <div class="col-md-9">
-    <label class="form-label">{{ _('Memo') }}</label>
-    <input class="form-control" name="memo" />
-  </div>
-  <div class="col-md-5">
-    <label class="form-label">{{ _('Debit Account') }}</label>
-    <select class="form-select" name="debit_account_id" required>
-      <option value="">--</option>
-      {% for a in accounts %}
-      <option value="{{ a.id }}">{{ a.code }} - {{ a.name }} ({{ a.type }})</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-5">
-    <label class="form-label">{{ _('Credit Account') }}</label>
-    <select class="form-select" name="credit_account_id" required>
-      <option value="">--</option>
-      {% for a in accounts %}
-      <option value="{{ a.id }}">{{ a.code }} - {{ a.name }} ({{ a.type }})</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-2">
-    <label class="form-label">{{ _('Amount') }}</label>
-    <input class="form-control" name="amount" type="number" step="0.01" required />
-  </div>
-  <div class="col-12">
-    <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
-  </div>
-</form>
+</div>
+
 {% endblock %}

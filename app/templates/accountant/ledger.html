@@ -1,24 +1,37 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('General Ledger') }}{% endblock %}
+
 {% block content %}
-<h3 class="mb-3">{{ _('General Ledger') }}</h3>
-<form method="get" class="row g-3 mb-3">
-  <div class="col-md-6">
-    <label class="form-label">{{ _('Account') }}</label>
-    <select class="form-select" name="account_id">
-      <option value="">--</option>
-      {% for a in accounts %}
-      <option value="{{ a.id }}" {% if selected_account and selected_account.id == a.id %}selected{% endif %}>{{ a.code }} - {{ a.name }} ({{ a.type }})</option>
-      {% endfor %}
-    </select>
+<h3 class="mb-4 text-primary">{{ _('General Ledger') }}</h3>
+
+<!-- فلتر الحساب -->
+<div class="card mb-4 shadow-sm border-0">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ _('Account') }}</label>
+        <select class="form-select" name="account_id">
+          <option value="">{{ _('Select Account') }}</option>
+          {% for a in accounts %}
+          <option value="{{ a.id }}" {% if selected_account and selected_account.id == a.id %}selected{% endif %}>
+            {{ a.code }} - {{ a.name }} ({{ a.type }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">
+          <i class="bi bi-search me-1"></i>{{ _('View') }}
+        </button>
+      </div>
+    </form>
   </div>
-  <div class="col-md-2 align-self-end">
-    <button class="btn btn-primary" type="submit">{{ _('View') }}</button>
-  </div>
-</form>
+</div>
+
+<!-- جدول الدفتر العام -->
 <div class="table-responsive">
-  <table class="table table-bordered align-middle">
-    <thead>
+  <table class="table table-striped table-bordered align-middle text-center">
+    <thead class="table-light">
       <tr>
         <th>{{ _('Date') }}</th>
         <th>{{ _('Memo') }}</th>
@@ -31,15 +44,18 @@
       {% for row in lines %}
       <tr>
         <td>{{ row.date }}</td>
-        <td>{{ row.memo or '' }}</td>
+        <td class="text-start">{{ row.memo or '' }}</td>
         <td class="text-end">{{ row.debit }}</td>
         <td class="text-end">{{ row.credit }}</td>
-        <td class="text-end">{{ row.balance }}</td>
+        <td class="text-end fw-bold">{{ row.balance }}</td>
       </tr>
       {% else %}
-      <tr><td colspan="5">{{ _('No data') }}</td></tr>
+      <tr>
+        <td colspan="5" class="text-center text-muted">{{ _('No data') }}</td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+
 {% endblock %}
