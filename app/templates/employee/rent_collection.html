@@ -57,7 +57,19 @@
         </td>
         <td>
           {% if c %}
-            {{ c.rent_amount }}
+            {# Fallback to apartment or property price if contract.rent_amount is empty or zero #}
+            {% set ra = c.rent_amount %}
+            {% if not ra or ra == 0 %}
+              {% if c.apartment and c.apartment.rent_price %}
+                {{ c.apartment.rent_price }}
+              {% elif c.property and c.property.price %}
+                {{ c.property.price }}
+              {% else %}
+                0
+              {% endif %}
+            {% else %}
+              {{ ra }}
+            {% endif %}
           {% else %}
             <span class="text-muted">—</span>
           {% endif %}
