@@ -627,12 +627,30 @@ def collect_rent(tenant_id: int):
     if payment:
         payment.status = "paid"
         payment.paid_date = today
-        payment.amount = payment.amount or contract.rent_amount
+        # Prefer existing payment amount; otherwise fall back to contract/apartment/property pricing
+        default_amount = contract.rent_amount
+        if not default_amount:
+            if getattr(contract, "apartment", None) and getattr(contract.apartment, "rent_price", None):
+                default_amount = contract.apartment.rent_price
+            elif getattr(contract, "property", None) and getattr(contract.property, "price", None):
+                default_amount = contract.property.price
+            else:
+                default_amount = 0
+        payment.amount = payment.amount or default_amount
         payment.method = payment.method or "cash"
     else:
+        # Determine expected amount when creating a new payment
+        default_amount = contract.rent_amount
+        if not default_amount:
+            if getattr(contract, "apartment", None) and getattr(contract.apartment, "rent_price", None):
+                default_amount = contract.apartment.rent_price
+            elif getattr(contract, "property", None) and getattr(contract.property, "price", None):
+                default_amount = contract.property.price
+            else:
+                default_amount = 0
         payment = Payment(
             contract_id=contract.id,
-            amount=contract.rent_amount,
+            amount=default_amount,
             due_date=today,
             paid_date=today,
             method="cash",
