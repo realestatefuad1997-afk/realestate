@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Contracts') }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>{{ _('Contracts') }}</h3>
+</div>
+
+<form class="row g-2 align-items-end mb-3">
+  <div class="col-12 col-md-4">
+    <label class="form-label">{{ _('Search') }}</label>
+    <input type="text" name="q" class="form-control" value="{{ q or '' }}" placeholder="{{ _('Property or Tenant...') }}" />
+  </div>
+  <div class="col-6 col-md-3">
+    <label class="form-label">{{ _('Status') }}</label>
+    <select class="form-select" name="status">
+      <option value="" {{ 'selected' if not selected_status else '' }}>{{ _('All') }}</option>
+      <option value="active" {{ 'selected' if selected_status=='active' else '' }}>{{ _('Active') }}</option>
+      <option value="expired" {{ 'selected' if selected_status=='expired' else '' }}>{{ _('Expired') }}</option>
+      <option value="pending" {{ 'selected' if selected_status=='pending' else '' }}>{{ _('Pending') }}</option>
+    </select>
+  </div>
+  <div class="col-6 col-md-2">
+    <label class="form-label">{{ _('Start from') }}</label>
+    <input type="date" name="start" class="form-control" value="{{ start or '' }}" />
+  </div>
+  <div class="col-6 col-md-2">
+    <label class="form-label">{{ _('End to') }}</label>
+    <input type="date" name="end" class="form-control" value="{{ end or '' }}" />
+  </div>
+  <div class="col-12 col-md-1 d-grid">
+    <button class="btn btn-primary"><i class="bi bi-search me-1"></i>{{ _('Filter') }}</button>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{ _('Property') }}</th>
+        <th>{{ _('Tenant') }}</th>
+        <th>{{ _('Start') }}</th>
+        <th>{{ _('End') }}</th>
+        <th>{{ _('Rent') }}</th>
+        <th>{{ _('Status') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in contracts %}
+      <tr>
+        <td>{{ c.id }}</td>
+        <td>{{ c.property.title }}</td>
+        <td>{{ c.tenant.username }}</td>
+        <td>{{ c.start_date }}</td>
+        <td>{{ c.end_date }}</td>
+        <td>{{ c.rent_amount }}</td>
+        <td>
+          {% if c.status == 'active' %}
+            <span class="badge text-bg-success">{{ _('Active') }}</span>
+          {% elif c.status == 'expired' %}
+            <span class="badge text-bg-danger">{{ _('Expired') }}</span>
+          {% elif c.status == 'pending' %}
+            <span class="badge text-bg-warning text-dark">{{ _('Pending') }}</span>
+          {% else %}
+            <span class="badge text-bg-secondary">{{ c.status }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="7" class="text-center py-4">{{ _('No data') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

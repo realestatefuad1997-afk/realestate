@@ -2,7 +2,20 @@ from flask import Blueprint, render_template, abort, request, redirect, url_for,
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from ..extensions import db
-from ..models import Payment, Invoice, Account, JournalEntry, JournalLine, Expense, Contract, User
+from ..models import (
+    Payment,
+    Invoice,
+    Account,
+    JournalEntry,
+    JournalLine,
+    Expense,
+    Contract,
+    User,
+    Property,
+    Apartment,
+    MaintenanceRequest,
+    Complaint,
+)
 from flask import current_app, send_file
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -58,12 +71,12 @@ def dashboard():
     # Unpaid count
     unpaid_count = db.session.query(db.func.count()).select_from(Payment).filter(Payment.status != "paid").scalar() or 0
 
-    # Alerts: due soon (within 3 days) and overdue
+    # Alerts: due soon (within 7 days) and overdue
     today = date.today()
-    in_3 = today + timedelta(days=3)
+    in_7 = today + timedelta(days=7)
     due_soon = (
         db.session.query(Payment)
-        .filter(Payment.status != "paid", Payment.due_date >= today, Payment.due_date <= in_3)
+        .filter(Payment.status != "paid", Payment.due_date >= today, Payment.due_date <= in_7)
         .order_by(Payment.due_date.asc())
         .all()
     )
@@ -132,6 +145,82 @@ def dashboard():
 
     monthly_profit = [round((monthly_income[i] - monthly_expenses[i]), 2) for i in range(len(month_ranges))]
 
+    # -----------------------
+    # Additional KPIs & charts for dashboard cards
+    # -----------------------
+
+    # Properties/Units occupancy breakdown
+    units_total = (
+        (db.session.query(db.func.count(Apartment.id)).scalar() or 0)
+        + (
+            db.session.query(db.func.count(Property.id))
+            .filter(Property.property_type == "apartment")
+            .scalar()
+            or 0
+        )
+    )
+    units_available = (
+        (db.session.query(db.func.count(Apartment.id)).filter(Apartment.status == "available").scalar() or 0)
+        + (
+            db.session.query(db.func.count(Property.id))
+            .filter(Property.property_type == "apartment", Property.status == "available")
+            .scalar()
+            or 0
+        )
+    )
+    units_occupied = (
+        (db.session.query(db.func.count(Apartment.id)).filter(Apartment.status == "occupied").scalar() or 0)
+        + (
+            db.session.query(db.func.count(Property.id))
+            .filter(Property.property_type == "apartment", Property.status == "occupied")
+            .scalar()
+            or 0
+        )
+    )
+
+    # Maintenance and complaints counts
+    maint_new = db.session.query(db.func.count(MaintenanceRequest.id)).filter(MaintenanceRequest.status == "new").scalar() or 0
+    maint_in_progress = (
+        db.session.query(db.func.count(MaintenanceRequest.id)).filter(MaintenanceRequest.status == "in_progress").scalar() or 0
+    )
+    maint_resolved = db.session.query(db.func.count(MaintenanceRequest.id)).filter(MaintenanceRequest.status == "resolved").scalar() or 0
+    maint_closed = db.session.query(db.func.count(MaintenanceRequest.id)).filter(MaintenanceRequest.status == "closed").scalar() or 0
+
+    comp_new = db.session.query(db.func.count(Complaint.id)).filter(Complaint.status == "new").scalar() or 0
+    comp_reviewing = db.session.query(db.func.count(Complaint.id)).filter(Complaint.status == "reviewing").scalar() or 0
+    comp_resolved = db.session.query(db.func.count(Complaint.id)).filter(Complaint.status == "resolved").scalar() or 0
+    comp_closed = db.session.query(db.func.count(Complaint.id)).filter(Complaint.status == "closed").scalar() or 0
+
+    # Contracts status counts
+    contract_status_rows = (
+        db.session.query(Contract.status, db.func.count(Contract.id))
+        .group_by(Contract.status)
+        .all()
+    )
+    contracts_by_status = {k or "unknown": int(v or 0) for k, v in contract_status_rows}
+    contracts_total = sum(contracts_by_status.values())
+    contracts_active = contracts_by_status.get("active", 0)
+
+    # Payments counts
+    paid_count = db.session.query(db.func.count(Payment.id)).filter(Payment.status == "paid").scalar() or 0
+    overdue_count = (
+        db.session.query(db.func.count(Payment.id))
+        .filter(Payment.status != "paid", Payment.due_date < today)
+        .scalar()
+        or 0
+    )
+    upcoming_count = (
+        db.session.query(db.func.count(Payment.id))
+        .filter(Payment.status != "paid", Payment.due_date >= today, Payment.due_date <= (today + timedelta(days=14)))
+        .scalar()
+        or 0
+    )
+
+    # Recent items
+    recent_properties = Property.query.order_by(Property.created_at.desc()).limit(5).all()
+    recent_contracts = Contract.query.order_by(Contract.created_at.desc()).limit(5).all()
+    recent_payments = Payment.query.order_by(Payment.created_at.desc()).limit(5).all()
+
     return render_template(
         "accountant/dashboard.html",
         payments=payments,
@@ -147,7 +236,134 @@ def dashboard():
         monthly_income=monthly_income,
         monthly_expenses=monthly_expenses,
         monthly_profit=monthly_profit,
+        # occupancy chart
+        occupancy_labels=[_("Available"), _("Occupied")],
+        occupancy_values=[units_available, units_occupied],
+        # kpis for cards
+        units_total=units_total,
+        units_available=units_available,
+        units_occupied=units_occupied,
+        contracts_total=contracts_total,
+        contracts_active=contracts_active,
+        contracts_by_status=contracts_by_status,
+        paid_count=paid_count,
+        overdue_count=overdue_count,
+        upcoming_count=upcoming_count,
+        maint_new=maint_new,
+        maint_in_progress=maint_in_progress,
+        maint_resolved=maint_resolved,
+        maint_closed=maint_closed,
+        comp_new=comp_new,
+        comp_reviewing=comp_reviewing,
+        comp_resolved=comp_resolved,
+        comp_closed=comp_closed,
+        # recents
+        recent_properties=recent_properties,
+        recent_contracts=recent_contracts,
+        recent_payments=recent_payments,
     )
+
+
+# -----------------------
+# Accountant lists (read-only): Properties, Contracts, Maintenance, Complaints
+# -----------------------
+
+
+@accountant_bp.route("/properties")
+@login_required
+@accountant_required
+def properties_list():
+    q = (request.args.get("q") or "").strip()
+    status = (request.args.get("status") or "").strip()
+    ptype = (request.args.get("type") or "").strip()  # building | apartment | all
+
+    props_q = Property.query
+    if ptype in {"building", "apartment"}:
+        props_q = props_q.filter(Property.property_type == ptype)
+    if status in {"available", "occupied"}:
+        props_q = props_q.filter(Property.status == status)
+    if q:
+        like = f"%{q}%"
+        props_q = props_q.filter(Property.title.ilike(like))
+    props = props_q.order_by(Property.created_at.desc()).all()
+
+    # For quick occupancy totals on the list page
+    total_buildings = Property.query.filter_by(property_type="building").count()
+    total_standalone = Property.query.filter_by(property_type="apartment").count()
+
+    return render_template(
+        "accountant/properties.html",
+        properties=props,
+        total_buildings=total_buildings,
+        total_standalone=total_standalone,
+        q=q,
+        selected_status=status or None,
+        selected_type=ptype or "all",
+    )
+
+
+@accountant_bp.route("/contracts/list")
+@login_required
+@accountant_required
+def contracts_list_accountant():
+    q = (request.args.get("q") or "").strip()
+    status = (request.args.get("status") or "").strip()
+    start = (request.args.get("start") or "").strip()
+    end = (request.args.get("end") or "").strip()
+
+    contracts_q = Contract.query
+    if status:
+        contracts_q = contracts_q.filter(Contract.status == status)
+    if start:
+        try:
+            from datetime import datetime as _dt
+
+            start_d = _dt.strptime(start, "%Y-%m-%d").date()
+            contracts_q = contracts_q.filter(Contract.start_date >= start_d)
+        except Exception:
+            pass
+    if end:
+        try:
+            from datetime import datetime as _dt
+
+            end_d = _dt.strptime(end, "%Y-%m-%d").date()
+            contracts_q = contracts_q.filter(Contract.end_date <= end_d)
+        except Exception:
+            pass
+    if q:
+        like = f"%{q}%"
+        from sqlalchemy import or_
+
+        contracts_q = contracts_q.join(Property).join(User).filter(
+            or_(Property.title.ilike(like), User.username.ilike(like))
+        )
+    contracts = contracts_q.order_by(Contract.created_at.desc()).all()
+
+    return render_template("accountant/contracts.html", contracts=contracts, q=q, selected_status=status or None, start=start, end=end)
+
+
+@accountant_bp.route("/maintenance")
+@login_required
+@accountant_required
+def maintenance_list_accountant():
+    status = (request.args.get("status") or "").strip()
+    maint_q = MaintenanceRequest.query
+    if status:
+        maint_q = maint_q.filter(MaintenanceRequest.status == status)
+    maintenance_requests = maint_q.order_by(MaintenanceRequest.created_at.desc()).all()
+    return render_template("accountant/maintenance.html", maintenance_requests=maintenance_requests, selected_status=status or None)
+
+
+@accountant_bp.route("/complaints")
+@login_required
+@accountant_required
+def complaints_list_accountant():
+    status = (request.args.get("status") or "").strip()
+    complaints_q = Complaint.query
+    if status:
+        complaints_q = complaints_q.filter(Complaint.status == status)
+    complaints = complaints_q.order_by(Complaint.created_at.desc()).all()
+    return render_template("accountant/complaints.html", complaints=complaints, selected_status=status or None)
 
 
 # -----------------------

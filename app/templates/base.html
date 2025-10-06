@@ -55,8 +55,14 @@
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="acctDropdown" role="button" data-bs-toggle="dropdown">{{ _('Accountant') }}</a>
               <ul class="dropdown-menu" aria-labelledby="acctDropdown">
-                <li><a class="dropdown-item" href="{{ url_for('accountant.payments_list') }}">{{ _('Payments') }}</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('accountant.dashboard') }}">{{ _('Dashboard') }}</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.properties_list') }}">{{ _('Properties') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.contracts_list_accountant') }}">{{ _('Contracts') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.maintenance_list_accountant') }}">{{ _('Maintenance Requests') }}</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.complaints_list_accountant') }}">{{ _('Complaints') }}</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('accountant.payments_list') }}">{{ _('Payments') }}</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('accountant.report_unpaid') }}">{{ _('Unpaid') }}</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('accountant.invoices_list') }}">{{ _('Invoices') }}</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('accountant.accounts') }}">{{ _('Chart of Accounts') }}</a></li>

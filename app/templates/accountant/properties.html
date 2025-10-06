@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Properties') }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="bi bi-buildings me-2"></i>{{ _('Properties') }}</h3>
+  <div class="text-muted small">{{ _('Total Buildings') }}: {{ total_buildings }} · {{ _('Standalone Apartments') }}: {{ total_standalone }}</div>
+</div>
+
+<form class="row g-2 align-items-end mb-3">
+  <div class="col-12 col-md-4">
+    <label class="form-label">{{ _('Search') }}</label>
+    <input type="text" name="q" class="form-control" value="{{ q or '' }}" placeholder="{{ _('Title...') }}" />
+  </div>
+  <div class="col-6 col-md-3">
+    <label class="form-label">{{ _('Type') }}</label>
+    <select class="form-select" name="type">
+      <option value="" {{ 'selected' if not selected_type or selected_type=='all' else '' }}>{{ _('All') }}</option>
+      <option value="building" {{ 'selected' if selected_type=='building' else '' }}>{{ _('Buildings') }}</option>
+      <option value="apartment" {{ 'selected' if selected_type=='apartment' else '' }}>{{ _('Standalone Apartments') }}</option>
+    </select>
+  </div>
+  <div class="col-6 col-md-3">
+    <label class="form-label">{{ _('Status') }}</label>
+    <select class="form-select" name="status">
+      <option value="" {{ 'selected' if not selected_status else '' }}>{{ _('All') }}</option>
+      <option value="available" {{ 'selected' if selected_status=='available' else '' }}>{{ _('Available') }}</option>
+      <option value="occupied" {{ 'selected' if selected_status=='occupied' else '' }}>{{ _('Occupied') }}</option>
+    </select>
+  </div>
+  <div class="col-12 col-md-2 d-grid">
+    <button class="btn btn-primary"><i class="bi bi-search me-1"></i>{{ _('Filter') }}</button>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{ _('Title') }}</th>
+        <th>{{ _('Type') }}</th>
+        <th>{{ _('Status') }}</th>
+        <th>{{ _('Created at') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in properties %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.title }}</td>
+        <td>
+          {% if p.property_type == 'building' %}
+            <span class="badge text-bg-secondary">{{ _('Building') }}</span>
+          {% else %}
+            <span class="badge text-bg-info">{{ _('Apartment') }}</span>
+          {% endif %}
+        </td>
+        <td>
+          <span class="badge {{ 'text-bg-success' if p.status=='available' else 'text-bg-warning text-dark' if p.status=='occupied' else 'text-bg-secondary' }}">{{ p.status }}</span>
+        </td>
+        <td>{{ p.created_at }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" class="text-center py-4">{{ _('No data') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
