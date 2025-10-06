@@ -2,52 +2,64 @@
 {% block title %}{{ _('Tenant Dashboard') }}{% endblock %}
 
 {% block content %}
+
 <style>
-/* لوحة متكاملة وعصرية */
+/* شبكة الكروت */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
 }
 
-/* كروت ملونة وجذابة */
+/* كرت مستأجر */
 .card-tenant {
-  border-radius: 20px;
-  padding: 25px;
-  background: linear-gradient(145deg, #ffffff, #f0f0f5);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  transition: 0.4s;
-  cursor: pointer;
+  background-color: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
   position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 .card-tenant:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
 }
 
-/* أيقونات في الكروت */
+/* أيقونات داخل دوائر */
 .card-tenant .icon {
-  font-size: 2.2rem;
+  font-size: 2rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: absolute;
-  top: 20px;
-  right: 20px;
-  opacity: 0.15;
+  top: 15px;
+  right: 15px;
+  color: #fff;
 }
+.icon-blue { background-color: #0d6efd; }
+.icon-green { background-color: #198754; }
+.icon-yellow { background-color: #ffc107; color: #212529; }
+.icon-orange { background-color: #fd7e14; }
+.icon-red { background-color: #dc3545; }
 
-/* العناوين والنصوص */
+/* العناوين */
 .card-tenant h6 {
   font-weight: 700;
   font-size: 1.1rem;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .card-tenant .small-text {
   font-size: 0.85rem;
   color: #6c757d;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
-/* شريط الحالة */
+/* شارات الحالة */
 .badge-status {
   padding: 5px 10px;
   border-radius: 12px;
@@ -66,19 +78,25 @@
 .bg-paid { background: #198754; color: #fff; }
 .bg-unpaid { background: #ffc107; color: #212529; }
 
+/* عنوان رئيسي */
+h3.dashboard-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 </style>
 
-<h3 class="mb-4">{{ _('Tenant Dashboard') }}</h3>
+<h3 class="dashboard-title">{{ _('Tenant Dashboard') }}</h3>
 
 <!-- إجراءات سريعة -->
 <div class="dashboard-grid mb-4">
   <a class="card-tenant text-decoration-none text-dark" href="{{ url_for('tenant.maintenance_create') }}">
-    <i class="bi bi-tools icon"></i>
+    <i class="bi bi-tools icon-orange"></i>
     <h6>{{ _('New Maintenance Request') }}</h6>
     <div class="small-text">{{ _('Report an issue or request service') }}</div>
   </a>
   <a class="card-tenant text-decoration-none text-dark" href="{{ url_for('tenant.complaint_create') }}">
-    <i class="bi bi-exclamation-triangle icon"></i>
+    <i class="bi bi-exclamation-triangle icon-red"></i>
     <h6>{{ _('New Complaint') }}</h6>
     <div class="small-text">{{ _('Submit a complaint to management') }}</div>
   </a>
@@ -88,7 +106,7 @@
 <div class="dashboard-grid">
   {% for c in contracts %}
   <div class="card-tenant">
-    <i class="bi bi-file-earmark-text icon"></i>
+    <i class="bi bi-file-earmark-text icon-blue"></i>
     <h6>{{ _('Contract') }} #{{ c.id }}</h6>
     <div class="small-text">{{ c.property.title }}</div>
     <div class="small-text">{{ _('Start') }}: {{ c.start_date }} — {{ _('End') }}: {{ c.end_date }}</div>
@@ -105,7 +123,7 @@
 
   {% for p in payments %}
   <div class="card-tenant">
-    <i class="bi bi-currency-dollar icon"></i>
+    <i class="bi bi-currency-dollar icon-green"></i>
     <h6>{{ _('Payment') }} #{{ p.id }}</h6>
     <div class="small-text">{{ _('Amount') }}: {{ p.amount }}</div>
     <div class="small-text">{{ _('Due') }}: {{ p.due_date }}</div>
@@ -118,11 +136,11 @@
 </div>
 
 <!-- طلبات الصيانة والشكاوى -->
-<h5 class="mb-3">{{ _('Maintenance & Complaints') }}</h5>
+<h5 class="dashboard-title">{{ _('Maintenance & Complaints') }}</h5>
 <div class="dashboard-grid">
   {% for m in maintenance_requests %}
   <div class="card-tenant" onclick="window.location.href='{{ url_for('tenant.maintenance_show', request_id=m.id) }}'">
-    <i class="bi bi-tools icon"></i>
+    <i class="bi bi-tools icon-orange"></i>
     <h6>{{ m.title }}</h6>
     <div class="small-text">{{ m.description }}</div>
     {% if m.notes %}
@@ -143,7 +161,7 @@
 
   {% for c in complaints %}
   <div class="card-tenant" onclick="window.location.href='{{ url_for('tenant.complaint_show', complaint_id=c.id) }}'">
-    <i class="bi bi-exclamation-triangle icon"></i>
+    <i class="bi bi-exclamation-triangle icon-red"></i>
     <h6>{{ c.subject }}</h6>
     <div class="small-text">{{ c.description }}</div>
     {% if c.notes %}
@@ -162,4 +180,5 @@
   <div class="card-tenant">{{ _('No complaints') }}</div>
   {% endfor %}
 </div>
+
 {% endblock %}
