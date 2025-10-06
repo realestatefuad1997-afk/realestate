@@ -150,6 +150,89 @@ def dashboard():
     )
 
 
+@admin_bp.route("/unleased")
+@login_required
+@admin_required
+def unleased_units():
+    """List all unrented units today: standalone apartments and apartments inside buildings.
+
+    Standalone apartments are rows in `properties` with property_type='apartment' that have no
+    active contract covering today. Building apartments are rows in `apartments` that have no
+    active contract and whose parent building is not leased at the building level.
+    """
+    today = date.today()
+
+    # Active contracts covering today (by property)
+    active_props_subq = (
+        db.session.query(Contract.property_id)
+        .filter(
+            Contract.status == "active",
+            Contract.start_date <= today,
+            Contract.end_date >= today,
+        )
+        .subquery()
+    )
+
+    # Standalone apartments without active contract
+    standalone_apartments = (
+        Property.query
+        .filter(
+            Property.property_type == "apartment",
+            ~Property.id.in_(active_props_subq),
+        )
+        .order_by(Property.created_at.desc())
+        .all()
+    )
+
+    # Building apartments without active contract (and not covered by a building-level contract)
+    active_building_apartments_subq = (
+        db.session.query(Contract.apartment_id)
+        .filter(
+            Contract.status == "active",
+            Contract.start_date <= today,
+            Contract.end_date >= today,
+            Contract.apartment_id != None,
+        )
+        .subquery()
+    )
+
+    # Buildings that are leased as a whole (building-level contracts without apartment)
+    active_leased_buildings_subq = (
+        db.session.query(Contract.property_id)
+        .filter(
+            Contract.status == "active",
+            Contract.start_date <= today,
+            Contract.end_date >= today,
+            Contract.apartment_id == None,
+        )
+        .subquery()
+    )
+
+    building_apartments = (
+        Apartment.query
+        .filter(
+            ~Apartment.id.in_(active_building_apartments_subq),
+            ~Apartment.building_id.in_(active_leased_buildings_subq),
+        )
+        .order_by(Apartment.building_id.asc(), Apartment.number.asc(), Apartment.created_at.desc())
+        .all()
+    )
+
+    # Preload buildings for apartments to show building title
+    buildings_by_id = {}
+    if building_apartments:
+        building_ids = {a.building_id for a in building_apartments}
+        buildings = Property.query.filter(Property.id.in_(building_ids)).all()
+        buildings_by_id = {b.id: b for b in buildings}
+
+    return render_template(
+        "admin/unleased_units.html",
+        standalone_apartments=standalone_apartments,
+        building_apartments=building_apartments,
+        buildings_by_id=buildings_by_id,
+    )
+
+
 @admin_bp.route("/users")
 @login_required
 @admin_required
