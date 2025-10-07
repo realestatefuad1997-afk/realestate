@@ -9,18 +9,20 @@ class Config:
     # MASTER database holds Super Admin users and Companies registry
     MASTER_DATABASE_URI = os.getenv(
         "MASTER_DATABASE_URI",
-        f"sqlite:///{os.path.join(basedir, 'instance', 'master.db')}",
+        "postgresql://realestate_g8it_user:7cBCDJOvKnO7et2yn8tBtDGzoo6cprW5@dpg-d3hupr33fgac73a4j1tg-a.oregon-postgres.render.com/realestate_g8it"  # غيّرها بالقيمة المناسبة
     )
     # Default tenant database URI (used only for Alembic and when no company bound)
-    # Keep legacy single-tenant sqlite as the default tenant engine when needed
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "TENANT_DEFAULT_DATABASE_URI",
-        f"sqlite:///{os.path.join(basedir, 'instance', 'app.db')}",
+        "postgresql://realestate_g8it_user:7cBCDJOvKnO7et2yn8tBtDGzoo6cprW5@dpg-d3hupr33fgac73a4j1tg-a.oregon-postgres.render.com/realestate_g8it"  # غيّرها بالقيمة المناسبة
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Directory where per-company SQLite databases will be stored by default
-    COMPANY_DB_DIR = os.getenv("COMPANY_DB_DIR", os.path.join(os.path.dirname(__file__), "..", "companies"))
+    COMPANY_DB_DIR = os.getenv(
+        "COMPANY_DB_DIR",
+        os.path.join(os.path.dirname(__file__), "..", "companies")
+    )
 
     # Base directory to store user uploads; served via /uploads/<filename>
     UPLOAD_FOLDER = os.getenv(
